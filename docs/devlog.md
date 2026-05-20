@@ -12,6 +12,11 @@
   - backend `show_session_panel` remains as a fallback
   - Tauri capabilities now explicitly allow `show` and `set_focus`
   - added a focused Vitest regression test for the pet-window panel open path
+- Planned the conservative Settings Storage cleanup slice:
+  - Storage entry belongs in Settings rather than the Session Panel.
+  - First version only cleans safe session files and old event files.
+  - Imported pets are counted but not deleted.
+  - design spec added at `docs/superpowers/specs/2026-05-21-storage-cleanup-design.md`.
 
 ## 2026-05-20
 

@@ -17,6 +17,7 @@ src-tauri/gen/schemas
 
 # Local app data
 .claude-sprout/
+.superpowers/
 
 # Editor directories and files
 .vscode/*

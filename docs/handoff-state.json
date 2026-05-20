@@ -27,6 +27,7 @@
     "Controlled session smoke tooling: npm run smoke:sessions launches the release exe with a temporary CLAUDE_SPROUT_HOME and writes notification/DND transition snapshots",
     "More accurate terminal session handling: Stop, StopFailure, and SessionEnd set ended_at; statusline writers preserve terminal state; Rust derives non-terminal snapshots with ended_at as closed; executable tests cover both PowerShell and Node writers",
     "Manual desktop smoke verified native Windows notifications, DND suppression, tray menu actions, Settings, Open Data Folder, and pet click opening the session panel; pet click now opens/focuses the main window directly with a backend command fallback",
+    "Conservative local storage cleanup design is specified at docs/superpowers/specs/2026-05-21-storage-cleanup-design.md: Settings owns the Storage entry, safe sessions and old events are cleanable, imported pets are counted but not deleted",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -47,8 +48,8 @@
     "The release exe build works with npm run release:exe or npm run tauri -- build --no-bundle, and the NSIS installer build works while the verified local NSIS cache is present."
   ],
   "nextTasks": [
-    "Fix the root machine certificate/proxy-chain issue for GitHub release downloads, or add a documented repeatable pre-cache workflow for NSIS/WiX tools.",
-    "Plan and implement the next product slice: data cleanup UI for local sessions/events/pets."
+    "Review and implement the conservative Settings Storage cleanup spec in docs/superpowers/specs/2026-05-21-storage-cleanup-design.md.",
+    "Fix the root machine certificate/proxy-chain issue for GitHub release downloads, or add a documented repeatable pre-cache workflow for NSIS/WiX tools."
   ],
   "importantDecisions": [
     "Do not make the product a browser-style dashboard. The pet window is the first-class UI.",
