@@ -23,6 +23,8 @@ pub struct AppSettings {
     pub pet_lock_position: bool,
     pub pet_scale: f64,
     pub pet_size_preset: PetSizePreset,
+    #[serde(default)]
+    pub active_pet_id: Option<String>,
 }
 
 impl Default for AppSettings {
@@ -33,6 +35,7 @@ impl Default for AppSettings {
             pet_lock_position: false,
             pet_scale: 1.0,
             pet_size_preset: PetSizePreset::Medium,
+            active_pet_id: None,
         }
     }
 }
@@ -95,7 +98,10 @@ mod tests {
     fn loads_defaults_when_settings_file_is_missing() {
         let root = temp_root();
 
-        assert_eq!(load_from_root(&root).expect("settings load should succeed"), AppSettings::default());
+        assert_eq!(
+            load_from_root(&root).expect("settings load should succeed"),
+            AppSettings::default()
+        );
     }
 
     #[test]
@@ -107,11 +113,15 @@ mod tests {
             pet_lock_position: true,
             pet_scale: 1.25,
             pet_size_preset: PetSizePreset::Large,
+            active_pet_id: Some("custom-sprout".into()),
         };
 
         save_to_root(&root, &settings).expect("settings save should succeed");
 
-        assert_eq!(load_from_root(&root).expect("settings load should succeed"), settings);
+        assert_eq!(
+            load_from_root(&root).expect("settings load should succeed"),
+            settings
+        );
         fs::remove_dir_all(root).expect("temp settings root should be removable");
     }
 
@@ -128,6 +138,23 @@ mod tests {
         let settings = load_from_root(&root).expect("settings load should succeed");
 
         assert_eq!(settings.pet_scale, MAX_PET_SCALE);
+        fs::remove_dir_all(root).expect("temp settings root should be removable");
+    }
+
+    #[test]
+    fn loads_settings_written_before_active_pet_selection() {
+        let root = temp_root();
+        fs::create_dir_all(&root).expect("temp settings root should be created");
+        fs::write(
+            root.join("settings.json"),
+            r#"{"doNotDisturb":true,"petAlwaysOnTop":true,"petLockPosition":false,"petScale":1.0,"petSizePreset":"medium"}"#,
+        )
+        .expect("settings file should be writable");
+
+        let settings = load_from_root(&root).expect("legacy settings should load");
+
+        assert_eq!(settings.active_pet_id, None);
+        assert!(settings.do_not_disturb);
         fs::remove_dir_all(root).expect("temp settings root should be removable");
     }
 }

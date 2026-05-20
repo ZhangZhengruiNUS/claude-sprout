@@ -67,6 +67,11 @@ pub fn import_codex_pet(path: String) -> Result<pet_import::PetManifest, String>
     pet_import::import_codex_pet(Path::new(&path))
 }
 
+#[tauri::command]
+pub fn list_installed_pets() -> Result<Vec<pet_import::InstalledPet>, String> {
+    pet_import::list_installed_pets()
+}
+
 fn open_path(path: &Path) -> Result<(), String> {
     if !path.exists() {
         return Err(format!("Path does not exist: {}", path.display()));

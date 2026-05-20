@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { PetRenderer } from './pet/PetRenderer'
+import { listPetAssets, type PetAsset } from './pet/petAssetsApi'
 import {
   applyPetAlwaysOnTop,
   applyPetScale,
@@ -51,6 +52,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'sessions' | 'settings'>('sessions')
   const [windowKind] = useState<WindowKind>(resolveInitialWindowKind)
   const [petAction, setPetAction] = useState<PetAnimation | null>(null)
+  const [petAssets, setPetAssets] = useState<PetAsset[]>([])
 
   async function load() {
     setIsLoading(true)
@@ -66,6 +68,10 @@ function App() {
       void load()
     }, 30_000)
     return () => window.clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    void refreshPetAssets()
   }, [])
 
   const topStatus = useMemo(() => getHighestPriorityStatus(sessions), [sessions])
@@ -136,6 +142,12 @@ function App() {
     await updateSettings(settingsWithPetSizePreset(settings, preset))
   }
 
+  async function refreshPetAssets() {
+    setPetAssets(await listPetAssets())
+  }
+
+  const activePetAsset = petAssets.find((petAsset) => petAsset.id === settings.activePetId) ?? null
+
   if (windowKind === 'pet') {
     return (
       <main className="floating-pet-shell">
@@ -146,6 +158,7 @@ function App() {
           draggable={!settings.petLockPosition}
           scale={settings.petScale}
           action={petAction}
+          petAsset={activePetAsset}
           onClick={() => {
             void showSessionPanel()
           }}
@@ -169,7 +182,7 @@ function App() {
           <PawPrint size={18} />
           <span>Claude Sprout</span>
         </div>
-        <PetRenderer status={topStatus} alertCount={waitingCount} />
+        <PetRenderer status={topStatus} alertCount={waitingCount} petAsset={activePetAsset} />
         <div className="rail-actions">
           <button type="button" onClick={() => setActiveTab('sessions')}>
             <Bell size={16} />
@@ -233,11 +246,15 @@ function App() {
         ) : (
           <SettingsPanel
             settings={settings}
+            petAssets={petAssets}
             onSettingsChange={(nextSettings) => {
               void updateSettings(nextSettings)
             }}
             onPetSizePresetChange={(preset) => {
               void updatePetSizePreset(preset)
+            }}
+            onRefreshPetAssets={() => {
+              void refreshPetAssets()
             }}
           />
         )}

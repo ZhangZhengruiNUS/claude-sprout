@@ -3,6 +3,7 @@ import { useRef } from 'react'
 import type { SessionStatus } from '../sessions/sessionTypes'
 import { type PetAnimation, statusToPetAnimation } from './petStateMapper'
 import type { PetDragOrigin, PetDragSession } from './petWindowControls'
+import type { PetAsset } from './petAssetsApi'
 
 type Props = {
   status: SessionStatus
@@ -11,6 +12,7 @@ type Props = {
   draggable?: boolean
   scale?: number
   action?: PetAnimation | null
+  petAsset?: PetAsset | null
   onClick?: () => void
   onDoubleClick?: () => void
   onContextMenu?: () => void
@@ -25,6 +27,7 @@ export function PetRenderer({
   draggable = true,
   scale = 1,
   action,
+  petAsset,
   onClick,
   onDoubleClick,
   onContextMenu,
@@ -32,6 +35,20 @@ export function PetRenderer({
   onDragStart,
 }: Props) {
   const animation = action ?? statusToPetAnimation(status)
+  const atlasAnimation = petAsset?.atlasProfile.animations[animation]
+  const spriteDuration =
+    atlasAnimation && petAsset
+      ? 'durationMs' in atlasAnimation && typeof atlasAnimation.durationMs === 'number'
+        ? atlasAnimation.durationMs
+        : petAsset.atlasProfile.defaultFrameDurationMs * atlasAnimation.frameCount
+      : null
+  const spriteSheetWidth =
+    atlasAnimation && petAsset ? petAsset.atlasProfile.frameWidth * atlasAnimation.frameCount : null
+  const spriteSheetHeight = petAsset ? petAsset.atlasProfile.frameHeight * petAsset.atlasProfile.rows : null
+  const spriteRowOffset =
+    atlasAnimation && petAsset ? atlasAnimation.row * petAsset.atlasProfile.frameHeight * -1 : null
+  const spriteEndOffset =
+    atlasAnimation && petAsset ? petAsset.atlasProfile.frameWidth * atlasAnimation.frameCount * -1 : null
   const pointerStart = useRef<{ x: number; y: number; screenX: number; screenY: number } | null>(null)
   const dragSession = useRef<PetDragSession | null>(null)
   const isDragging = useRef(false)
@@ -104,13 +121,32 @@ export function PetRenderer({
       onPointerCancel={handlePointerEnd}
       style={{ '--pet-scale': scale } as CSSProperties}
     >
-      <div className={`sprout-pet ${animation}`}>
-        <div className="sprout-leaf" />
-        <div className="sprout-face">
-          <span />
-          <span />
+      {petAsset && atlasAnimation ? (
+        <div
+          className={`sprite-pet ${atlasAnimation.mode}`}
+          style={
+            {
+              '--sprite-url': `url("${petAsset.imageSrc}")`,
+              '--sprite-frames': atlasAnimation.frameCount,
+              '--sprite-frame-width': `${petAsset.atlasProfile.frameWidth}px`,
+              '--sprite-frame-height': `${petAsset.atlasProfile.frameHeight}px`,
+              '--sprite-sheet-width': `${spriteSheetWidth}px`,
+              '--sprite-sheet-height': `${spriteSheetHeight}px`,
+              '--sprite-row-offset': `${spriteRowOffset}px`,
+              '--sprite-end-offset': `${spriteEndOffset}px`,
+              '--sprite-duration': `${spriteDuration}ms`,
+            } as CSSProperties
+          }
+        />
+      ) : (
+        <div className={`sprout-pet ${animation}`}>
+          <div className="sprout-leaf" />
+          <div className="sprout-face">
+            <span />
+            <span />
+          </div>
         </div>
-      </div>
+      )}
       {status === 'waiting_permission' ? (
         <div className="alert-bubble">Permission needed{alertCount > 1 ? ` x${alertCount}` : ''}</div>
       ) : null}

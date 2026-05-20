@@ -18,6 +18,8 @@
     "Settings persistence under %USERPROFILE%\\.claude-sprout\\settings.json for do-not-disturb, pet always-on-top, pet lock-position, and pet size",
     "Settings UI controls for small/medium/large pet size, always-on-top, do-not-disturb, and lock-position; changes sync to the live pet window",
     "Vitest test runner with app settings schema tests, plus Rust tests for app-data settings load/save/clamp behavior",
+    "Imported pet asset listing from %USERPROFILE%\\.claude-sprout\\pets plus Settings selection for built-in sprout or imported Codex 8x9 spritesheets",
+    "Pet renderer can animate imported Codex 8x9 spritesheets through the Tauri asset protocol while keeping the built-in sprout fallback",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -33,7 +35,8 @@
     "The release exe build works with npm run tauri -- build --no-bundle."
   ],
   "nextTasks": [
-    "Improve Codex-like pet behavior: add idle/wave/run/jump/failed/review animation controller, support imported codex-8x9 spritesheets in the pet window, and add pet preview/apply UI.",
+    "Finish Codex-compatible pet workflow UI: scan %USERPROFILE%\\.codex\\pets / %CODEX_HOME%\\pets, import valid candidates, refresh installed pet list, and surface validation errors.",
+    "Improve animation control polish: reset one-shot spritesheet rows reliably for wave/jump/failed and add clearer preview/apply affordances.",
     "Wire real session refresh: file watcher with debounce, native notifications for waiting_permission/waiting_input/done/error, tray menu actions for refresh/open data/settings.",
     "Connect persisted do-not-disturb to notifications and tray state instead of only the panel UI.",
     "Improve installer path: document WiX prerequisite or add an NSIS target if it avoids the current WiX blocker."

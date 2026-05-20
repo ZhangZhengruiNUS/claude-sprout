@@ -60,6 +60,7 @@ describe('app settings persistence', () => {
       petLockPosition: true,
       petScale: PET_SIZE_OPTIONS.large.scale,
       petSizePreset: 'large',
+      activePetId: null,
     })
   })
 
@@ -106,5 +107,13 @@ describe('app settings persistence', () => {
 
     storage.setItem('claude-sprout.pet-scale', '1')
     expect(hasStoredAppSettings(storage)).toBe(true)
+  })
+
+  it('persists the active imported pet id', () => {
+    const storage = new MemoryStorage()
+
+    saveAppSettings({ ...DEFAULT_APP_SETTINGS, activePetId: 'sprout-custom' }, storage)
+
+    expect(loadAppSettings(storage).activePetId).toBe('sprout-custom')
   })
 })

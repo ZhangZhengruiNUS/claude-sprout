@@ -37,3 +37,8 @@
   - Settings includes do-not-disturb, always-on-top, small/medium/large pet size, and lock-position controls
   - Settings changes sync to the live pet window through Tauri events
   - added Vitest coverage for frontend settings schema and Rust coverage for app-data settings storage
+- Added imported pet rendering support:
+  - `activePetId` is persisted in app settings
+  - Rust can list installed pets from `%USERPROFILE%\.claude-sprout\pets`
+  - Settings can choose the built-in sprout or an installed Codex-compatible pet
+  - imported Codex 8x9 spritesheets render through the Tauri asset protocol

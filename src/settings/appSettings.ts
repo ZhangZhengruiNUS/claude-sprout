@@ -6,6 +6,7 @@ export type AppSettings = {
   petLockPosition: boolean
   petScale: number
   petSizePreset: PetSizePreset
+  activePetId: string | null
 }
 
 type StoredAppSettings = Partial<AppSettings>
@@ -28,6 +29,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   petLockPosition: false,
   petScale: PET_SIZE_OPTIONS.medium.scale,
   petSizePreset: 'medium',
+  activePetId: null,
 }
 
 const PET_SIZE_PRESETS = new Set<PetSizePreset>(['small', 'medium', 'large', 'custom'])
@@ -94,6 +96,7 @@ function normalizeAppSettings(settings: StoredAppSettings): AppSettings {
     petLockPosition: settings.petLockPosition ?? DEFAULT_APP_SETTINGS.petLockPosition,
     petScale: clampPetScale(presetScale ?? storedScale ?? DEFAULT_APP_SETTINGS.petScale),
     petSizePreset,
+    activePetId: typeof settings.activePetId === 'string' ? settings.activePetId : null,
   }
 }
 

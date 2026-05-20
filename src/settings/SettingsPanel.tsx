@@ -1,16 +1,25 @@
 import { Lock, Pin, VolumeX } from 'lucide-react'
+import type { PetAsset } from '../pet/petAssetsApi'
 import type { AppSettings, PetSizePreset } from './appSettings'
 import { PET_SIZE_OPTIONS } from './appSettings'
 
 type Props = {
   settings: AppSettings
+  petAssets: PetAsset[]
   onSettingsChange: (settings: AppSettings) => void
   onPetSizePresetChange: (preset: Exclude<PetSizePreset, 'custom'>) => void
+  onRefreshPetAssets: () => void
 }
 
 const PET_SIZE_PRESETS = ['small', 'medium', 'large'] as const
 
-export function SettingsPanel({ settings, onSettingsChange, onPetSizePresetChange }: Props) {
+export function SettingsPanel({
+  settings,
+  petAssets,
+  onSettingsChange,
+  onPetSizePresetChange,
+  onRefreshPetAssets,
+}: Props) {
   return (
     <section className="settings-panel">
       <h2>Settings</h2>
@@ -74,6 +83,34 @@ export function SettingsPanel({ settings, onSettingsChange, onPetSizePresetChang
           />
         </span>
       </label>
+      <div className="setting-row">
+        <span>
+          <strong>Pet appearance</strong>
+          <small>Use an imported Codex-compatible 8x9 spritesheet, or keep the built-in sprout.</small>
+        </span>
+        <button type="button" onClick={onRefreshPetAssets}>
+          Refresh pets
+        </button>
+      </div>
+      <div className="pet-picker">
+        <button
+          type="button"
+          className={!settings.activePetId ? 'active' : ''}
+          onClick={() => onSettingsChange({ ...settings, activePetId: null })}
+        >
+          Built-in sprout
+        </button>
+        {petAssets.map((petAsset) => (
+          <button
+            key={petAsset.id}
+            type="button"
+            className={settings.activePetId === petAsset.id ? 'active' : ''}
+            onClick={() => onSettingsChange({ ...settings, activePetId: petAsset.id })}
+          >
+            {petAsset.name}
+          </button>
+        ))}
+      </div>
     </section>
   )
 }

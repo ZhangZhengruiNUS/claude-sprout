@@ -24,7 +24,8 @@ pub fn run() {
             commands::open_data_folder,
             commands::open_project_folder,
             commands::scan_codex_pets,
-            commands::import_codex_pet
+            commands::import_codex_pet,
+            commands::list_installed_pets
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Claude Sprout");
