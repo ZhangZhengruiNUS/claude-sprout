@@ -49,7 +49,7 @@ Claude Sprout 已经具备宠物窗口、Session Panel、通知、托盘菜单�
 
 安全 session 的定义：
 
-- JSON 可以被解析为 `SessionSnapshot`，并且派生状态为 `closed` 或 `probably_closed`；或原始状态为 `done` / `error` / `closed`。
+- JSON 可以被解析为 `SessionSnapshot`，并且原始状态为 `done` / `error` / `closed` / `probably_closed`。
 - JSON 无法解析时不删除，避免误删格式变化或损坏但仍有诊断价值的文件。
 - 状态为 `running`、`tool_running`、`waiting_input`、`waiting_permission`、`idle`、`stale` 的 session 不删除。
 
@@ -127,7 +127,7 @@ Settings tab 打开时和用户点击 `Refresh storage` 时加载统计。清理
 Rust 单测：
 
 - 统计 sessions/events/pets 的文件数、目录数和字节数。
-- 安全 session 清理只删除 `done` / `error` / `closed` / `probably_closed`，保留 running/waiting/stale。
+- 安全 session 清理只删除原始状态为 `done` / `error` / `closed` / `probably_closed` 的文件，保留 running/waiting/idle/stale，即使这些活动态因为心跳过旧会被列表派生为 `probably_closed`。
 - 无法解析的 session JSON 不删除。
 - event 清理只删除修改时间超过 14 天的普通文件。
 - pets 只统计不删除。

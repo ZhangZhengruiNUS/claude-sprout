@@ -39,6 +39,14 @@ import {
   settingsWithPetSizePreset,
 } from './settings/appSettings'
 import { loadPersistedAppSettings, savePersistedAppSettings } from './settings/appSettingsApi'
+import {
+  cleanStorage,
+  getStorageSummary,
+  openDataFolder,
+  type StorageCleanKind,
+  type StorageSummary,
+} from './storage/storageApi'
+import { cleanStorageConfirmationText, formatBytes } from './storage/storageFormatting'
 import './styles/app.css'
 
 type WindowKind = 'panel' | 'pet'
@@ -79,6 +87,10 @@ function App() {
   const [isScanningCodexPets, setIsScanningCodexPets] = useState(false)
   const [importingPetSourcePath, setImportingPetSourcePath] = useState<string | null>(null)
   const [petImportError, setPetImportError] = useState<string | null>(null)
+  const [storageSummary, setStorageSummary] = useState<StorageSummary | null>(null)
+  const [isStorageLoading, setIsStorageLoading] = useState(false)
+  const [isStorageCleaning, setIsStorageCleaning] = useState(false)
+  const [storageMessage, setStorageMessage] = useState<string | null>(null)
   const settingsRef = useRef(settings)
   const sessionsRef = useRef<SessionSnapshot[]>([])
   const notifiedSessionKeysRef = useRef(new Set<string>())
@@ -179,6 +191,11 @@ function App() {
       unlisten?.()
     }
   }, [windowKind])
+
+  useEffect(() => {
+    if (windowKind !== 'panel' || activeTab !== 'settings') return
+    void loadStorageSummary()
+  }, [activeTab, windowKind])
 
   useEffect(() => {
     if (!isTauriRuntime() || windowKind !== 'panel') return
@@ -316,6 +333,50 @@ function App() {
     }
   }
 
+  async function loadStorageSummary(options: { clearMessage?: boolean } = {}) {
+    setIsStorageLoading(true)
+    if (options.clearMessage ?? true) {
+      setStorageMessage(null)
+    }
+    try {
+      setStorageSummary(await getStorageSummary())
+      return true
+    } catch (error) {
+      setStorageMessage(`Storage summary failed: ${errorMessage(error)}`)
+      return false
+    } finally {
+      setIsStorageLoading(false)
+    }
+  }
+
+  async function handleCleanStorage(kind: StorageCleanKind) {
+    const bucket = kind === 'safe_sessions' ? storageSummary?.sessions : storageSummary?.events
+    if (!bucket || bucket.cleanableFileCount === 0) return
+
+    const confirmed = window.confirm(
+      cleanStorageConfirmationText(kind, bucket.cleanableFileCount, bucket.cleanableBytes),
+    )
+    if (!confirmed) return
+
+    setIsStorageCleaning(true)
+    setStorageMessage(null)
+    try {
+      const result = await cleanStorage(kind)
+      const refreshed = await loadStorageSummary({ clearMessage: false })
+      if (!refreshed) return
+      setStorageMessage(
+        `Deleted ${result.deletedFileCount} files and freed ${formatBytes(result.deletedBytes)}.`,
+      )
+      if (kind === 'safe_sessions') {
+        await load({ showLoading: false })
+      }
+    } catch (error) {
+      setStorageMessage(`Storage cleanup failed: ${errorMessage(error)}`)
+    } finally {
+      setIsStorageCleaning(false)
+    }
+  }
+
   const activePetAsset = petAssets.find((petAsset) => petAsset.id === settings.activePetId) ?? null
   const previewPetAsset =
     windowKind === 'panel'
@@ -434,6 +495,10 @@ function App() {
             isScanningCodexPets={isScanningCodexPets}
             importingPetSourcePath={importingPetSourcePath}
             petImportError={petImportError}
+            storageSummary={storageSummary}
+            isStorageLoading={isStorageLoading}
+            isStorageCleaning={isStorageCleaning}
+            storageMessage={storageMessage}
             onSettingsChange={(nextSettings) => {
               void updateSettings(nextSettings)
             }}
@@ -455,6 +520,15 @@ function App() {
             }}
             onImportCodexPet={(candidate) => {
               void importPetCandidate(candidate)
+            }}
+            onRefreshStorage={() => {
+              void loadStorageSummary()
+            }}
+            onCleanStorage={(kind) => {
+              void handleCleanStorage(kind)
+            }}
+            onOpenDataFolder={() => {
+              void openDataFolder()
             }}
           />
         )}

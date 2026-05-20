@@ -1,4 +1,4 @@
-use crate::{app_settings, pet_import, session_store};
+use crate::{app_settings, pet_import, session_store, storage_cleanup};
 use std::{path::Path, process::Command};
 use tauri::{AppHandle, Manager};
 
@@ -70,6 +70,18 @@ pub fn import_codex_pet(path: String) -> Result<pet_import::PetManifest, String>
 #[tauri::command]
 pub fn list_installed_pets() -> Result<Vec<pet_import::InstalledPet>, String> {
     pet_import::list_installed_pets()
+}
+
+#[tauri::command]
+pub fn get_storage_summary() -> Result<storage_cleanup::StorageSummary, String> {
+    storage_cleanup::summarize()
+}
+
+#[tauri::command]
+pub fn clean_storage(
+    kind: storage_cleanup::StorageCleanKind,
+) -> Result<storage_cleanup::StorageCleanResult, String> {
+    storage_cleanup::clean(kind)
 }
 
 fn open_path(path: &Path) -> Result<(), String> {

@@ -597,6 +597,63 @@ h1 {
   color: #97a3ae;
 }
 
+.storage-panel {
+  margin-top: 0.8rem;
+  padding-top: 0.2rem;
+}
+
+.storage-heading {
+  align-items: flex-start;
+}
+
+.storage-message {
+  margin: 0.35rem 0 0.8rem;
+  color: #b8c87a;
+}
+
+.storage-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.storage-row {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(14rem, 1.2fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.storage-row-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.storage-row-title span {
+  min-width: 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.storage-metrics {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  color: #c1c9d1;
+  font-size: 0.86rem;
+}
+
+.storage-metrics span {
+  border-radius: 999px;
+  padding: 0.2rem 0.45rem;
+  background: rgba(255, 255, 255, 0.055);
+}
+
 @keyframes bob {
   50% {
     transform: translateY(-7px) scale(var(--pet-scale, 1));
@@ -670,6 +727,10 @@ h1 {
   }
 
   .pet-import-row {
+    grid-template-columns: 1fr;
+  }
+
+  .storage-row {
     grid-template-columns: 1fr;
   }
 

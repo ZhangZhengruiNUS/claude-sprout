@@ -4,6 +4,7 @@ mod notifications;
 mod pet_import;
 mod session_store;
 mod session_watcher;
+mod storage_cleanup;
 mod tray;
 
 pub fn run() {
@@ -27,7 +28,9 @@ pub fn run() {
             commands::open_project_folder,
             commands::scan_codex_pets,
             commands::import_codex_pet,
-            commands::list_installed_pets
+            commands::list_installed_pets,
+            commands::get_storage_summary,
+            commands::clean_storage
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Claude Sprout");

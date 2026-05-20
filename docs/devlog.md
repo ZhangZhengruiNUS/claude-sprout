@@ -17,6 +17,11 @@
   - First version only cleans safe session files and old event files.
   - Imported pets are counted but not deleted.
   - design spec added at `docs/superpowers/specs/2026-05-21-storage-cleanup-design.md`.
+- Implemented Settings Storage cleanup:
+  - Settings now shows local storage counts and sizes for sessions, events, and imported pets.
+  - safe session cleanup deletes only raw done, error, closed, or probably_closed session files while keeping raw stale, running, waiting, idle, and unparseable files.
+  - old event cleanup deletes only regular event files older than 14 days.
+  - imported pets remain read-only and counted only.
 
 ## 2026-05-20
 

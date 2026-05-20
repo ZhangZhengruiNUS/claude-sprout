@@ -1,6 +1,8 @@
 import { Download, Lock, Pin, RefreshCw, Search, VolumeX } from 'lucide-react'
 import type { CodexPetCandidate, PetAsset } from '../pet/petAssetsApi'
 import type { PetAnimation } from '../pet/petStateMapper'
+import { StoragePanel } from '../storage/StoragePanel'
+import type { StorageCleanKind, StorageSummary } from '../storage/storageApi'
 import type { AppSettings, PetSizePreset } from './appSettings'
 import { PET_SIZE_OPTIONS } from './appSettings'
 
@@ -13,6 +15,10 @@ type Props = {
   isScanningCodexPets: boolean
   importingPetSourcePath: string | null
   petImportError: string | null
+  storageSummary: StorageSummary | null
+  isStorageLoading: boolean
+  isStorageCleaning: boolean
+  storageMessage: string | null
   onSettingsChange: (settings: AppSettings) => void
   onPetSizePresetChange: (preset: Exclude<PetSizePreset, 'custom'>) => void
   onPreviewPet: (petId: string | null) => void
@@ -21,6 +27,9 @@ type Props = {
   onRefreshPetAssets: () => void
   onScanCodexPets: () => void
   onImportCodexPet: (candidate: CodexPetCandidate) => void
+  onRefreshStorage: () => void
+  onCleanStorage: (kind: StorageCleanKind) => void
+  onOpenDataFolder: () => void
 }
 
 const PET_SIZE_PRESETS = ['small', 'medium', 'large'] as const
@@ -34,6 +43,10 @@ export function SettingsPanel({
   isScanningCodexPets,
   importingPetSourcePath,
   petImportError,
+  storageSummary,
+  isStorageLoading,
+  isStorageCleaning,
+  storageMessage,
   onSettingsChange,
   onPetSizePresetChange,
   onPreviewPet,
@@ -42,6 +55,9 @@ export function SettingsPanel({
   onRefreshPetAssets,
   onScanCodexPets,
   onImportCodexPet,
+  onRefreshStorage,
+  onCleanStorage,
+  onOpenDataFolder,
 }: Props) {
   const installedPetIds = new Set(petAssets.map((petAsset) => petAsset.id))
   const hasPendingPetSelection = previewPetId !== settings.activePetId
@@ -199,6 +215,15 @@ export function SettingsPanel({
           )}
         </div>
       )}
+      <StoragePanel
+        summary={storageSummary}
+        isLoading={isStorageLoading}
+        isCleaning={isStorageCleaning}
+        message={storageMessage}
+        onRefresh={onRefreshStorage}
+        onClean={onCleanStorage}
+        onOpenDataFolder={onOpenDataFolder}
+      />
     </section>
   )
 }
