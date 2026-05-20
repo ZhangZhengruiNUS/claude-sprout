@@ -1,0 +1,50 @@
+{
+  "updatedBy": "scripts/update-handoff.mjs",
+  "currentState": [
+    "Claude Sprout is a public GitHub repository at https://github.com/ZhangZhengruiNUS/claude-sprout.",
+    "The app is a Tauri v2 + React + TypeScript + Rust desktop companion for Claude Code.",
+    "The primary surface is a transparent, frameless, always-on-top pet window. The full session panel is secondary and opens from the pet or tray."
+  ],
+  "implemented": [
+    "React/Vite frontend scaffold",
+    "Tauri v2 Rust backend scaffold",
+    "Tray skeleton",
+    "Main session panel with mock sessions",
+    "PowerShell and Node hook/statusline writers",
+    "Local session state model and stale/probably_closed TTL tests",
+    "Codex-compatible pet importer Rust skeleton",
+    "Tauri release exe build support",
+    "Interactive pet window: click opens panel, drag moves window, wheel resizes, right-click enlarges, double-click waves, scale persists in localStorage, transparent background, shadow disabled",
+    "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
+    "Handoff updater script and optional git pre-commit hook installer"
+  ],
+  "knownPassingCommands": [
+    "npm run lint",
+    "npm run build",
+    "cargo test --manifest-path src-tauri\\Cargo.toml",
+    "npm run tauri -- build --no-bundle"
+  ],
+  "knownBlockers": [
+    "Full MSI bundling with npm run tauri:build fails at WiX download/install on this machine: Tauri auto-download of WiX hit TLS UnknownIssuer, and winget install WiXToolset.WiXToolset requires admin rights to enable NetFx3.",
+    "The release exe build works with npm run tauri -- build --no-bundle."
+  ],
+  "nextTasks": [
+    "Improve pet-window polish: verify whether the transparent square is gone on the user's desktop; if still visible, shrink the window to content bounds or investigate native region/hit-test masking; add explicit small/medium/large size controls in Settings.",
+    "Improve Codex-like pet behavior: add idle/wave/run/jump/failed/review animation controller, support imported codex-8x9 spritesheets in the pet window, and add pet preview/apply UI.",
+    "Wire real session refresh: file watcher with debounce, native notifications for waiting_permission/waiting_input/done/error, tray menu actions for refresh/open data/settings.",
+    "Add settings persistence: do-not-disturb, always-on-top, pet scale, and lock position.",
+    "Improve installer path: document WiX prerequisite or add an NSIS target if it avoids the current WiX blocker."
+  ],
+  "importantDecisions": [
+    "Do not make the product a browser-style dashboard. The pet window is the first-class UI.",
+    "Do not auto-approve Claude Code permission prompts.",
+    "Keep prompts/outputs out of stored state by default.",
+    "PowerShell hook writer is the default for Windows; Node hook writer remains a fallback.",
+    "Imported Codex-compatible pet assets are copied into Claude Sprout app data; do not reference or distribute official Codex assets."
+  ],
+  "runCommands": [
+    ".\\src-tauri\\target\\release\\claude-sprout.exe",
+    "npm run dev"
+  ],
+  "petPreviewUrl": "http://127.0.0.1:5173/?window=pet"
+}

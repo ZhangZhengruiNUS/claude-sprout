@@ -24,3 +24,7 @@
   - `AGENTS.md` for automatic startup instructions
   - `docs/next-session.md` for short handoff
   - `docs/devlog.md` for chronological project tracking
+- Added a more reliable handoff update mechanism:
+  - `docs/handoff-state.json` stores handoff source data
+  - `scripts/update-handoff.mjs` regenerates `docs/next-session.md`
+  - `scripts/install-dev-hooks.ps1` installs a local git pre-commit hook that refreshes and stages the handoff before commits

@@ -12,7 +12,9 @@
     "tauri:build": "tauri build",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "handoff:update": "node scripts/update-handoff.mjs",
+    "hooks:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-dev-hooks.ps1"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.0",

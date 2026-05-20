@@ -39,4 +39,8 @@ After meaningful project changes, update:
 - `docs/next-session.md` with current state, commands, blockers, and next tasks.
 - `docs/devlog.md` with a short dated entry.
 
+Use `npm run handoff:update` to regenerate `docs/next-session.md` from `docs/handoff-state.json` plus live git/package metadata. If the local git hook has been installed with `npm run hooks:install`, commits automatically run the handoff update and stage `docs/next-session.md`.
+
+When next tasks, blockers, implemented capabilities, or decisions change, edit `docs/handoff-state.json` first, then run `npm run handoff:update`.
+
 Then commit and push unless the user asks not to.
