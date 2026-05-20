@@ -1,0 +1,112 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-hook.ps1"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-hook.ps1"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-hook.ps1"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-hook.ps1"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-hook.ps1"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-hook.ps1"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-hook.ps1"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-hook.ps1"
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-hook.ps1"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-hook.ps1"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/path/to/claude-sprout/hooks/windows/claude-sprout-statusline.ps1",
+    "refreshInterval": 30
+  }
+}

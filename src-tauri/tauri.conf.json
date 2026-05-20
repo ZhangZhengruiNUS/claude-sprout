@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Claude Sprout",
+  "version": "0.1.0",
+  "identifier": "dev.claudesprout.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Claude Sprout",
+        "width": 1120,
+        "height": 760,
+        "minWidth": 760,
+        "minHeight": 520,
+        "center": true
+      },
+      {
+        "label": "pet",
+        "title": "Claude Sprout Pet",
+        "width": 220,
+        "height": 260,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "visible": false,
+        "resizable": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": []
+  }
+}

@@ -1,0 +1,51 @@
+import type { SessionSnapshot } from './sessionTypes'
+
+const now = Date.now()
+
+export const mockSessions: SessionSnapshot[] = [
+  {
+    session_id: 'mock-permission-001',
+    project_name: 'AIInsideCopilot',
+    cwd: 'D:\\Project\\AIInsideCopilot',
+    status: 'waiting_permission',
+    last_event: 'Notification',
+    notification_type: 'permission_prompt',
+    last_tool: 'Bash',
+    context_used_percentage: 72,
+    last_heartbeat_at: new Date(now - 18_000).toISOString(),
+    updated_at: new Date(now - 18_000).toISOString(),
+    ended_at: null,
+    end_reason: null,
+    source: 'mock',
+  },
+  {
+    session_id: 'mock-running-002',
+    project_name: 'claude-sprout',
+    cwd: 'E:\\Codex Project\\claude-sprout',
+    status: 'tool_running',
+    last_event: 'PreToolUse',
+    notification_type: null,
+    last_tool: 'Edit',
+    context_used_percentage: 38,
+    last_heartbeat_at: new Date(now - 6_000).toISOString(),
+    updated_at: new Date(now - 6_000).toISOString(),
+    ended_at: null,
+    end_reason: null,
+    source: 'mock',
+  },
+  {
+    session_id: 'mock-stale-003',
+    project_name: 'data-pipeline',
+    cwd: 'D:\\Work\\data-pipeline',
+    status: 'stale',
+    last_event: 'UserPromptSubmit',
+    notification_type: null,
+    last_tool: null,
+    context_used_percentage: 51,
+    last_heartbeat_at: new Date(now - 4 * 60_000).toISOString(),
+    updated_at: new Date(now - 4 * 60_000).toISOString(),
+    ended_at: null,
+    end_reason: null,
+    source: 'mock',
+  },
+]
