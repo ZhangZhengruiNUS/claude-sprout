@@ -54,3 +54,10 @@
   - built-in `jump` and `failed` animations use the same replay key path
   - Settings pet picker now previews selection first, then applies it explicitly
   - `Preview wave` exercises the panel pet without changing the saved active pet
+- Wired the first real session refresh and notification path:
+  - Rust polls the session snapshot directory and emits a frontend refresh event when JSON files change
+  - the panel window owns native notifications to avoid duplicate toasts from the pet window
+  - notifications are emitted for `waiting_permission`, `waiting_input`, `done`, and `error` transitions
+  - duplicate notification keys suppress overlapping refresh/event delivery
+  - persisted do-not-disturb suppresses native notifications
+  - tray menu actions now refresh sessions, open the data folder, open Settings, and toggle do-not-disturb

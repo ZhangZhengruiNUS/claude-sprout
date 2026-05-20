@@ -2,6 +2,11 @@ import { Bell, FolderOpen, Moon, PawPrint, RefreshCw, Settings } from 'lucide-re
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from '@tauri-apps/plugin-notification'
 import { PetRenderer } from './pet/PetRenderer'
 import {
   importCodexPet,
@@ -20,6 +25,7 @@ import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
 import { SessionPanel } from './sessions/SessionPanel'
 import { loadSessions, refreshSessions, showSessionPanel } from './sessions/sessionApi'
+import { notificationsForSessionChanges } from './sessions/sessionNotifications'
 import type { SessionSnapshot } from './sessions/sessionTypes'
 import { SettingsPanel } from './settings/SettingsPanel'
 import type { AppSettings, PetSizePreset } from './settings/appSettings'
@@ -34,6 +40,8 @@ import './styles/app.css'
 type WindowKind = 'panel' | 'pet'
 const SETTINGS_CHANGED_EVENT = 'claude-sprout://settings-changed'
 const PET_ASSETS_CHANGED_EVENT = 'claude-sprout://pet-assets-changed'
+const SESSION_CHANGED_EVENT = 'claude-sprout://sessions-changed'
+const OPEN_SETTINGS_EVENT = 'claude-sprout://open-settings'
 
 function resolveInitialWindowKind(): WindowKind {
   const params = new URLSearchParams(window.location.search)
@@ -68,11 +76,33 @@ function App() {
   const [importingPetSourcePath, setImportingPetSourcePath] = useState<string | null>(null)
   const [petImportError, setPetImportError] = useState<string | null>(null)
   const settingsRef = useRef(settings)
+  const sessionsRef = useRef<SessionSnapshot[]>([])
+  const notifiedSessionKeysRef = useRef(new Set<string>())
+  const loadSequenceRef = useRef(0)
 
-  async function load() {
-    setIsLoading(true)
-    setSessions(await loadSessions())
-    setIsLoading(false)
+  async function load(options: { showLoading?: boolean; notify?: boolean } = {}) {
+    const sequence = loadSequenceRef.current + 1
+    loadSequenceRef.current = sequence
+    if (options.showLoading ?? true) {
+      setIsLoading(true)
+    }
+    const nextSessions = await loadSessions()
+    if (sequence !== loadSequenceRef.current) {
+      return
+    }
+    if (options.notify) {
+      void notifySessionChanges(
+        sessionsRef.current,
+        nextSessions,
+        settingsRef.current.doNotDisturb,
+        notifiedSessionKeysRef.current,
+      )
+    }
+    sessionsRef.current = nextSessions
+    setSessions(nextSessions)
+    if (options.showLoading ?? true) {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -80,10 +110,10 @@ function App() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load()
     const id = window.setInterval(() => {
-      void load()
+      void load({ showLoading: false, notify: windowKind === 'panel' })
     }, 30_000)
     return () => window.clearInterval(id)
-  }, [])
+  }, [windowKind])
 
   useEffect(() => {
     void refreshPetAssets()
@@ -145,6 +175,25 @@ function App() {
   }, [windowKind])
 
   useEffect(() => {
+    if (!isTauriRuntime() || windowKind !== 'panel') return
+
+    let isMounted = true
+    let unlisten: (() => void) | null = null
+
+    void listen(OPEN_SETTINGS_EVENT, () => {
+      if (!isMounted) return
+      setActiveTab('settings')
+    }).then((handler) => {
+      unlisten = handler
+    })
+
+    return () => {
+      isMounted = false
+      unlisten?.()
+    }
+  }, [windowKind])
+
+  useEffect(() => {
     if (!isTauriRuntime()) return
 
     let isMounted = true
@@ -162,6 +211,25 @@ function App() {
       unlisten?.()
     }
   }, [])
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+
+    let isMounted = true
+    let unlisten: (() => void) | null = null
+
+    void listen(SESSION_CHANGED_EVENT, () => {
+      if (!isMounted) return
+      void load({ showLoading: false, notify: windowKind === 'panel' })
+    }).then((handler) => {
+      unlisten = handler
+    })
+
+    return () => {
+      isMounted = false
+      unlisten?.()
+    }
+  }, [windowKind])
 
   function playPetAction(action: PetAnimation) {
     setPetActionReplayKey((current) => current + 1)
@@ -324,7 +392,7 @@ function App() {
               type="button"
               onClick={async () => {
                 await refreshSessions()
-                await load()
+                await load({ showLoading: false, notify: true })
               }}
             >
               <RefreshCw size={16} />
@@ -387,6 +455,36 @@ function App() {
       </section>
     </main>
   )
+}
+
+async function notifySessionChanges(
+  previousSessions: SessionSnapshot[],
+  nextSessions: SessionSnapshot[],
+  doNotDisturb: boolean,
+  notifiedSessionKeys: Set<string>,
+) {
+  if (!isTauriRuntime() || doNotDisturb) return
+
+  const notifications = notificationsForSessionChanges(
+    previousSessions,
+    nextSessions,
+    notifiedSessionKeys,
+  )
+  if (notifications.length === 0) return
+
+  for (const notification of notifications) {
+    notifiedSessionKeys.add(notification.key)
+  }
+
+  let permissionGranted = await isPermissionGranted()
+  if (!permissionGranted) {
+    permissionGranted = (await requestPermission()) === 'granted'
+  }
+  if (!permissionGranted) return
+
+  for (const notification of notifications) {
+    sendNotification({ title: notification.title, body: notification.body })
+  }
 }
 
 function errorMessage(error: unknown) {

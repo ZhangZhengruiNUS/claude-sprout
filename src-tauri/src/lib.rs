@@ -3,6 +3,7 @@ mod commands;
 mod notifications;
 mod pet_import;
 mod session_store;
+mod session_watcher;
 mod tray;
 
 pub fn run() {
@@ -12,6 +13,7 @@ pub fn run() {
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
             tray::create_tray(app)?;
+            session_watcher::start(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

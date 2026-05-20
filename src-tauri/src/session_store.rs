@@ -1,6 +1,10 @@
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -73,6 +77,49 @@ pub fn list_sessions() -> Result<Vec<SessionSnapshot>, String> {
     Ok(sessions)
 }
 
+pub fn session_dir_fingerprint() -> Result<Vec<String>, String> {
+    let root = ensure_layout()?;
+    session_dir_fingerprint_from_root(&root)
+}
+
+fn session_dir_fingerprint_from_root(root: &Path) -> Result<Vec<String>, String> {
+    let session_dir = root.join("sessions");
+    let mut fingerprint = Vec::new();
+
+    for entry in fs::read_dir(session_dir).map_err(|error| error.to_string())? {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let path = entry.path();
+        if path.extension().and_then(|value| value.to_str()) != Some("json") {
+            continue;
+        }
+
+        let metadata = entry.metadata().map_err(|error| error.to_string())?;
+        let modified_ms = metadata
+            .modified()
+            .ok()
+            .and_then(system_time_ms)
+            .unwrap_or_default();
+        fingerprint.push(format!(
+            "{}:{}:{}",
+            path.file_name()
+                .and_then(|value| value.to_str())
+                .unwrap_or_default(),
+            metadata.len(),
+            modified_ms
+        ));
+    }
+
+    fingerprint.sort();
+    Ok(fingerprint)
+}
+
+fn system_time_ms(value: SystemTime) -> Option<u128> {
+    value
+        .duration_since(UNIX_EPOCH)
+        .ok()
+        .map(|duration| duration.as_millis())
+}
+
 fn derive_status(session: &SessionSnapshot) -> SessionStatus {
     if matches!(
         session.status,
@@ -129,5 +176,25 @@ mod tests {
             derive_status(&snapshot_with_age(11)),
             SessionStatus::ProbablyClosed
         );
+    }
+
+    #[test]
+    fn fingerprints_json_session_files_only() {
+        let root = std::env::temp_dir().join(format!(
+            "claude-sprout-session-fingerprint-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let session_dir = root.join("sessions");
+        fs::create_dir_all(&session_dir).expect("session directory should be created");
+        fs::write(session_dir.join("a.json"), "{}").expect("json file should be writable");
+        fs::write(session_dir.join("ignore.txt"), "text").expect("text file should be writable");
+
+        let fingerprint =
+            session_dir_fingerprint_from_root(&root).expect("fingerprint should be readable");
+
+        assert_eq!(fingerprint.len(), 1);
+        assert!(fingerprint[0].starts_with("a.json:2:"));
+
+        fs::remove_dir_all(root).expect("temp root should be removable");
     }
 }
