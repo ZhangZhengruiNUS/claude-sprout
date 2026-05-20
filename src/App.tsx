@@ -59,7 +59,9 @@ function App() {
   const [activeTab, setActiveTab] = useState<'sessions' | 'settings'>('sessions')
   const [windowKind] = useState<WindowKind>(resolveInitialWindowKind)
   const [petAction, setPetAction] = useState<PetAnimation | null>(null)
+  const [petActionReplayKey, setPetActionReplayKey] = useState(0)
   const [petAssets, setPetAssets] = useState<PetAsset[]>([])
+  const [previewPetId, setPreviewPetId] = useState<string | null>(settings.activePetId)
   const [codexPetCandidates, setCodexPetCandidates] = useState<CodexPetCandidate[]>([])
   const [hasScannedCodexPets, setHasScannedCodexPets] = useState(false)
   const [isScanningCodexPets, setIsScanningCodexPets] = useState(false)
@@ -101,6 +103,7 @@ function App() {
       if (!isMounted) return
       // Settings are owned by the app-data store; the sync load only seeds first paint.
       setSettings(persistedSettings)
+      setPreviewPetId(persistedSettings.activePetId)
     })
 
     return () => {
@@ -124,7 +127,11 @@ function App() {
 
     void listen<AppSettings>(SETTINGS_CHANGED_EVENT, (event) => {
       if (!isMounted) return
+      const previousAppliedPetId = settingsRef.current.activePetId
       setSettings(event.payload)
+      setPreviewPetId((currentPreviewPetId) =>
+        currentPreviewPetId === previousAppliedPetId ? event.payload.activePetId : currentPreviewPetId,
+      )
       void refreshPetAssets()
       void applySettingsToPet(event.payload, windowKind)
     }).then((handler) => {
@@ -157,6 +164,7 @@ function App() {
   }, [])
 
   function playPetAction(action: PetAnimation) {
+    setPetActionReplayKey((current) => current + 1)
     setPetAction(action)
     window.setTimeout(() => setPetAction(null), 950)
   }
@@ -187,6 +195,13 @@ function App() {
     await updateSettings(resolveNextSettings(settingsRef.current))
   }
 
+  async function applyPreviewPet() {
+    await updateSettingsFromLatest((currentSettings) => ({
+      ...currentSettings,
+      activePetId: previewPetId,
+    }))
+  }
+
   async function refreshPetAssets() {
     setPetAssets(await listPetAssets())
   }
@@ -212,6 +227,7 @@ function App() {
     try {
       const manifest = await importCodexPet(candidate.sourcePath)
       await refreshPetAssets()
+      setPreviewPetId(manifest.id)
       await updateSettingsFromLatest((currentSettings) => ({
         ...currentSettings,
         activePetId: manifest.id,
@@ -227,6 +243,10 @@ function App() {
   }
 
   const activePetAsset = petAssets.find((petAsset) => petAsset.id === settings.activePetId) ?? null
+  const previewPetAsset =
+    windowKind === 'panel'
+      ? petAssets.find((petAsset) => petAsset.id === previewPetId) ?? null
+      : activePetAsset
 
   if (windowKind === 'pet') {
     return (
@@ -238,6 +258,7 @@ function App() {
           draggable={!settings.petLockPosition}
           scale={settings.petScale}
           action={petAction}
+          actionReplayKey={petActionReplayKey}
           petAsset={activePetAsset}
           onClick={() => {
             void showSessionPanel()
@@ -262,7 +283,13 @@ function App() {
           <PawPrint size={18} />
           <span>Claude Sprout</span>
         </div>
-        <PetRenderer status={topStatus} alertCount={waitingCount} petAsset={activePetAsset} />
+        <PetRenderer
+          status={topStatus}
+          alertCount={waitingCount}
+          action={petAction}
+          actionReplayKey={petActionReplayKey}
+          petAsset={previewPetAsset}
+        />
         <div className="rail-actions">
           <button type="button" onClick={() => setActiveTab('sessions')}>
             <Bell size={16} />
@@ -327,6 +354,7 @@ function App() {
           <SettingsPanel
             settings={settings}
             petAssets={petAssets}
+            previewPetId={previewPetId}
             codexPetCandidates={codexPetCandidates}
             hasScannedCodexPets={hasScannedCodexPets}
             isScanningCodexPets={isScanningCodexPets}
@@ -338,6 +366,13 @@ function App() {
             onPetSizePresetChange={(preset) => {
               void updatePetSizePreset(preset)
             }}
+            onPreviewPet={(petId) => {
+              setPreviewPetId(petId)
+            }}
+            onApplyPetSelection={() => {
+              void applyPreviewPet()
+            }}
+            onPreviewPetAnimation={playPetAction}
             onRefreshPetAssets={() => {
               void refreshPetAssets()
             }}

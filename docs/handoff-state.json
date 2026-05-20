@@ -21,6 +21,7 @@
     "Imported pet asset listing from %USERPROFILE%\\.claude-sprout\\pets plus Settings selection for built-in sprout or imported Codex 8x9 spritesheets",
     "Pet renderer can animate imported Codex 8x9 spritesheets through the Tauri asset protocol while keeping the built-in sprout fallback",
     "Codex-compatible pet workflow UI: scan %USERPROFILE%\\.codex\\pets and %CODEX_HOME%\\pets, show valid/invalid candidates with validation errors, import valid candidates, refresh installed pets, and sync imported selections across windows",
+    "Animation control polish: one-shot imported sprite rows and built-in jump/failed remount for replay, Settings pet picker previews before applying, and Preview wave exercises the panel pet",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -36,7 +37,6 @@
     "The release exe build works with npm run tauri -- build --no-bundle."
   ],
   "nextTasks": [
-    "Improve animation control polish: reset one-shot spritesheet rows reliably for wave/jump/failed and add clearer preview/apply affordances.",
     "Wire real session refresh: file watcher with debounce, native notifications for waiting_permission/waiting_input/done/error, tray menu actions for refresh/open data/settings.",
     "Connect persisted do-not-disturb to notifications and tray state instead of only the panel UI.",
     "Improve installer path: document WiX prerequisite or add an NSIS target if it avoids the current WiX blocker."

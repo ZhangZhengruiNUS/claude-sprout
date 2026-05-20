@@ -547,6 +547,15 @@ h1 {
   background: #425245;
 }
 
+.pet-apply-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.8rem;
+  color: #97a3ae;
+}
+
 .pet-import-list {
   display: grid;
   gap: 0.55rem;
@@ -665,6 +674,11 @@ h1 {
   }
 
   .setting-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pet-apply-row {
     align-items: flex-start;
     flex-direction: column;
   }

@@ -4,6 +4,7 @@ import type { SessionStatus } from '../sessions/sessionTypes'
 import { type PetAnimation, statusToPetAnimation } from './petStateMapper'
 import type { PetDragOrigin, PetDragSession } from './petWindowControls'
 import type { PetAsset } from './petAssetsApi'
+import { petAnimationRenderKey } from './petAnimation'
 
 type Props = {
   status: SessionStatus
@@ -12,6 +13,7 @@ type Props = {
   draggable?: boolean
   scale?: number
   action?: PetAnimation | null
+  actionReplayKey?: number
   petAsset?: PetAsset | null
   onClick?: () => void
   onDoubleClick?: () => void
@@ -27,6 +29,7 @@ export function PetRenderer({
   draggable = true,
   scale = 1,
   action,
+  actionReplayKey = 0,
   petAsset,
   onClick,
   onDoubleClick,
@@ -36,6 +39,16 @@ export function PetRenderer({
 }: Props) {
   const animation = action ?? statusToPetAnimation(status)
   const atlasAnimation = petAsset?.atlasProfile.animations[animation]
+  const animationMode = atlasAnimation?.mode ?? builtInAnimationMode(animation)
+  const animationKey = petAnimationRenderKey({
+    animation,
+    mode: animationMode,
+    actionActive: action !== null && action !== undefined,
+    actionReplayKey,
+    petAssetId: petAsset?.id ?? 'built-in',
+    status,
+    alertCount,
+  })
   const spriteDuration =
     atlasAnimation && petAsset
       ? 'durationMs' in atlasAnimation && typeof atlasAnimation.durationMs === 'number'
@@ -123,6 +136,7 @@ export function PetRenderer({
     >
       {petAsset && atlasAnimation ? (
         <div
+          key={animationKey}
           className={`sprite-pet ${atlasAnimation.mode}`}
           style={
             {
@@ -139,7 +153,7 @@ export function PetRenderer({
           }
         />
       ) : (
-        <div className={`sprout-pet ${animation}`}>
+        <div key={animationKey} className={`sprout-pet ${animation}`}>
           <div className="sprout-leaf" />
           <div className="sprout-face">
             <span />
@@ -157,4 +171,8 @@ export function PetRenderer({
       )}
     </button>
   )
+}
+
+function builtInAnimationMode(animation: PetAnimation) {
+  return ['jump', 'failed'].includes(animation) ? 'once' : 'loop'
 }

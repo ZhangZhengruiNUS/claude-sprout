@@ -1,11 +1,13 @@
 import { Download, Lock, Pin, RefreshCw, Search, VolumeX } from 'lucide-react'
 import type { CodexPetCandidate, PetAsset } from '../pet/petAssetsApi'
+import type { PetAnimation } from '../pet/petStateMapper'
 import type { AppSettings, PetSizePreset } from './appSettings'
 import { PET_SIZE_OPTIONS } from './appSettings'
 
 type Props = {
   settings: AppSettings
   petAssets: PetAsset[]
+  previewPetId: string | null
   codexPetCandidates: CodexPetCandidate[]
   hasScannedCodexPets: boolean
   isScanningCodexPets: boolean
@@ -13,6 +15,9 @@ type Props = {
   petImportError: string | null
   onSettingsChange: (settings: AppSettings) => void
   onPetSizePresetChange: (preset: Exclude<PetSizePreset, 'custom'>) => void
+  onPreviewPet: (petId: string | null) => void
+  onApplyPetSelection: () => void
+  onPreviewPetAnimation: (action: PetAnimation) => void
   onRefreshPetAssets: () => void
   onScanCodexPets: () => void
   onImportCodexPet: (candidate: CodexPetCandidate) => void
@@ -23,6 +28,7 @@ const PET_SIZE_PRESETS = ['small', 'medium', 'large'] as const
 export function SettingsPanel({
   settings,
   petAssets,
+  previewPetId,
   codexPetCandidates,
   hasScannedCodexPets,
   isScanningCodexPets,
@@ -30,11 +36,15 @@ export function SettingsPanel({
   petImportError,
   onSettingsChange,
   onPetSizePresetChange,
+  onPreviewPet,
+  onApplyPetSelection,
+  onPreviewPetAnimation,
   onRefreshPetAssets,
   onScanCodexPets,
   onImportCodexPet,
 }: Props) {
   const installedPetIds = new Set(petAssets.map((petAsset) => petAsset.id))
+  const hasPendingPetSelection = previewPetId !== settings.activePetId
 
   return (
     <section className="settings-panel">
@@ -118,8 +128,8 @@ export function SettingsPanel({
       <div className="pet-picker">
         <button
           type="button"
-          className={!settings.activePetId ? 'active' : ''}
-          onClick={() => onSettingsChange({ ...settings, activePetId: null })}
+          className={previewPetId === null ? 'active' : ''}
+          onClick={() => onPreviewPet(null)}
         >
           Built-in sprout
         </button>
@@ -127,12 +137,34 @@ export function SettingsPanel({
           <button
             key={petAsset.id}
             type="button"
-            className={settings.activePetId === petAsset.id ? 'active' : ''}
-            onClick={() => onSettingsChange({ ...settings, activePetId: petAsset.id })}
+            className={previewPetId === petAsset.id ? 'active' : ''}
+            onClick={() => onPreviewPet(petAsset.id)}
           >
             {petAsset.name}
           </button>
         ))}
+      </div>
+      <div className="pet-apply-row">
+        <span>
+          {hasPendingPetSelection
+            ? 'Previewing a different pet. Apply to use it in the floating window.'
+            : 'Current pet selection is applied.'}
+        </span>
+        <div className="setting-actions">
+          <button type="button" onClick={() => onPreviewPetAnimation('wave')}>
+            Preview wave
+          </button>
+          <button
+            type="button"
+            disabled={!hasPendingPetSelection}
+            onClick={() => onPreviewPet(settings.activePetId)}
+          >
+            Cancel
+          </button>
+          <button type="button" disabled={!hasPendingPetSelection} onClick={onApplyPetSelection}>
+            Apply
+          </button>
+        </div>
       </div>
       {(hasScannedCodexPets || petImportError) && (
         <div className="pet-import-list" aria-live="polite">

@@ -49,3 +49,8 @@
   - installed pet lists refresh after import and notify the pet window
   - scanner output is deterministic and de-duplicates identical roots
   - import selection merges against the latest settings state to avoid overwriting concurrent changes
+- Improved pet preview and one-shot animation handling:
+  - one-shot imported sprite rows remount when replayed or when the previewed pet changes
+  - built-in `jump` and `failed` animations use the same replay key path
+  - Settings pet picker now previews selection first, then applies it explicitly
+  - `Preview wave` exercises the panel pet without changing the saved active pet
