@@ -43,6 +43,10 @@ function Limit-EventFile([string]$path) {
   }
 }
 
+function Is-TerminalEvent([string]$eventName) {
+  return $eventName -eq "Stop" -or $eventName -eq "StopFailure" -or $eventName -eq "SessionEnd"
+}
+
 try {
   $raw = [Console]::In.ReadToEnd()
   if ([string]::IsNullOrWhiteSpace($raw)) { exit 0 }
@@ -58,6 +62,7 @@ try {
 
   $now = (Get-Date).ToUniversalTime().ToString("o")
   $status = Get-Status $payload
+  $eventName = [string]$payload.hook_event_name
   $cwd = if ($payload.cwd) { [string]$payload.cwd } else { "" }
   $context = $null
   if ($payload.context_window -and $null -ne $payload.context_window.used_percentage) {
@@ -69,13 +74,13 @@ try {
     project_name = Get-ProjectName $cwd
     cwd = $cwd
     status = $status
-    last_event = [string]$payload.hook_event_name
+    last_event = $eventName
     notification_type = if ($payload.notification_type) { [string]$payload.notification_type } else { $null }
     last_tool = if ($payload.tool_name) { [string]$payload.tool_name } else { $null }
     context_used_percentage = $context
     last_heartbeat_at = $now
     updated_at = $now
-    ended_at = if ($status -eq "closed") { $now } else { $null }
+    ended_at = if (Is-TerminalEvent $eventName) { $now } else { $null }
     end_reason = if ($payload.reason) { [string]$payload.reason } else { $null }
     source = "claude-code-hook"
   }
@@ -87,7 +92,7 @@ try {
 
   $event = [ordered]@{
     session_id = $sessionId
-    event_name = [string]$payload.hook_event_name
+    event_name = $eventName
     status = $status
     timestamp = $now
     tool_name = if ($payload.tool_name) { [string]$payload.tool_name } else { $null }

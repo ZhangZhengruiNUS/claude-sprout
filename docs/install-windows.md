@@ -43,7 +43,45 @@ npm run release:nsis
 The Tauri config uses the NSIS target by default so normal installer work does not also request MSI output.
 Installer tools are cached under the project target directory (`src-tauri\target\.tauri`) so failed downloads and pre-cached tools are easier to inspect on Windows.
 
-Known local blocker: NSIS bundling currently compiles the release exe, then fails while downloading Tauri's NSIS tool archive because the GitHub TLS certificate is reported as `UnknownIssuer`. This is a machine trust or proxy-chain problem, not an app compile problem; fix the local certificate path or pre-cache the NSIS tool archive before rerunning `npm run release:nsis`.
+Check the local installer tool cache:
+
+```powershell
+npm run release:doctor
+```
+
+If the machine cannot download Tauri's NSIS tools because the GitHub TLS certificate is reported as `UnknownIssuer`, pre-cache NSIS under:
+
+```text
+src-tauri\target\.tauri\NSIS
+```
+
+Tauri expects the extracted NSIS files directly inside that folder, including:
+
+```text
+makensis.exe
+Bin\makensis.exe
+Stubs\lzma-x86-unicode
+Stubs\lzma_solid-x86-unicode
+Include\MUI2.nsh
+Include\FileFunc.nsh
+Include\x64.nsh
+Include\nsDialogs.nsh
+Include\WinMessages.nsh
+Plugins\x86-unicode\additional\nsis_tauri_utils.dll
+```
+
+Reference downloads:
+
+- `https://github.com/tauri-apps/binary-releases/releases/download/nsis-3.11/nsis-3.11.zip`
+  - SHA1: `EF7FF767E5CBD9EDD22ADD3A32C9B8F4500BB10D`
+- `https://github.com/tauri-apps/nsis-tauri-utils/releases/download/nsis_tauri_utils-v0.5.3/nsis_tauri_utils.dll`
+  - SHA1: `75197FEE3C6A814FE035788D1C34EAD39349B860`
+
+After the cache is populated, `npm run release:nsis` writes the installer to:
+
+```text
+src-tauri\target\release\bundle\nsis\Claude Sprout_0.1.0_x64-setup.exe
+```
 
 Build an MSI only when WiX is installed and working:
 
@@ -70,6 +108,14 @@ Then verify:
 5. With Do Not Disturb on, the same transition refreshes session state without showing a native notification.
 
 For reliable notification testing while the current polling implementation is in place, leave at least two seconds between controlled session JSON state changes.
+
+For a repeatable controlled session-state smoke sequence, run:
+
+```powershell
+npm run smoke:sessions
+```
+
+This launches the release exe with a temporary `CLAUDE_SPROUT_HOME`, writes `running -> waiting_permission -> done`, toggles do-not-disturb in settings, then writes `running -> waiting_input` for a second session. The script verifies the file flow and app process path; native notification visibility still needs desktop observation.
 
 ## Data Folder
 

@@ -47,21 +47,26 @@ function trimEventFile(path) {
   }
 }
 
+function isTerminalEvent(eventName) {
+  return ['Stop', 'StopFailure', 'SessionEnd'].includes(eventName)
+}
+
 const now = new Date().toISOString()
 const cwd = payload.cwd || ''
 const status = statusFor(payload)
+const eventName = payload.hook_event_name
 const snapshot = {
   session_id: sessionId,
   project_name: cwd ? basename(cwd) : 'Unknown project',
   cwd,
   status,
-  last_event: payload.hook_event_name,
+  last_event: eventName,
   notification_type: payload.notification_type ?? null,
   last_tool: payload.tool_name ?? null,
   context_used_percentage: payload.context_window?.used_percentage ?? null,
   last_heartbeat_at: now,
   updated_at: now,
-  ended_at: status === 'closed' ? now : null,
+  ended_at: isTerminalEvent(eventName) ? now : null,
   end_reason: payload.reason ?? null,
   source: 'claude-code-hook',
 }
@@ -74,7 +79,7 @@ renameSync(tmpPath, sessionPath)
 const eventPath = join(eventsDir, `${sessionId}.jsonl`)
 appendFileSync(eventPath, `${JSON.stringify({
   session_id: sessionId,
-  event_name: payload.hook_event_name,
+  event_name: eventName,
   status,
   timestamp: now,
   tool_name: payload.tool_name ?? null,

@@ -41,3 +41,4 @@ Then merge the `hooks` and `statusLine` sections manually.
 - `SessionEnd` -> `closed`
 
 The writer exits quickly, avoids network access, and writes only lightweight metadata.
+Terminal hook events preserve `ended_at` across later statusline heartbeats so the app can distinguish active sessions from sessions that already stopped.

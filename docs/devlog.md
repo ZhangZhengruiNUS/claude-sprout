@@ -73,3 +73,12 @@
   - added focused tests for denied-permission retry behavior and delivered notification suppression keys
   - enabled Tauri's local installer tools cache under `src-tauri\target\.tauri`
   - expanded Windows install docs with the machine TLS trust blocker and a desktop smoke checklist for tray DND/settings actions and native notifications
+- Added repeatable release and smoke tooling:
+  - `npm run release:doctor` checks the Tauri NSIS/WiX local tool cache and prints verified download hashes
+  - `npm run smoke:sessions` launches the release exe against a temporary `CLAUDE_SPROUT_HOME` and writes controlled session transitions for notification/DND validation
+  - pre-cached NSIS 3.11 plus `nsis_tauri_utils.dll` with verified SHA1 hashes and confirmed `npm run release:nsis` generates `src-tauri\target\release\bundle\nsis\Claude Sprout_0.1.0_x64-setup.exe`
+- Improved closed-session detection:
+  - terminal hook events now set `ended_at` for `Stop`, `StopFailure`, and `SessionEnd`
+  - statusline writers preserve prior `ended_at` and `end_reason` instead of clearing terminal state
+  - Rust session derivation marks non-terminal snapshots with `ended_at` as `closed`
+  - added executable Vitest coverage for both PowerShell and Node hook/statusline terminal-state preservation

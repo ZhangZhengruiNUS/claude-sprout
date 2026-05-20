@@ -18,10 +18,12 @@
 - Pet preview and apply workflow.
 - Settings persistence.
 - Data cleanup UI.
+- Release doctor and controlled session smoke scripts.
+- Preserve terminal hook state for more accurate closed-session detection.
 
 ## Later
 
-- Optional wrapper/PID enhancement for more accurate closed detection.
+- Optional wrapper/PID enhancement for process-level closed detection.
 - Signed release flow and optional MSI once WiX is available.
 - GitHub Actions release builds.
 - Optional light theme.

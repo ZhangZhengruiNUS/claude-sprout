@@ -40,8 +40,8 @@ try {
     context_used_percentage: context,
     last_heartbeat_at: now,
     updated_at: now,
-    ended_at: null,
-    end_reason: null,
+    ended_at: previous.ended_at ?? null,
+    end_reason: previous.end_reason ?? null,
     source: 'claude-code-statusline',
   }
 

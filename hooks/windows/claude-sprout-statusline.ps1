@@ -32,12 +32,16 @@ try {
   $lastEvent = "statusLine"
   $lastTool = $null
   $notificationType = $null
+  $endedAt = $null
+  $endReason = $null
   if (Test-Path $sessionPath) {
     $previous = Get-Content -Raw -LiteralPath $sessionPath | ConvertFrom-Json
     $previousStatus = [string]$previous.status
     $lastEvent = if ($previous.last_event) { [string]$previous.last_event } else { $lastEvent }
     $lastTool = if ($previous.last_tool) { [string]$previous.last_tool } else { $null }
     $notificationType = if ($previous.notification_type) { [string]$previous.notification_type } else { $null }
+    $endedAt = if ($previous.ended_at) { [string]$previous.ended_at } else { $null }
+    $endReason = if ($previous.end_reason) { [string]$previous.end_reason } else { $null }
   }
 
   $snapshot = [ordered]@{
@@ -51,8 +55,8 @@ try {
     context_used_percentage = $context
     last_heartbeat_at = $now
     updated_at = $now
-    ended_at = $null
-    end_reason = $null
+    ended_at = $endedAt
+    end_reason = $endReason
     source = "claude-code-statusline"
   }
 

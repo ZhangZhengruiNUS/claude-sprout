@@ -131,6 +131,10 @@ fn derive_status(session: &SessionSnapshot) -> SessionStatus {
         return session.status.clone();
     }
 
+    if session.ended_at.is_some() {
+        return SessionStatus::Closed;
+    }
+
     let heartbeat = session.last_heartbeat_at.unwrap_or(session.updated_at);
     let age = Utc::now() - heartbeat;
     if age > Duration::minutes(10) {
@@ -176,6 +180,14 @@ mod tests {
             derive_status(&snapshot_with_age(11)),
             SessionStatus::ProbablyClosed
         );
+    }
+
+    #[test]
+    fn marks_ended_running_session_closed() {
+        let mut snapshot = snapshot_with_age(0);
+        snapshot.ended_at = Some(Utc::now());
+
+        assert_eq!(derive_status(&snapshot), SessionStatus::Closed);
     }
 
     #[test]
