@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import { Window } from '@tauri-apps/api/window'
 import { mockSessions } from './mockSessions'
 import type { SessionSnapshot } from './sessionTypes'
 
@@ -40,6 +41,17 @@ export async function showSessionPanel(): Promise<void> {
   if (!isTauriRuntime()) {
     console.info('Show session panel')
     return
+  }
+
+  try {
+    const panelWindow = await Window.getByLabel('main')
+    if (panelWindow) {
+      await panelWindow.show()
+      await panelWindow.setFocus()
+      return
+    }
+  } catch (error) {
+    console.warn('Falling back to backend session panel command.', error)
   }
 
   await invoke('show_session_panel')

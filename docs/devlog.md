@@ -1,5 +1,18 @@
 # Development Log
 
+## 2026-05-21
+
+- Completed manual desktop smoke validation for the release exe:
+  - Windows native notifications appear for controlled session transitions.
+  - Do Not Disturb suppresses the later waiting-input notification.
+  - Tray menu opens and Settings / Open Data Folder respond.
+  - Pet click initially failed to open the session panel.
+- Fixed pet click opening the session panel:
+  - frontend now opens and focuses the `main` window directly from `showSessionPanel()`
+  - backend `show_session_panel` remains as a fallback
+  - Tauri capabilities now explicitly allow `show` and `set_focus`
+  - added a focused Vitest regression test for the pet-window panel open path
+
 ## 2026-05-20
 
 - Initialized `claude-sprout` as a Tauri v2 + React + TypeScript + Rust project.
