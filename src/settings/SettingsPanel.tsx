@@ -1,14 +1,21 @@
-import { Lock, Pin, VolumeX } from 'lucide-react'
-import type { PetAsset } from '../pet/petAssetsApi'
+import { Download, Lock, Pin, RefreshCw, Search, VolumeX } from 'lucide-react'
+import type { CodexPetCandidate, PetAsset } from '../pet/petAssetsApi'
 import type { AppSettings, PetSizePreset } from './appSettings'
 import { PET_SIZE_OPTIONS } from './appSettings'
 
 type Props = {
   settings: AppSettings
   petAssets: PetAsset[]
+  codexPetCandidates: CodexPetCandidate[]
+  hasScannedCodexPets: boolean
+  isScanningCodexPets: boolean
+  importingPetSourcePath: string | null
+  petImportError: string | null
   onSettingsChange: (settings: AppSettings) => void
   onPetSizePresetChange: (preset: Exclude<PetSizePreset, 'custom'>) => void
   onRefreshPetAssets: () => void
+  onScanCodexPets: () => void
+  onImportCodexPet: (candidate: CodexPetCandidate) => void
 }
 
 const PET_SIZE_PRESETS = ['small', 'medium', 'large'] as const
@@ -16,10 +23,19 @@ const PET_SIZE_PRESETS = ['small', 'medium', 'large'] as const
 export function SettingsPanel({
   settings,
   petAssets,
+  codexPetCandidates,
+  hasScannedCodexPets,
+  isScanningCodexPets,
+  importingPetSourcePath,
+  petImportError,
   onSettingsChange,
   onPetSizePresetChange,
   onRefreshPetAssets,
+  onScanCodexPets,
+  onImportCodexPet,
 }: Props) {
+  const installedPetIds = new Set(petAssets.map((petAsset) => petAsset.id))
+
   return (
     <section className="settings-panel">
       <h2>Settings</h2>
@@ -88,9 +104,16 @@ export function SettingsPanel({
           <strong>Pet appearance</strong>
           <small>Use an imported Codex-compatible 8x9 spritesheet, or keep the built-in sprout.</small>
         </span>
-        <button type="button" onClick={onRefreshPetAssets}>
-          Refresh pets
-        </button>
+        <div className="setting-actions">
+          <button type="button" onClick={onRefreshPetAssets}>
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+          <button type="button" onClick={onScanCodexPets} disabled={isScanningCodexPets}>
+            <Search size={16} />
+            {isScanningCodexPets ? 'Scanning' : 'Scan Codex'}
+          </button>
+        </div>
       </div>
       <div className="pet-picker">
         <button
@@ -111,6 +134,39 @@ export function SettingsPanel({
           </button>
         ))}
       </div>
+      {(hasScannedCodexPets || petImportError) && (
+        <div className="pet-import-list" aria-live="polite">
+          {petImportError && <p className="pet-import-error">{petImportError}</p>}
+          {codexPetCandidates.length === 0 && hasScannedCodexPets && !isScanningCodexPets ? (
+            <p className="pet-import-empty">No Codex-compatible pet folders were found.</p>
+          ) : (
+            codexPetCandidates.map((candidate) => {
+              const isImporting = importingPetSourcePath === candidate.sourcePath
+              const isInstalled = installedPetIds.has(candidate.id)
+
+              return (
+                <div key={candidate.sourcePath} className="pet-import-row">
+                  <span className="pet-import-meta">
+                    <strong>{candidate.id}</strong>
+                    <small>{candidate.sourcePath}</small>
+                    {!candidate.valid && candidate.reason && (
+                      <small className="pet-import-error">{candidate.reason}</small>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={!candidate.valid || isImporting || isInstalled}
+                    onClick={() => onImportCodexPet(candidate)}
+                  >
+                    <Download size={16} />
+                    {isImporting ? 'Importing' : isInstalled ? 'Installed' : 'Import'}
+                  </button>
+                </div>
+              )
+            })
+          )}
+        </div>
+      )}
     </section>
   )
 }

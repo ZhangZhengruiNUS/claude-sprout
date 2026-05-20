@@ -42,3 +42,10 @@
   - Rust can list installed pets from `%USERPROFILE%\.claude-sprout\pets`
   - Settings can choose the built-in sprout or an installed Codex-compatible pet
   - imported Codex 8x9 spritesheets render through the Tauri asset protocol
+- Finished the first Codex-compatible pet workflow UI:
+  - Settings can scan `%USERPROFILE%\.codex\pets` and `%CODEX_HOME%\pets`
+  - valid candidates can be imported from the Settings panel
+  - invalid candidates show validation errors inline
+  - installed pet lists refresh after import and notify the pet window
+  - scanner output is deterministic and de-duplicates identical roots
+  - import selection merges against the latest settings state to avoid overwriting concurrent changes

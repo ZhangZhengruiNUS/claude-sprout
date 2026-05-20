@@ -1,9 +1,15 @@
 import { Bell, FolderOpen, Moon, PawPrint, RefreshCw, Settings } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { PetRenderer } from './pet/PetRenderer'
-import { listPetAssets, type PetAsset } from './pet/petAssetsApi'
+import {
+  importCodexPet,
+  listPetAssets,
+  scanCodexPetCandidates,
+  type CodexPetCandidate,
+  type PetAsset,
+} from './pet/petAssetsApi'
 import {
   applyPetAlwaysOnTop,
   applyPetScale,
@@ -27,6 +33,7 @@ import './styles/app.css'
 
 type WindowKind = 'panel' | 'pet'
 const SETTINGS_CHANGED_EVENT = 'claude-sprout://settings-changed'
+const PET_ASSETS_CHANGED_EVENT = 'claude-sprout://pet-assets-changed'
 
 function resolveInitialWindowKind(): WindowKind {
   const params = new URLSearchParams(window.location.search)
@@ -53,6 +60,12 @@ function App() {
   const [windowKind] = useState<WindowKind>(resolveInitialWindowKind)
   const [petAction, setPetAction] = useState<PetAnimation | null>(null)
   const [petAssets, setPetAssets] = useState<PetAsset[]>([])
+  const [codexPetCandidates, setCodexPetCandidates] = useState<CodexPetCandidate[]>([])
+  const [hasScannedCodexPets, setHasScannedCodexPets] = useState(false)
+  const [isScanningCodexPets, setIsScanningCodexPets] = useState(false)
+  const [importingPetSourcePath, setImportingPetSourcePath] = useState<string | null>(null)
+  const [petImportError, setPetImportError] = useState<string | null>(null)
+  const settingsRef = useRef(settings)
 
   async function load() {
     setIsLoading(true)
@@ -96,6 +109,10 @@ function App() {
   }, [])
 
   useEffect(() => {
+    settingsRef.current = settings
+  }, [settings])
+
+  useEffect(() => {
     void applySettingsToPet(settings, windowKind)
   }, [settings, windowKind])
 
@@ -108,6 +125,7 @@ function App() {
     void listen<AppSettings>(SETTINGS_CHANGED_EVENT, (event) => {
       if (!isMounted) return
       setSettings(event.payload)
+      void refreshPetAssets()
       void applySettingsToPet(event.payload, windowKind)
     }).then((handler) => {
       unlisten = handler
@@ -119,6 +137,25 @@ function App() {
     }
   }, [windowKind])
 
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+
+    let isMounted = true
+    let unlisten: (() => void) | null = null
+
+    void listen(PET_ASSETS_CHANGED_EVENT, () => {
+      if (!isMounted) return
+      void refreshPetAssets()
+    }).then((handler) => {
+      unlisten = handler
+    })
+
+    return () => {
+      isMounted = false
+      unlisten?.()
+    }
+  }, [])
+
   function playPetAction(action: PetAnimation) {
     setPetAction(action)
     window.setTimeout(() => setPetAction(null), 950)
@@ -129,7 +166,9 @@ function App() {
   }
 
   async function updateSettings(nextSettings: AppSettings) {
+    settingsRef.current = nextSettings
     const savedSettings = await savePersistedAppSettings(nextSettings)
+    settingsRef.current = savedSettings
     setSettings(savedSettings)
     await applySettingsToPet(savedSettings, windowKind)
 
@@ -142,8 +181,49 @@ function App() {
     await updateSettings(settingsWithPetSizePreset(settings, preset))
   }
 
+  async function updateSettingsFromLatest(
+    resolveNextSettings: (currentSettings: AppSettings) => AppSettings,
+  ) {
+    await updateSettings(resolveNextSettings(settingsRef.current))
+  }
+
   async function refreshPetAssets() {
     setPetAssets(await listPetAssets())
+  }
+
+  async function scanCodexPets() {
+    setIsScanningCodexPets(true)
+    setPetImportError(null)
+    try {
+      setCodexPetCandidates(await scanCodexPetCandidates())
+      setHasScannedCodexPets(true)
+    } catch (error) {
+      setPetImportError(errorMessage(error))
+    } finally {
+      setIsScanningCodexPets(false)
+    }
+  }
+
+  async function importPetCandidate(candidate: CodexPetCandidate) {
+    if (!candidate.valid) return
+
+    setImportingPetSourcePath(candidate.sourcePath)
+    setPetImportError(null)
+    try {
+      const manifest = await importCodexPet(candidate.sourcePath)
+      await refreshPetAssets()
+      await updateSettingsFromLatest((currentSettings) => ({
+        ...currentSettings,
+        activePetId: manifest.id,
+      }))
+      if (isTauriRuntime()) {
+        await emit(PET_ASSETS_CHANGED_EVENT)
+      }
+    } catch (error) {
+      setPetImportError(errorMessage(error))
+    } finally {
+      setImportingPetSourcePath(null)
+    }
   }
 
   const activePetAsset = petAssets.find((petAsset) => petAsset.id === settings.activePetId) ?? null
@@ -247,6 +327,11 @@ function App() {
           <SettingsPanel
             settings={settings}
             petAssets={petAssets}
+            codexPetCandidates={codexPetCandidates}
+            hasScannedCodexPets={hasScannedCodexPets}
+            isScanningCodexPets={isScanningCodexPets}
+            importingPetSourcePath={importingPetSourcePath}
+            petImportError={petImportError}
             onSettingsChange={(nextSettings) => {
               void updateSettings(nextSettings)
             }}
@@ -256,11 +341,21 @@ function App() {
             onRefreshPetAssets={() => {
               void refreshPetAssets()
             }}
+            onScanCodexPets={() => {
+              void scanCodexPets()
+            }}
+            onImportCodexPet={(candidate) => {
+              void importPetCandidate(candidate)
+            }}
           />
         )}
       </section>
     </main>
   )
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error)
 }
 
 async function applySettingsToPet(settings: AppSettings, windowKind: WindowKind) {
