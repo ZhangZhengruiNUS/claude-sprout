@@ -29,6 +29,16 @@ pub fn create_tray(app: &mut App) -> tauri::Result<()> {
                     let _ = window.set_focus();
                 }
             }
+            "toggle_pet" => {
+                if let Some(window) = app.get_webview_window("pet") {
+                    if window.is_visible().unwrap_or(false) {
+                        let _ = window.hide();
+                    } else {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
+                }
+            }
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {

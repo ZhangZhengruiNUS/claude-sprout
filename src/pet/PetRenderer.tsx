@@ -4,13 +4,20 @@ import { statusToPetAnimation } from './petStateMapper'
 type Props = {
   status: SessionStatus
   alertCount: number
+  compact?: boolean
+  onClick?: () => void
 }
 
-export function PetRenderer({ status, alertCount }: Props) {
+export function PetRenderer({ status, alertCount, compact = false, onClick }: Props) {
   const animation = statusToPetAnimation(status)
 
   return (
-    <button type="button" className={`pet-surface ${status}`} aria-label="Open session panel">
+    <button
+      type="button"
+      className={`pet-surface ${status}${compact ? ' compact' : ''}`}
+      aria-label="Open session panel"
+      onClick={onClick}
+    >
       <div className={`sprout-pet ${animation}`}>
         <div className="sprout-leaf" />
         <div className="sprout-face">
@@ -21,7 +28,7 @@ export function PetRenderer({ status, alertCount }: Props) {
       {status === 'waiting_permission' ? (
         <div className="alert-bubble">Permission needed{alertCount > 1 ? ` x${alertCount}` : ''}</div>
       ) : null}
-      <div className="pet-caption">{status}</div>
+      {!compact ? <div className="pet-caption">{status}</div> : null}
     </button>
   )
 }

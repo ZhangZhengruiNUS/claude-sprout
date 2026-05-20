@@ -25,6 +25,8 @@ sequenceDiagram
 - The renderer does not parse Codex pet files directly.
 - Rust owns local data access, imports, and opening folders.
 - React owns presentation and mock preview fallback.
+- The Tauri `pet` window is the primary surface: transparent, frameless, always-on-top, and taskbar-hidden.
+- The Tauri `main` window is secondary and starts hidden; it opens from the pet or tray.
 
 ## Refresh Policy
 

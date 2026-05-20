@@ -35,3 +35,12 @@ export async function openProjectFolder(cwd: string): Promise<void> {
 
   await invoke('open_project_folder', { path: cwd })
 }
+
+export async function showSessionPanel(): Promise<void> {
+  if (!isTauriRuntime()) {
+    console.info('Show session panel')
+    return
+  }
+
+  await invoke('show_session_panel')
+}

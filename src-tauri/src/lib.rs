@@ -16,6 +16,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::list_sessions,
             commands::refresh_sessions,
+            commands::show_session_panel,
+            commands::toggle_pet_window,
             commands::open_data_folder,
             commands::open_project_folder,
             commands::scan_codex_pets,

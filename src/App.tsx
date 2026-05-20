@@ -1,18 +1,35 @@
 import { Bell, FolderOpen, Moon, PawPrint, RefreshCw, Settings } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import { PetRenderer } from './pet/PetRenderer'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
 import { SessionPanel } from './sessions/SessionPanel'
-import { loadSessions, refreshSessions } from './sessions/sessionApi'
+import { loadSessions, refreshSessions, showSessionPanel } from './sessions/sessionApi'
 import type { SessionSnapshot } from './sessions/sessionTypes'
 import { SettingsPanel } from './settings/SettingsPanel'
 import './styles/app.css'
+
+type WindowKind = 'panel' | 'pet'
+
+function resolveInitialWindowKind(): WindowKind {
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('window') === 'pet') {
+    return 'pet'
+  }
+
+  try {
+    return getCurrentWindow().label === 'pet' ? 'pet' : 'panel'
+  } catch {
+    return 'panel'
+  }
+}
 
 function App() {
   const [sessions, setSessions] = useState<SessionSnapshot[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [doNotDisturb, setDoNotDisturb] = useState(false)
   const [activeTab, setActiveTab] = useState<'sessions' | 'settings'>('sessions')
+  const [windowKind] = useState<WindowKind>(resolveInitialWindowKind)
 
   async function load() {
     setIsLoading(true)
@@ -33,6 +50,25 @@ function App() {
   const topStatus = useMemo(() => getHighestPriorityStatus(sessions), [sessions])
   const activeCount = sessions.filter((session) => !['closed'].includes(session.status)).length
   const waitingCount = sessions.filter((session) => session.status === 'waiting_permission').length
+
+  useEffect(() => {
+    document.documentElement.dataset.window = windowKind
+  }, [windowKind])
+
+  if (windowKind === 'pet') {
+    return (
+      <main className="floating-pet-shell">
+        <PetRenderer
+          status={topStatus}
+          alertCount={waitingCount}
+          compact
+          onClick={() => {
+            void showSessionPanel()
+          }}
+        />
+      </main>
+    )
+  }
 
   return (
     <main className="app-shell">

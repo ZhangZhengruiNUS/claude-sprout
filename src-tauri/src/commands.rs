@@ -1,5 +1,6 @@
 use crate::{pet_import, session_store};
 use std::{path::Path, process::Command};
+use tauri::{AppHandle, Manager};
 
 #[tauri::command]
 pub fn list_sessions() -> Result<Vec<session_store::SessionSnapshot>, String> {
@@ -20,6 +21,28 @@ pub fn open_data_folder() -> Result<(), String> {
 #[tauri::command]
 pub fn open_project_folder(path: String) -> Result<(), String> {
     open_path(Path::new(&path))
+}
+
+#[tauri::command]
+pub fn show_session_panel(app: AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        window.show().map_err(|error| error.to_string())?;
+        window.set_focus().map_err(|error| error.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn toggle_pet_window(app: AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("pet") {
+        if window.is_visible().map_err(|error| error.to_string())? {
+            window.hide().map_err(|error| error.to_string())?;
+        } else {
+            window.show().map_err(|error| error.to_string())?;
+            window.set_focus().map_err(|error| error.to_string())?;
+        }
+    }
+    Ok(())
 }
 
 #[tauri::command]

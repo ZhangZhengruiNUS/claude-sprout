@@ -1,6 +1,6 @@
 # Claude Sprout
 
-Claude Sprout is a Windows-first desktop companion for Claude Code CLI sessions. It is not a Claude Code replacement and does not approve permissions for you. It watches lightweight local status files written by Claude Code hooks/statusline scripts, then shows session state through a tray entry, a small desktop pet, a session panel, and native notifications.
+Claude Sprout is a Windows-first desktop companion for Claude Code CLI sessions. It is not a Claude Code replacement and does not approve permissions for you. It watches lightweight local status files written by Claude Code hooks/statusline scripts, then shows session state through a tray entry, a small always-on-top desktop pet, a secondary session panel, and native notifications.
 
 The MVP optimizes for low idle overhead, local-only data, and fast attention cues when Claude Code needs human input.
 
@@ -11,6 +11,7 @@ The MVP optimizes for low idle overhead, local-only data, and fast attention cue
 - Strong visual reminder for `waiting_permission`; lighter cues for `waiting_input`; notifications for `done` and `error`.
 - Session panel with project name, cwd, session id, status, last event, last tool, heartbeat, context usage, and update time.
 - Tauri v2 tray skeleton with panel entry, refresh, settings, and quit menu items.
+- Tauri pet window configured as transparent, frameless, always-on-top, and hidden from the taskbar.
 - PowerShell hook/statusline writers for Windows, with Node.js fallback scripts.
 - Local status directory at `%USERPROFILE%\.claude-sprout`.
 - Codex-compatible custom pet importer skeleton for folders containing `pet.json` and `spritesheet.webp`.
@@ -60,6 +61,8 @@ Install and run the web preview:
 npm install
 npm run dev
 ```
+
+The Vite page is only a development preview. The intended desktop shape is the Tauri `pet` window: a small transparent floating component above other apps. The full session panel is secondary and opens from the pet or tray.
 
 Run the Tauri app after Rust is installed:
 

@@ -1,6 +1,6 @@
 # Claude Sprout
 
-Claude Sprout 是一个 Windows 优先的 Claude Code CLI 桌面伴随工具。它不是 Claude Code 替代品，也不会替你自动审批权限。它通过 Claude Code hooks/statusline 写入的本地轻量状态文件，聚合展示多个会话状态，并用托盘、小宠物窗口、状态面板和系统通知提醒你及时介入。
+Claude Sprout 是一个 Windows 优先的 Claude Code CLI 桌面伴随工具。它不是 Claude Code 替代品，也不会替你自动审批权限。它通过 Claude Code hooks/statusline 写入的本地轻量状态文件，聚合展示多个会话状态，并用托盘、置顶悬浮小宠物窗口、辅助状态面板和系统通知提醒你及时介入。
 
 MVP 的工程目标是低资源占用、本地优先、权限等待时提醒足够明显。
 
@@ -11,6 +11,7 @@ MVP 的工程目标是低资源占用、本地优先、权限等待时提醒足�
 - `waiting_permission` 强提醒，`waiting_input` 轻提醒，`done/error` 系统通知。
 - 状态面板展示 project name、cwd、session id、status、last event、last tool、heartbeat、context usage、updated time。
 - Tauri v2 托盘骨架：打开面板、刷新、设置、退出。
+- Tauri 宠物窗口配置为透明、无边框、置顶，并从任务栏隐藏。
 - Windows PowerShell hook/statusline writer，另有 Node.js fallback。
 - 本地状态目录：`%USERPROFILE%\.claude-sprout`。
 - Codex-compatible 自定义宠物导入骨架，支持 `pet.json` + `spritesheet.webp` 包结构。
@@ -60,6 +61,8 @@ flowchart LR
 npm install
 npm run dev
 ```
+
+Vite 页面只是开发预览。真正的桌面形态是 Tauri 的 `pet` 窗口：一个透明、无边框、悬浮在其他应用之上的轻量组件。完整状态面板只是辅助窗口，通过点击宠物或托盘打开。
 
 安装 Rust 后运行 Tauri：
 
