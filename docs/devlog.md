@@ -61,3 +61,9 @@
   - duplicate notification keys suppress overlapping refresh/event delivery
   - persisted do-not-disturb suppresses native notifications
   - tray menu actions now refresh sessions, open the data folder, open Settings, and toggle do-not-disturb
+- Improved the Windows build path:
+  - default Tauri bundle target is now NSIS instead of `all`
+  - added `release:exe`, `release:nsis`, and `release:msi` scripts
+  - verified `release:exe` still builds `src-tauri\target\release\claude-sprout.exe`
+  - `release:nsis` compiles the exe but currently fails while downloading Tauri's NSIS tool archive because GitHub TLS validation reports `UnknownIssuer`
+  - documented the stable no-bundle exe path and the local NSIS/WiX installer blockers in `docs/install-windows.md`

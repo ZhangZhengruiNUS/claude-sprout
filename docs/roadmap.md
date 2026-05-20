@@ -22,6 +22,6 @@
 ## Later
 
 - Optional wrapper/PID enhancement for more accurate closed detection.
-- Windows installer and signed release flow.
+- Signed release flow and optional MSI once WiX is available.
 - GitHub Actions release builds.
 - Optional light theme.
