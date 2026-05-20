@@ -32,3 +32,8 @@
   - transparent square artifact is confirmed gone
   - replaced delayed native `startDragging()` with manual pointer tracking plus Tauri `setPosition`
   - added explicit Tauri window permissions for pet position and size updates
+- Added settings persistence and pet controls:
+  - settings now persist to `%USERPROFILE%\.claude-sprout\settings.json`
+  - Settings includes do-not-disturb, always-on-top, small/medium/large pet size, and lock-position controls
+  - Settings changes sync to the live pet window through Tauri events
+  - added Vitest coverage for frontend settings schema and Rust coverage for app-data settings storage

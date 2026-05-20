@@ -1,3 +1,4 @@
+mod app_settings;
 mod commands;
 mod notifications;
 mod pet_import;
@@ -16,6 +17,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::list_sessions,
             commands::refresh_sessions,
+            commands::load_app_settings,
+            commands::save_app_settings,
             commands::show_session_panel,
             commands::toggle_pet_window,
             commands::open_data_folder,

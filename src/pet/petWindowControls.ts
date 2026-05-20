@@ -1,11 +1,9 @@
 import { LogicalSize, PhysicalPosition } from '@tauri-apps/api/dpi'
-import { getCurrentWindow } from '@tauri-apps/api/window'
+import { getCurrentWindow, Window } from '@tauri-apps/api/window'
+import { clampPetScale, loadAppSettings } from '../settings/appSettings'
 
 const BASE_WIDTH = 180
 const BASE_HEIGHT = 210
-const MIN_SCALE = 0.75
-const MAX_SCALE = 1.65
-const STORAGE_KEY = 'claude-sprout.pet-scale'
 
 export type PetDragOrigin = {
   screenX: number
@@ -21,22 +19,14 @@ function isTauriRuntime() {
 }
 
 export function loadPetScale() {
-  const raw = window.localStorage.getItem(STORAGE_KEY)
-  const parsed = raw ? Number(raw) : 1
-  if (!Number.isFinite(parsed)) return 1
-  return clampPetScale(parsed)
+  return loadAppSettings().petScale
 }
 
-export function clampPetScale(value: number) {
-  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, value))
-}
-
-export async function applyPetScale(value: number) {
+export async function applyPetScale(value: number, targetWindow?: Window) {
   const scale = clampPetScale(value)
-  window.localStorage.setItem(STORAGE_KEY, String(scale))
 
   if (isTauriRuntime()) {
-    await getCurrentWindow().setSize(
+    await (targetWindow ?? getCurrentWindow()).setSize(
       new LogicalSize(Math.round(BASE_WIDTH * scale), Math.round(BASE_HEIGHT * scale)),
     )
   }
@@ -63,4 +53,14 @@ export async function beginPetDrag(origin: PetDragOrigin): Promise<PetDragSessio
       )
     },
   }
+}
+
+export async function applyPetAlwaysOnTop(alwaysOnTop: boolean, targetWindow?: Window) {
+  if (!isTauriRuntime()) return
+  await (targetWindow ?? getCurrentWindow()).setAlwaysOnTop(alwaysOnTop)
+}
+
+export async function getPetWindow() {
+  if (!isTauriRuntime()) return null
+  return Window.getByLabel('pet')
 }

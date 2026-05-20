@@ -8,6 +8,7 @@ type Props = {
   status: SessionStatus
   alertCount: number
   compact?: boolean
+  draggable?: boolean
   scale?: number
   action?: PetAnimation | null
   onClick?: () => void
@@ -21,6 +22,7 @@ export function PetRenderer({
   status,
   alertCount,
   compact = false,
+  draggable = true,
   scale = 1,
   action,
   onClick,
@@ -36,7 +38,7 @@ export function PetRenderer({
   const suppressNextClick = useRef(false)
 
   async function handlePointerDown(event: PointerEvent<HTMLButtonElement>) {
-    if (!compact || event.button !== 0) return
+    if (!compact || !draggable || event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
     pointerStart.current = {
       x: event.clientX,
@@ -83,7 +85,7 @@ export function PetRenderer({
   return (
     <button
       type="button"
-      className={`pet-surface ${status}${compact ? ' compact' : ''}`}
+      className={`pet-surface ${status}${compact ? ' compact' : ''}${!draggable ? ' locked' : ''}`}
       aria-label="Open session panel"
       onClick={handleClick}
       onDoubleClick={onDoubleClick}
@@ -112,7 +114,11 @@ export function PetRenderer({
       {status === 'waiting_permission' ? (
         <div className="alert-bubble">Permission needed{alertCount > 1 ? ` x${alertCount}` : ''}</div>
       ) : null}
-      {!compact ? <div className="pet-caption">{status}</div> : <div className="pet-hint">wheel / double-click</div>}
+      {!compact ? (
+        <div className="pet-caption">{status}</div>
+      ) : (
+        <div className="pet-hint">{draggable ? 'drag / wheel / double-click' : 'locked / wheel / double-click'}</div>
+      )}
     </button>
   )
 }

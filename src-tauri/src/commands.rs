@@ -1,4 +1,4 @@
-use crate::{pet_import, session_store};
+use crate::{app_settings, pet_import, session_store};
 use std::{path::Path, process::Command};
 use tauri::{AppHandle, Manager};
 
@@ -10,6 +10,18 @@ pub fn list_sessions() -> Result<Vec<session_store::SessionSnapshot>, String> {
 #[tauri::command]
 pub fn refresh_sessions() -> Result<(), String> {
     session_store::ensure_layout().map(|_| ())
+}
+
+#[tauri::command]
+pub fn load_app_settings() -> Result<app_settings::AppSettings, String> {
+    app_settings::load()
+}
+
+#[tauri::command]
+pub fn save_app_settings(
+    settings: app_settings::AppSettings,
+) -> Result<app_settings::AppSettings, String> {
+    app_settings::save(&settings)
 }
 
 #[tauri::command]

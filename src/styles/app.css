@@ -127,6 +127,11 @@ button:disabled {
   cursor: grabbing;
 }
 
+.pet-surface.compact.locked,
+.pet-surface.compact.locked:active {
+  cursor: pointer;
+}
+
 .pet-surface.compact:hover {
   background: transparent;
 }
@@ -468,6 +473,35 @@ h1 {
 .setting-row span {
   display: grid;
   gap: 0.25rem;
+}
+
+.setting-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.size-segment {
+  display: inline-grid;
+  grid-template-columns: repeat(3, minmax(4.5rem, 1fr));
+  gap: 0.25rem;
+  padding: 0.2rem;
+  border-radius: 8px;
+  background: #15191d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.size-segment button {
+  justify-content: center;
+  min-height: 2.15rem;
+  padding: 0.4rem 0.65rem;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.size-segment button.active {
+  background: #425245;
 }
 
 @keyframes bob {

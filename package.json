@@ -12,6 +12,7 @@
     "tauri:build": "tauri build",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest run",
     "preview": "vite preview",
     "handoff:update": "node scripts/update-handoff.mjs",
     "hooks:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-dev-hooks.ps1"
@@ -38,6 +39,7 @@
     "globals": "^17.6.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vitest": "^4.1.6"
   }
 }

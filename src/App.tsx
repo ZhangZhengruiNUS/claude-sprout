@@ -1,17 +1,31 @@
 import { Bell, FolderOpen, Moon, PawPrint, RefreshCw, Settings } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { PetRenderer } from './pet/PetRenderer'
-import { applyPetScale, beginPetDrag, loadPetScale } from './pet/petWindowControls'
+import {
+  applyPetAlwaysOnTop,
+  applyPetScale,
+  beginPetDrag,
+  getPetWindow,
+} from './pet/petWindowControls'
 import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
 import { SessionPanel } from './sessions/SessionPanel'
 import { loadSessions, refreshSessions, showSessionPanel } from './sessions/sessionApi'
 import type { SessionSnapshot } from './sessions/sessionTypes'
 import { SettingsPanel } from './settings/SettingsPanel'
+import type { AppSettings, PetSizePreset } from './settings/appSettings'
+import {
+  loadAppSettings,
+  settingsWithPetScale,
+  settingsWithPetSizePreset,
+} from './settings/appSettings'
+import { loadPersistedAppSettings, savePersistedAppSettings } from './settings/appSettingsApi'
 import './styles/app.css'
 
 type WindowKind = 'panel' | 'pet'
+const SETTINGS_CHANGED_EVENT = 'claude-sprout://settings-changed'
 
 function resolveInitialWindowKind(): WindowKind {
   const params = new URLSearchParams(window.location.search)
@@ -26,13 +40,16 @@ function resolveInitialWindowKind(): WindowKind {
   }
 }
 
+function isTauriRuntime() {
+  return '__TAURI_INTERNALS__' in window
+}
+
 function App() {
   const [sessions, setSessions] = useState<SessionSnapshot[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [doNotDisturb, setDoNotDisturb] = useState(false)
+  const [settings, setSettings] = useState(loadAppSettings)
   const [activeTab, setActiveTab] = useState<'sessions' | 'settings'>('sessions')
   const [windowKind] = useState<WindowKind>(resolveInitialWindowKind)
-  const [petScale, setPetScale] = useState(loadPetScale)
   const [petAction, setPetAction] = useState<PetAnimation | null>(null)
 
   async function load() {
@@ -59,14 +76,64 @@ function App() {
     document.documentElement.dataset.window = windowKind
   }, [windowKind])
 
+  useEffect(() => {
+    let isMounted = true
+    void loadPersistedAppSettings().then((persistedSettings) => {
+      if (!isMounted) return
+      // Settings are owned by the app-data store; the sync load only seeds first paint.
+      setSettings(persistedSettings)
+    })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    void applySettingsToPet(settings, windowKind)
+  }, [settings, windowKind])
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+
+    let isMounted = true
+    let unlisten: (() => void) | null = null
+
+    void listen<AppSettings>(SETTINGS_CHANGED_EVENT, (event) => {
+      if (!isMounted) return
+      setSettings(event.payload)
+      void applySettingsToPet(event.payload, windowKind)
+    }).then((handler) => {
+      unlisten = handler
+    })
+
+    return () => {
+      isMounted = false
+      unlisten?.()
+    }
+  }, [windowKind])
+
   function playPetAction(action: PetAnimation) {
     setPetAction(action)
     window.setTimeout(() => setPetAction(null), 950)
   }
 
   async function resizePet(delta: number) {
-    const nextScale = await applyPetScale(petScale + delta * 0.1)
-    setPetScale(nextScale)
+    await updateSettings(settingsWithPetScale(settings, settings.petScale + delta * 0.1))
+  }
+
+  async function updateSettings(nextSettings: AppSettings) {
+    const savedSettings = await savePersistedAppSettings(nextSettings)
+    setSettings(savedSettings)
+    await applySettingsToPet(savedSettings, windowKind)
+
+    if (isTauriRuntime()) {
+      await emit(SETTINGS_CHANGED_EVENT, savedSettings)
+    }
+  }
+
+  async function updatePetSizePreset(preset: Exclude<PetSizePreset, 'custom'>) {
+    await updateSettings(settingsWithPetSizePreset(settings, preset))
   }
 
   if (windowKind === 'pet') {
@@ -76,7 +143,8 @@ function App() {
           status={topStatus}
           alertCount={waitingCount}
           compact
-          scale={petScale}
+          draggable={!settings.petLockPosition}
+          scale={settings.petScale}
           action={petAction}
           onClick={() => {
             void showSessionPanel()
@@ -123,9 +191,11 @@ function App() {
           <div className="topbar-actions">
             <button
               type="button"
-              className={doNotDisturb ? 'toggle active' : 'toggle'}
-              onClick={() => setDoNotDisturb((value) => !value)}
-              aria-pressed={doNotDisturb}
+              className={settings.doNotDisturb ? 'toggle active' : 'toggle'}
+              onClick={() => {
+                void updateSettings({ ...settings, doNotDisturb: !settings.doNotDisturb })
+              }}
+              aria-pressed={settings.doNotDisturb}
             >
               <Moon size={16} />
               Do not disturb
@@ -161,11 +231,37 @@ function App() {
         {activeTab === 'sessions' ? (
           <SessionPanel sessions={sessions} isLoading={isLoading} onRefresh={load} />
         ) : (
-          <SettingsPanel doNotDisturb={doNotDisturb} onDoNotDisturbChange={setDoNotDisturb} />
+          <SettingsPanel
+            settings={settings}
+            onSettingsChange={(nextSettings) => {
+              void updateSettings(nextSettings)
+            }}
+            onPetSizePresetChange={(preset) => {
+              void updatePetSizePreset(preset)
+            }}
+          />
         )}
       </section>
     </main>
   )
+}
+
+async function applySettingsToPet(settings: AppSettings, windowKind: WindowKind) {
+  if (windowKind === 'pet') {
+    await Promise.all([
+      applyPetScale(settings.petScale),
+      applyPetAlwaysOnTop(settings.petAlwaysOnTop),
+    ])
+    return
+  }
+
+  const petWindow = await getPetWindow()
+  if (!petWindow) return
+
+  await Promise.all([
+    applyPetScale(settings.petScale, petWindow),
+    applyPetAlwaysOnTop(settings.petAlwaysOnTop, petWindow),
+  ])
 }
 
 export default App
