@@ -1,7 +1,8 @@
-import type { CSSProperties, PointerEvent } from 'react'
+import type { CSSProperties, MouseEvent, PointerEvent } from 'react'
 import { useRef } from 'react'
 import type { SessionStatus } from '../sessions/sessionTypes'
 import { type PetAnimation, statusToPetAnimation } from './petStateMapper'
+import type { PetDragOrigin, PetDragSession } from './petWindowControls'
 
 type Props = {
   status: SessionStatus
@@ -13,7 +14,7 @@ type Props = {
   onDoubleClick?: () => void
   onContextMenu?: () => void
   onWheel?: (delta: number) => void
-  onDragStart?: () => void
+  onDragStart?: (origin: PetDragOrigin) => Promise<PetDragSession | null>
 }
 
 export function PetRenderer({
@@ -29,11 +30,22 @@ export function PetRenderer({
   onDragStart,
 }: Props) {
   const animation = action ?? statusToPetAnimation(status)
-  const pointerStart = useRef<{ x: number; y: number } | null>(null)
+  const pointerStart = useRef<{ x: number; y: number; screenX: number; screenY: number } | null>(null)
+  const dragSession = useRef<PetDragSession | null>(null)
+  const isDragging = useRef(false)
+  const suppressNextClick = useRef(false)
 
-  function handlePointerDown(event: PointerEvent<HTMLButtonElement>) {
+  async function handlePointerDown(event: PointerEvent<HTMLButtonElement>) {
     if (!compact || event.button !== 0) return
-    pointerStart.current = { x: event.clientX, y: event.clientY }
+    event.currentTarget.setPointerCapture(event.pointerId)
+    pointerStart.current = {
+      x: event.clientX,
+      y: event.clientY,
+      screenX: event.screenX,
+      screenY: event.screenY,
+    }
+    dragSession.current =
+      (await onDragStart?.({ screenX: event.screenX, screenY: event.screenY })) ?? null
   }
 
   function handlePointerMove(event: PointerEvent<HTMLButtonElement>) {
@@ -42,9 +54,30 @@ export function PetRenderer({
       event.clientX - pointerStart.current.x,
       event.clientY - pointerStart.current.y,
     )
-    if (moved < 6) return
+    if (moved < 6 && !isDragging.current) return
+    isDragging.current = true
+    void dragSession.current?.move(event.screenX, event.screenY)
+  }
+
+  function handlePointerEnd(event: PointerEvent<HTMLButtonElement>) {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    if (isDragging.current) {
+      suppressNextClick.current = true
+    }
     pointerStart.current = null
-    onDragStart?.()
+    dragSession.current = null
+    isDragging.current = false
+  }
+
+  function handleClick(event: MouseEvent<HTMLButtonElement>) {
+    if (suppressNextClick.current) {
+      event.preventDefault()
+      suppressNextClick.current = false
+      return
+    }
+    onClick?.()
   }
 
   return (
@@ -52,7 +85,7 @@ export function PetRenderer({
       type="button"
       className={`pet-surface ${status}${compact ? ' compact' : ''}`}
       aria-label="Open session panel"
-      onClick={onClick}
+      onClick={handleClick}
       onDoubleClick={onDoubleClick}
       onContextMenu={(event) => {
         event.preventDefault()
@@ -65,6 +98,8 @@ export function PetRenderer({
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerEnd}
+      onPointerCancel={handlePointerEnd}
       style={{ '--pet-scale': scale } as CSSProperties}
     >
       <div className={`sprout-pet ${animation}`}>

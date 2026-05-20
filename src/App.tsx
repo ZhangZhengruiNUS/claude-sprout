@@ -2,7 +2,7 @@ import { Bell, FolderOpen, Moon, PawPrint, RefreshCw, Settings } from 'lucide-re
 import { useEffect, useMemo, useState } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { PetRenderer } from './pet/PetRenderer'
-import { applyPetScale, loadPetScale, startPetDrag } from './pet/petWindowControls'
+import { applyPetScale, beginPetDrag, loadPetScale } from './pet/petWindowControls'
 import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
 import { SessionPanel } from './sessions/SessionPanel'
@@ -88,9 +88,7 @@ function App() {
           onWheel={(delta) => {
             void resizePet(delta)
           }}
-          onDragStart={() => {
-            void startPetDrag()
-          }}
+          onDragStart={beginPetDrag}
         />
       </main>
     )

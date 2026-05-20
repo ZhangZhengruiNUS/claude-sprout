@@ -14,7 +14,7 @@
     "Local session state model and stale/probably_closed TTL tests",
     "Codex-compatible pet importer Rust skeleton",
     "Tauri release exe build support",
-    "Interactive pet window: click opens panel, drag moves window, wheel resizes, right-click enlarges, double-click waves, scale persists in localStorage, transparent background, shadow disabled",
+    "Interactive pet window: click opens panel, drag moves window through manual setPosition tracking, wheel resizes, right-click enlarges, double-click waves, scale persists in localStorage, transparent background, shadow disabled",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -29,7 +29,7 @@
     "The release exe build works with npm run tauri -- build --no-bundle."
   ],
   "nextTasks": [
-    "Improve pet-window polish: verify whether the transparent square is gone on the user's desktop; if still visible, shrink the window to content bounds or investigate native region/hit-test masking; add explicit small/medium/large size controls in Settings.",
+    "Improve pet-window polish: transparent square is gone on the user's desktop; add explicit small/medium/large size controls in Settings and keep validating drag/resize ergonomics.",
     "Improve Codex-like pet behavior: add idle/wave/run/jump/failed/review animation controller, support imported codex-8x9 spritesheets in the pet window, and add pet preview/apply UI.",
     "Wire real session refresh: file watcher with debounce, native notifications for waiting_permission/waiting_input/done/error, tray menu actions for refresh/open data/settings.",
     "Add settings persistence: do-not-disturb, always-on-top, pet scale, and lock position.",

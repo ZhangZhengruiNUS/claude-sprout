@@ -28,3 +28,7 @@
   - `docs/handoff-state.json` stores handoff source data
   - `scripts/update-handoff.mjs` regenerates `docs/next-session.md`
   - `scripts/install-dev-hooks.ps1` installs a local git pre-commit hook that refreshes and stages the handoff before commits
+- Fixed pet-window movement after user desktop testing:
+  - transparent square artifact is confirmed gone
+  - replaced delayed native `startDragging()` with manual pointer tracking plus Tauri `setPosition`
+  - added explicit Tauri window permissions for pet position and size updates
