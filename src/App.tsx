@@ -2,6 +2,8 @@ import { Bell, FolderOpen, Moon, PawPrint, RefreshCw, Settings } from 'lucide-re
 import { useEffect, useMemo, useState } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { PetRenderer } from './pet/PetRenderer'
+import { applyPetScale, loadPetScale, startPetDrag } from './pet/petWindowControls'
+import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
 import { SessionPanel } from './sessions/SessionPanel'
 import { loadSessions, refreshSessions, showSessionPanel } from './sessions/sessionApi'
@@ -30,6 +32,8 @@ function App() {
   const [doNotDisturb, setDoNotDisturb] = useState(false)
   const [activeTab, setActiveTab] = useState<'sessions' | 'settings'>('sessions')
   const [windowKind] = useState<WindowKind>(resolveInitialWindowKind)
+  const [petScale, setPetScale] = useState(loadPetScale)
+  const [petAction, setPetAction] = useState<PetAnimation | null>(null)
 
   async function load() {
     setIsLoading(true)
@@ -55,6 +59,16 @@ function App() {
     document.documentElement.dataset.window = windowKind
   }, [windowKind])
 
+  function playPetAction(action: PetAnimation) {
+    setPetAction(action)
+    window.setTimeout(() => setPetAction(null), 950)
+  }
+
+  async function resizePet(delta: number) {
+    const nextScale = await applyPetScale(petScale + delta * 0.1)
+    setPetScale(nextScale)
+  }
+
   if (windowKind === 'pet') {
     return (
       <main className="floating-pet-shell">
@@ -62,8 +76,20 @@ function App() {
           status={topStatus}
           alertCount={waitingCount}
           compact
+          scale={petScale}
+          action={petAction}
           onClick={() => {
             void showSessionPanel()
+          }}
+          onDoubleClick={() => playPetAction('wave')}
+          onContextMenu={() => {
+            void resizePet(1)
+          }}
+          onWheel={(delta) => {
+            void resizePet(delta)
+          }}
+          onDragStart={() => {
+            void startPetDrag()
           }}
         />
       </main>

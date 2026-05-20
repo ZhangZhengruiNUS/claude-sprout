@@ -29,6 +29,7 @@
         "height": 210,
         "decorations": false,
         "transparent": true,
+        "shadow": false,
         "alwaysOnTop": true,
         "visible": true,
         "resizable": false,
