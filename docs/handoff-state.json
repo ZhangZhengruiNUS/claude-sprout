@@ -22,8 +22,8 @@
     "Pet renderer can animate imported Codex 8x9 spritesheets through the Tauri asset protocol while keeping the built-in sprout fallback",
     "Codex-compatible pet workflow UI: scan %USERPROFILE%\\.codex\\pets and %CODEX_HOME%\\pets, show valid/invalid candidates with validation errors, import valid candidates, refresh installed pets, and sync imported selections across windows",
     "Animation control polish: one-shot imported sprite rows and built-in jump/failed remount for replay, Settings pet picker previews before applying, and Preview wave exercises the panel pet",
-    "Real session refresh foundation: background session-file polling emits refresh events, panel-owned notifications fire for waiting_permission/waiting_input/done/error transitions with duplicate suppression, do-not-disturb suppresses notifications, and tray refresh/open data/settings/DND actions are wired",
-    "Installer path improvement: default bundle target is NSIS, release scripts separate exe/no-bundle, NSIS installer, and optional MSI/WiX builds, and Windows install docs record the local NSIS/WiX TLS blockers",
+    "Real session refresh foundation: background session-file polling emits refresh events, panel-owned notifications fire for waiting_permission/waiting_input/done/error transitions with duplicate suppression after notification delivery, permission-denied notifications stay pending for retry, do-not-disturb suppresses notifications, and tray refresh/open data/settings/DND actions are wired",
+    "Installer path improvement: default bundle target is NSIS, release scripts separate exe/no-bundle, NSIS installer, and optional MSI/WiX builds, local Tauri installer tools cache under src-tauri\\target\\.tauri, and Windows install docs record the local NSIS/WiX TLS blockers plus smoke checklist",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -36,13 +36,13 @@
     "npm run release:exe"
   ],
   "knownBlockers": [
-    "NSIS bundling with npm run release:nsis currently compiles the release exe, then fails downloading Tauri's NSIS tool archive because GitHub TLS validation reports UnknownIssuer.",
+    "NSIS bundling with npm run release:nsis currently compiles the release exe, then fails downloading Tauri's NSIS tool archive because GitHub TLS validation reports UnknownIssuer. The repo now uses Tauri's local tools cache path, but this still needs machine certificate/proxy repair or a pre-cached NSIS tool archive.",
     "MSI bundling with npm run release:msi can fail on this machine: Tauri auto-download of WiX hit TLS UnknownIssuer, and winget install WiXToolset.WiXToolset requires admin rights to enable NetFx3.",
     "The release exe build works with npm run release:exe or npm run tauri -- build --no-bundle."
   ],
   "nextTasks": [
-    "Manual desktop smoke test of tray DND/settings actions and native notification delivery in the built Tauri runtime.",
-    "Fix installer tool download/certificate path, or preinstall/cache NSIS/WiX tools, then rerun npm run release:nsis and document the generated installer artifact path.",
+    "Manual desktop smoke test of tray DND/settings actions and native notification delivery in the built Tauri runtime, using at least two seconds between controlled session JSON state changes.",
+    "Fix the machine installer tool download/certificate path, or preinstall/pre-cache NSIS/WiX tools under the Tauri local tools cache, then rerun npm run release:nsis and document the generated installer artifact path.",
     "Plan the next product slice after installer validation: data cleanup UI or more accurate closed-session detection."
   ],
   "importantDecisions": [

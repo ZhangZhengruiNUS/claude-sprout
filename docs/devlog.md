@@ -67,3 +67,9 @@
   - verified `release:exe` still builds `src-tauri\target\release\claude-sprout.exe`
   - `release:nsis` compiles the exe but currently fails while downloading Tauri's NSIS tool archive because GitHub TLS validation reports `UnknownIssuer`
   - documented the stable no-bundle exe path and the local NSIS/WiX installer blockers in `docs/install-windows.md`
+- Hardened the release validation path:
+  - notification duplicate suppression now marks a transition as delivered only after OS notification permission is available and send is attempted
+  - permission-denied notifications stay pending so they can be retried later in the same app run
+  - added focused tests for denied-permission retry behavior and delivered notification suppression keys
+  - enabled Tauri's local installer tools cache under `src-tauri\target\.tauri`
+  - expanded Windows install docs with the machine TLS trust blocker and a desktop smoke checklist for tray DND/settings actions and native notifications

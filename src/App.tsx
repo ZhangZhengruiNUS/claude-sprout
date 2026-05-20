@@ -25,7 +25,11 @@ import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
 import { SessionPanel } from './sessions/SessionPanel'
 import { loadSessions, refreshSessions, showSessionPanel } from './sessions/sessionApi'
-import { notificationsForSessionChanges } from './sessions/sessionNotifications'
+import { deliverSessionNotifications } from './sessions/sessionNotificationDelivery'
+import {
+  notificationsForSessionChanges,
+  type SessionNotification,
+} from './sessions/sessionNotifications'
 import type { SessionSnapshot } from './sessions/sessionTypes'
 import { SettingsPanel } from './settings/SettingsPanel'
 import type { AppSettings, PetSizePreset } from './settings/appSettings'
@@ -78,6 +82,7 @@ function App() {
   const settingsRef = useRef(settings)
   const sessionsRef = useRef<SessionSnapshot[]>([])
   const notifiedSessionKeysRef = useRef(new Set<string>())
+  const pendingSessionNotificationsRef = useRef(new Map<string, SessionNotification>())
   const loadSequenceRef = useRef(0)
 
   async function load(options: { showLoading?: boolean; notify?: boolean } = {}) {
@@ -96,6 +101,7 @@ function App() {
         nextSessions,
         settingsRef.current.doNotDisturb,
         notifiedSessionKeysRef.current,
+        pendingSessionNotificationsRef.current,
       )
     }
     sessionsRef.current = nextSessions
@@ -462,6 +468,7 @@ async function notifySessionChanges(
   nextSessions: SessionSnapshot[],
   doNotDisturb: boolean,
   notifiedSessionKeys: Set<string>,
+  pendingSessionNotifications: Map<string, SessionNotification>,
 ) {
   if (!isTauriRuntime() || doNotDisturb) return
 
@@ -470,21 +477,14 @@ async function notifySessionChanges(
     nextSessions,
     notifiedSessionKeys,
   )
-  if (notifications.length === 0) return
-
-  for (const notification of notifications) {
-    notifiedSessionKeys.add(notification.key)
-  }
-
-  let permissionGranted = await isPermissionGranted()
-  if (!permissionGranted) {
-    permissionGranted = (await requestPermission()) === 'granted'
-  }
-  if (!permissionGranted) return
-
-  for (const notification of notifications) {
-    sendNotification({ title: notification.title, body: notification.body })
-  }
+  await deliverSessionNotifications({
+    notifications,
+    pendingNotifications: pendingSessionNotifications,
+    notifiedKeys: notifiedSessionKeys,
+    isPermissionGranted,
+    requestPermission,
+    sendNotification,
+  })
 }
 
 function errorMessage(error: unknown) {
