@@ -35,6 +35,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::list_sessions,
             commands::refresh_sessions,
+            commands::get_data_root,
             commands::load_app_settings,
             commands::save_app_settings,
             commands::show_session_panel,

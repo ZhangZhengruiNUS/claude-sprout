@@ -13,6 +13,11 @@ pub fn refresh_sessions() -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn get_data_root() -> Result<String, String> {
+    Ok(session_store::ensure_layout()?.display().to_string())
+}
+
+#[tauri::command]
 pub fn load_app_settings() -> Result<app_settings::AppSettings, String> {
     app_settings::load()
 }

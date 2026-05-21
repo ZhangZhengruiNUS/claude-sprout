@@ -157,3 +157,8 @@
   - statusline writers preserve prior `ended_at` and `end_reason` instead of clearing terminal state
   - Rust session derivation marks non-terminal snapshots with `ended_at` as `closed`
   - added executable Vitest coverage for both PowerShell and Node hook/statusline terminal-state preservation
+- Hardened real session panel loading after Windows hook smoke:
+  - session listing now skips malformed historical snapshot files instead of failing the whole panel load
+  - the panel displays the active app data root and any Tauri session-load error instead of silently showing an empty list
+  - added Rust coverage for the real statusline snapshot shape and malformed-file tolerance
+  - rebuilt the release exe and verified `claude -p` writes a real hook snapshot under `C:\Users\ASUS\.claude-sprout\sessions`

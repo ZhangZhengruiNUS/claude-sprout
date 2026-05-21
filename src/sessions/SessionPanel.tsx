@@ -18,7 +18,8 @@ const statusRank: Record<SessionStatus, number> = {
 type Props = {
   sessions: SessionSnapshot[]
   isLoading: boolean
-  onRefresh: () => void
+  loadError?: string | null
+  onRefresh: () => void | Promise<void>
 }
 
 function formatTime(value?: string | null) {
@@ -30,7 +31,7 @@ function formatTime(value?: string | null) {
   }).format(new Date(value))
 }
 
-export function SessionPanel({ sessions, isLoading, onRefresh }: Props) {
+export function SessionPanel({ sessions, isLoading, loadError, onRefresh }: Props) {
   const sortedSessions = [...sessions].sort((a, b) => {
     const rankDelta = statusRank[a.status] - statusRank[b.status]
     if (rankDelta !== 0) return rankDelta
@@ -50,7 +51,13 @@ export function SessionPanel({ sessions, isLoading, onRefresh }: Props) {
         </button>
       </div>
 
+      {loadError ? <p className="session-load-error">{loadError}</p> : null}
+
       <div className="session-list">
+        {!isLoading && sortedSessions.length === 0 && !loadError ? (
+          <p className="session-empty">No Claude Code session snapshots found yet.</p>
+        ) : null}
+
         {sortedSessions.map((session) => (
           <article className="session-card" key={session.session_id}>
             <div className="session-main">

@@ -58,18 +58,27 @@ pub fn ensure_layout() -> Result<PathBuf, String> {
 
 pub fn list_sessions() -> Result<Vec<SessionSnapshot>, String> {
     let root = ensure_layout()?;
+    list_sessions_from_root(&root)
+}
+
+fn list_sessions_from_root(root: &Path) -> Result<Vec<SessionSnapshot>, String> {
     let session_dir = root.join("sessions");
     let mut sessions = Vec::new();
 
     for entry in fs::read_dir(session_dir).map_err(|error| error.to_string())? {
-        let entry = entry.map_err(|error| error.to_string())?;
+        let Ok(entry) = entry else {
+            continue;
+        };
         if entry.path().extension().and_then(|value| value.to_str()) != Some("json") {
             continue;
         }
 
-        let raw = fs::read_to_string(entry.path()).map_err(|error| error.to_string())?;
-        let mut session: SessionSnapshot =
-            serde_json::from_str(&raw).map_err(|error| error.to_string())?;
+        let Ok(raw) = fs::read_to_string(entry.path()) else {
+            continue;
+        };
+        let Ok(mut session) = serde_json::from_str::<SessionSnapshot>(&raw) else {
+            continue;
+        };
         session.status = derive_status(&session);
         sessions.push(session);
     }
@@ -206,6 +215,43 @@ mod tests {
 
         assert_eq!(fingerprint.len(), 1);
         assert!(fingerprint[0].starts_with("a.json:2:"));
+
+        fs::remove_dir_all(root).expect("temp root should be removable");
+    }
+
+    #[test]
+    fn parses_real_statusline_snapshot_with_waiting_input() {
+        let raw = r#"{"session_id":"585b245a-9664-492d-b7f2-377b6cee236e","project_name":"ASUS","cwd":"C:\\Users\\ASUS","status":"waiting_input","last_event":"Notification","notification_type":"idle_prompt","last_tool":null,"context_used_percentage":12,"last_heartbeat_at":"2026-05-21T10:08:57.9219847Z","updated_at":"2026-05-21T10:08:57.9219847Z","ended_at":null,"end_reason":null,"source":"claude-code-statusline"}"#;
+
+        let session: SessionSnapshot =
+            serde_json::from_str(raw).expect("real statusline snapshot should parse");
+
+        assert_eq!(session.status, SessionStatus::WaitingInput);
+        assert_eq!(session.project_name, "ASUS");
+        assert_eq!(session.context_used_percentage, Some(12.0));
+    }
+
+    #[test]
+    fn skips_malformed_session_files_when_listing() {
+        let root = std::env::temp_dir().join(format!(
+            "claude-sprout-session-list-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let session_dir = root.join("sessions");
+        fs::create_dir_all(&session_dir).expect("session directory should be created");
+        fs::write(session_dir.join("bad.json"), "not-json").expect("bad file should be writable");
+
+        let good_snapshot = snapshot_with_age(0);
+        fs::write(
+            session_dir.join("good.json"),
+            serde_json::to_string(&good_snapshot).expect("snapshot should serialize"),
+        )
+        .expect("good file should be writable");
+
+        let sessions = list_sessions_from_root(&root).expect("sessions should list");
+
+        assert_eq!(sessions.len(), 1);
+        assert_eq!(sessions[0].session_id, good_snapshot.session_id);
 
         fs::remove_dir_all(root).expect("temp root should be removable");
     }

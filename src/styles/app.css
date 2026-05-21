@@ -366,6 +366,17 @@ h1 {
   align-items: center;
   gap: 0.5rem;
   color: #c1c9d1;
+  min-width: 0;
+}
+
+.status-strip div:last-child {
+  min-width: min(100%, 16rem);
+}
+
+.status-strip div:last-child span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metric {
@@ -390,6 +401,20 @@ h1 {
 .session-list {
   display: grid;
   gap: 0.8rem;
+}
+
+.session-load-error,
+.session-empty {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #c1c9d1;
+}
+
+.session-load-error {
+  margin-bottom: 0.8rem;
+  color: #f0a0a0;
 }
 
 .session-card,

@@ -36,7 +36,7 @@ import {
 import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
 import { SessionPanel } from './sessions/SessionPanel'
-import { loadSessions, refreshSessions, showSessionPanel } from './sessions/sessionApi'
+import { getDataRoot, loadSessions, refreshSessions, showSessionPanel } from './sessions/sessionApi'
 import { deliverSessionNotifications } from './sessions/sessionNotificationDelivery'
 import {
   notificationsForSessionChanges,
@@ -84,6 +84,8 @@ function resolveInitialWindowKind(): WindowKind {
 function App() {
   const [sessions, setSessions] = useState<SessionSnapshot[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [sessionLoadError, setSessionLoadError] = useState<string | null>(null)
+  const [dataRoot, setDataRoot] = useState('%USERPROFILE%\\.claude-sprout')
   const [settings, setSettings] = useState(loadAppSettings)
   const [activeTab, setActiveTab] = useState<'sessions' | 'settings'>('sessions')
   const [windowKind] = useState<WindowKind>(resolveInitialWindowKind)
@@ -114,10 +116,23 @@ function App() {
     if (options.showLoading ?? true) {
       setIsLoading(true)
     }
-    const nextSessions = await loadSessions()
+    let nextSessions: SessionSnapshot[]
+    try {
+      nextSessions = await loadSessions()
+    } catch (error) {
+      if (sequence !== loadSequenceRef.current) {
+        return
+      }
+      setSessionLoadError(`Session load failed: ${errorMessage(error)}`)
+      if (options.showLoading ?? true) {
+        setIsLoading(false)
+      }
+      return
+    }
     if (sequence !== loadSequenceRef.current) {
       return
     }
+    setSessionLoadError(null)
     if (options.notify) {
       void notifySessionChanges(
         sessionsRef.current,
@@ -134,6 +149,17 @@ function App() {
     }
   }
 
+  async function reloadSessions(options: { showLoading?: boolean; notify?: boolean } = {}) {
+    try {
+      await refreshSessions()
+    } catch (error) {
+      setSessionLoadError(`Session refresh failed: ${errorMessage(error)}`)
+      return
+    }
+
+    await load(options)
+  }
+
   useEffect(() => {
     // Session data is an external Tauri-backed store; initial load belongs in this subscription effect.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -146,6 +172,25 @@ function App() {
 
   useEffect(() => {
     void refreshPetAssets()
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+    void getDataRoot()
+      .then((root) => {
+        if (isMounted) {
+          setDataRoot(root)
+        }
+      })
+      .catch((error) => {
+        if (isMounted) {
+          setSessionLoadError(`Data root lookup failed: ${errorMessage(error)}`)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const topStatus = useMemo(() => getHighestPriorityStatus(sessions), [sessions])
@@ -577,8 +622,7 @@ function App() {
             <button
               type="button"
               onClick={async () => {
-                await refreshSessions()
-                await load({ showLoading: false, notify: true })
+                await reloadSessions({ showLoading: false, notify: true })
               }}
             >
               <RefreshCw size={16} />
@@ -598,12 +642,17 @@ function App() {
           </div>
           <div>
             <FolderOpen size={16} />
-            <span>%USERPROFILE%\.claude-sprout</span>
+            <span title={dataRoot}>{dataRoot}</span>
           </div>
         </div>
 
         {activeTab === 'sessions' ? (
-          <SessionPanel sessions={sessions} isLoading={isLoading} onRefresh={load} />
+          <SessionPanel
+            sessions={sessions}
+            isLoading={isLoading}
+            loadError={sessionLoadError}
+            onRefresh={() => reloadSessions({ showLoading: true, notify: true })}
+          />
         ) : (
           <SettingsPanel
             settings={settings}

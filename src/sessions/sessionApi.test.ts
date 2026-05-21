@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { loadSessions, showSessionPanel } from './sessionApi'
+import { getDataRoot, loadSessions, showSessionPanel } from './sessionApi'
 
 const invokeMock = vi.hoisted(() => vi.fn())
 const getByLabelMock = vi.hoisted(() => vi.fn())
@@ -57,9 +57,16 @@ describe('session api', () => {
     expect(setFocus).toHaveBeenCalled()
   })
 
-  it('does not show mock sessions when Tauri session loading fails', async () => {
+  it('propagates Tauri session loading failures instead of showing mock sessions', async () => {
     invokeMock.mockRejectedValueOnce(new Error('bad session file'))
 
-    await expect(loadSessions()).resolves.toEqual([])
+    await expect(loadSessions()).rejects.toThrow('bad session file')
+  })
+
+  it('reads the active data root from Tauri', async () => {
+    invokeMock.mockResolvedValueOnce('C:\\Users\\ASUS\\.claude-sprout')
+
+    await expect(getDataRoot()).resolves.toBe('C:\\Users\\ASUS\\.claude-sprout')
+    expect(invokeMock).toHaveBeenCalledWith('get_data_root')
   })
 })

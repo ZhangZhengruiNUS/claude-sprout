@@ -9,12 +9,15 @@ export async function loadSessions(): Promise<SessionSnapshot[]> {
     return mockSessions
   }
 
-  try {
-    return await invoke<SessionSnapshot[]>('list_sessions')
-  } catch (error) {
-    console.error('Failed to load Claude Sprout sessions from Tauri.', error)
-    return []
+  return invoke<SessionSnapshot[]>('list_sessions')
+}
+
+export async function getDataRoot(): Promise<string> {
+  if (!isTauriRuntime()) {
+    return '%USERPROFILE%\\.claude-sprout'
   }
+
+  return invoke<string>('get_data_root')
 }
 
 export async function refreshSessions(): Promise<void> {
