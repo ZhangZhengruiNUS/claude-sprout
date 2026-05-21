@@ -2,6 +2,9 @@ param()
 
 $ErrorActionPreference = "Stop"
 
+[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+
 function Get-SproutRoot {
   if ($env:CLAUDE_SPROUT_HOME) { return $env:CLAUDE_SPROUT_HOME }
   return Join-Path $env:USERPROFILE ".claude-sprout"

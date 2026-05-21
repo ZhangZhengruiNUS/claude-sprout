@@ -5,6 +5,10 @@
 - Fixed Tauri runtime detection for release builds:
   - frontend APIs now treat either `globalThis.isTauri` or `__TAURI_INTERNALS__` as Tauri runtime markers.
   - Tauri session-load failures no longer fall back to mock sessions, preventing fake `mock-permission-001` rows and false `Permission needed` alerts in the release app.
+- Fixed PowerShell hook UTF-8 stdin handling:
+  - hook and statusline scripts now force UTF-8 console input/output before reading Claude Code JSON payloads.
+  - added executable coverage for CJK assistant text in a PowerShell hook payload.
+  - verified with `claude -p` that a real Claude Code session writes a Claude Sprout snapshot without hook errors.
 - Fixed Claude Code hook command quoting for checkout paths with spaces:
   - active local config under `E:\claude-code-config\settings.json` now quotes the Claude Sprout `.ps1` paths.
   - `hooks/windows/claude-settings.example.json` now quotes the placeholder `.ps1` paths.

@@ -86,6 +86,33 @@ describe('hook writers', () => {
     }
   }, 15_000)
 
+  it('handles UTF-8 Claude payloads with CJK assistant text in PowerShell hooks', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      const env = { CLAUDE_SPROUT_HOME: root }
+      await runPowerShellScript(
+        'hooks/windows/claude-sprout-hook.ps1',
+        JSON.stringify({
+          session_id: 'ps-cjk-session',
+          hook_event_name: 'Stop',
+          cwd: 'C:/Users/ASUS',
+          last_assistant_message:
+            '我是 Claude Code，Anthropic 的 CLI 编程助手。我可以帮你完成软件工程任务。',
+          background_tasks: [],
+          session_crons: [],
+        }),
+        env,
+      )
+
+      const snapshot = await readSnapshot(root, 'ps-cjk-session')
+      expect(snapshot.status).toBe('done')
+      expect(snapshot.project_name).toBe('ASUS')
+      expect(snapshot.ended_at).toEqual(expect.any(String))
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
   it('preserves ended_at across Node statusline updates', async () => {
     const root = await tempRoot('claude-sprout-hook-writers')
     try {
