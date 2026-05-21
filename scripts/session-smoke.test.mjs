@@ -50,6 +50,9 @@ describe('session smoke helpers', () => {
         petAlwaysOnTop: true,
         petLockPosition: false,
         petSizePreset: 'medium',
+        petDisplayMode: 'minimal',
+        petCompletionToastSeconds: 5,
+        petActivityVisibleCount: 3,
       })
     } finally {
       await rm(root, { recursive: true, force: true })

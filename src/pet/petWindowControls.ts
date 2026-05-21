@@ -1,10 +1,8 @@
 import { LogicalSize, PhysicalPosition } from '@tauri-apps/api/dpi'
 import { getCurrentWindow, Window } from '@tauri-apps/api/window'
-import { clampPetScale, loadAppSettings } from '../settings/appSettings'
+import { loadAppSettings, type AppSettings } from '../settings/appSettings'
 import { isTauriRuntime } from '../tauriRuntime'
-
-const BASE_WIDTH = 180
-const BASE_HEIGHT = 210
+import { petWindowSizeForDisplay } from './petWindowLayout'
 
 export type PetDragOrigin = {
   screenX: number
@@ -19,16 +17,24 @@ export function loadPetScale() {
   return loadAppSettings().petScale
 }
 
-export async function applyPetScale(value: number, targetWindow?: Window) {
-  const scale = clampPetScale(value)
+export async function applyPetScale(
+  value: number,
+  targetWindow?: Window,
+  layoutSettings?: Pick<AppSettings, 'petDisplayMode' | 'petActivityVisibleCount'>,
+) {
+  const size = petWindowSizeForDisplay({
+    scale: value,
+    displayMode: layoutSettings?.petDisplayMode ?? 'minimal',
+    visibleCount: layoutSettings?.petActivityVisibleCount ?? 3,
+  })
 
   if (isTauriRuntime()) {
     await (targetWindow ?? getCurrentWindow()).setSize(
-      new LogicalSize(Math.round(BASE_WIDTH * scale), Math.round(BASE_HEIGHT * scale)),
+      new LogicalSize(size.width, size.height),
     )
   }
 
-  return scale
+  return value
 }
 
 export async function beginPetDrag(origin: PetDragOrigin): Promise<PetDragSession | null> {

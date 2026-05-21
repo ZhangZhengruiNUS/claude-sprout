@@ -137,6 +137,10 @@ button:disabled {
   background: transparent;
 }
 
+.floating-pet-shell.activity .pet-surface.compact {
+  padding-bottom: 7rem;
+}
+
 .pet-surface.compact .sprout-pet {
   transform: scale(var(--pet-scale, 1));
   transform-origin: center bottom;
@@ -172,6 +176,249 @@ button:disabled {
 
 .pet-surface.compact:hover .pet-hint {
   opacity: 1;
+}
+
+.pet-assistant-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  color: #edf3f7;
+}
+
+.pet-minimal-hud {
+  position: absolute;
+  left: 0.35rem;
+  right: 0.35rem;
+  bottom: 0.45rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.pet-hud-pill,
+.pet-message-card,
+.pet-activity-hud {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, rgba(25, 31, 35, 0.68), rgba(17, 22, 25, 0.42));
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(16px) saturate(1.35);
+}
+
+.pet-hud-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 3.3rem;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.24rem 0.38rem;
+  color: rgba(237, 243, 247, 0.82);
+  font-size: 0.61rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.pet-hud-pill strong {
+  color: #ffffff;
+  font-size: 0.82rem;
+  line-height: 1;
+}
+
+.pet-hud-pill.running {
+  border-color: rgba(131, 185, 161, 0.48);
+}
+
+.pet-hud-pill.complete {
+  border-color: rgba(184, 200, 122, 0.46);
+}
+
+.pet-hud-pill.intervention {
+  border-color: rgba(233, 177, 90, 0.68);
+  box-shadow:
+    0 0 24px rgba(233, 177, 90, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.pet-message-stack {
+  position: absolute;
+  top: 0.35rem;
+  left: 0.35rem;
+  right: 0.35rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.pet-message-card {
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.95rem;
+  padding: 0.48rem 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  animation: pet-message-enter 220ms ease-out;
+}
+
+.pet-message-card.intervention {
+  border-color: rgba(233, 177, 90, 0.78);
+  box-shadow:
+    0 0 24px rgba(233, 177, 90, 0.24),
+    0 12px 32px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.pet-message-card.complete {
+  border-color: rgba(184, 200, 122, 0.5);
+}
+
+.pet-message-card.failed {
+  border-color: rgba(216, 115, 115, 0.58);
+}
+
+.pet-message-card strong,
+.pet-activity-card strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.pet-message-card small,
+.pet-activity-card small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 0.14rem;
+  color: rgba(223, 231, 236, 0.68);
+  font-size: 0.6rem;
+  line-height: 1.15;
+}
+
+.pet-message-card button,
+.pet-activity-pager button {
+  width: 1.45rem;
+  height: 1.45rem;
+  min-height: 0;
+  justify-content: center;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pet-message-card button:hover,
+.pet-activity-pager button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.pet-activity-hud {
+  pointer-events: auto;
+  position: absolute;
+  left: 0.35rem;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.45rem;
+  border-radius: 8px;
+}
+
+.pet-activity-header,
+.pet-activity-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.pet-activity-header span {
+  color: rgba(237, 243, 247, 0.74);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pet-activity-header small,
+.pet-activity-pager span {
+  color: rgba(237, 243, 247, 0.62);
+  font-size: 0.62rem;
+}
+
+.pet-activity-list {
+  display: grid;
+  gap: 0.3rem;
+  max-height: 7.6rem;
+  overflow: hidden;
+}
+
+.pet-activity-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.34rem 0.38rem;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.065);
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.pet-activity-card:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pet-activity-card.intervention {
+  background: rgba(233, 177, 90, 0.18);
+  box-shadow: inset 3px 0 0 rgba(233, 177, 90, 0.9);
+}
+
+.pet-activity-card.failed {
+  background: rgba(216, 115, 115, 0.14);
+  box-shadow: inset 3px 0 0 rgba(216, 115, 115, 0.84);
+}
+
+.pet-activity-card.running {
+  background: rgba(131, 185, 161, 0.13);
+  box-shadow: inset 3px 0 0 rgba(131, 185, 161, 0.8);
+}
+
+.pet-activity-card.complete {
+  background: rgba(184, 200, 122, 0.13);
+  box-shadow: inset 3px 0 0 rgba(184, 200, 122, 0.8);
+}
+
+.pet-activity-card span {
+  max-width: 4.2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(237, 243, 247, 0.72);
+  font-size: 0.55rem;
+  text-align: right;
+}
+
+.pet-activity-empty {
+  display: grid;
+  min-height: 2.1rem;
+  place-items: center;
+  color: rgba(237, 243, 247, 0.58);
+  font-size: 0.65rem;
+}
+
+.pet-activity-pager button:disabled {
+  opacity: 0.38;
 }
 
 .pet-context-menu {
@@ -590,6 +837,17 @@ h1 {
   background: #425245;
 }
 
+.setting-number {
+  width: 6rem;
+  min-height: 2.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: #15191d;
+  color: #edf3f7;
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+}
+
 .pet-picker {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
@@ -768,6 +1026,18 @@ h1 {
 
   to {
     background-position-x: var(--sprite-end-offset);
+  }
+}
+
+@keyframes pet-message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 

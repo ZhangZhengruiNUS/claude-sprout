@@ -1,5 +1,17 @@
 # Development Log
 
+## 2026-05-22
+
+- Implemented the next pet-assistant interaction slice:
+  - added configurable pet information modes: Minimal shows compact running/finished/action counts plus transient or persistent glass message cards; Activity shows a larger always-on-top glass activity stack with pager controls.
+  - waiting-permission and waiting-input sessions stay persistent until acknowledged in Minimal mode; done/error cards use the configured completion timeout, with `0` meaning persist until acknowledged.
+  - Activity mode highlights waiting, running, completed, and failed open sessions in the stack instead of adding a second message overlay.
+  - pet cards open the session panel, and acknowledge buttons dismiss only the matching message.
+  - activity mode expands the pet window size based on the configured visible row count while Minimal mode keeps the compact 180x210 footprint.
+- Added persisted settings for `petDisplayMode`, `petCompletionToastSeconds`, and `petActivityVisibleCount` across frontend localStorage, Rust app-data settings, and smoke fixtures.
+- Added focused tests for pet assistant summaries, message persistence/overflow behavior, settings migration/normalization, and pet window sizing.
+- Verified the new UI in browser preview at the compact Minimal size and the expanded Activity size.
+
 ## 2026-05-21
 
 - Fixed Tauri runtime detection for release builds:

@@ -1,4 +1,5 @@
 export type PetSizePreset = 'small' | 'medium' | 'large' | 'custom'
+export type PetDisplayMode = 'minimal' | 'activity'
 
 export type AppSettings = {
   doNotDisturb: boolean
@@ -7,6 +8,9 @@ export type AppSettings = {
   petScale: number
   petSizePreset: PetSizePreset
   activePetId: string | null
+  petDisplayMode: PetDisplayMode
+  petCompletionToastSeconds: number
+  petActivityVisibleCount: number
 }
 
 type StoredAppSettings = Partial<AppSettings>
@@ -16,6 +20,8 @@ export const LEGACY_PET_SCALE_STORAGE_KEY = 'claude-sprout.pet-scale'
 
 export const PET_SCALE_MIN = 0.75
 export const PET_SCALE_MAX = 1.65
+export const PET_COMPLETION_TOAST_SECONDS_MAX = 120
+export const PET_ACTIVITY_VISIBLE_COUNT_MAX = 12
 
 export const PET_SIZE_OPTIONS = {
   small: { label: 'Small', scale: 0.85 },
@@ -30,9 +36,13 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   petScale: PET_SIZE_OPTIONS.medium.scale,
   petSizePreset: 'medium',
   activePetId: null,
+  petDisplayMode: 'minimal',
+  petCompletionToastSeconds: 5,
+  petActivityVisibleCount: 3,
 }
 
 const PET_SIZE_PRESETS = new Set<PetSizePreset>(['small', 'medium', 'large', 'custom'])
+const PET_DISPLAY_MODES = new Set<PetDisplayMode>(['minimal', 'activity'])
 
 export function clampPetScale(value: number) {
   if (!Number.isFinite(value)) return DEFAULT_APP_SETTINGS.petScale
@@ -97,6 +107,21 @@ function normalizeAppSettings(settings: StoredAppSettings): AppSettings {
     petScale: clampPetScale(presetScale ?? storedScale ?? DEFAULT_APP_SETTINGS.petScale),
     petSizePreset,
     activePetId: typeof settings.activePetId === 'string' ? settings.activePetId : null,
+    petDisplayMode: isPetDisplayMode(settings.petDisplayMode)
+      ? settings.petDisplayMode
+      : DEFAULT_APP_SETTINGS.petDisplayMode,
+    petCompletionToastSeconds: clampIntegerSetting(
+      settings.petCompletionToastSeconds,
+      0,
+      PET_COMPLETION_TOAST_SECONDS_MAX,
+      DEFAULT_APP_SETTINGS.petCompletionToastSeconds,
+    ),
+    petActivityVisibleCount: clampIntegerSetting(
+      settings.petActivityVisibleCount,
+      1,
+      PET_ACTIVITY_VISIBLE_COUNT_MAX,
+      DEFAULT_APP_SETTINGS.petActivityVisibleCount,
+    ),
   }
 }
 
@@ -120,4 +145,16 @@ function parseFiniteNumber(raw: string | null) {
 
 function isPetSizePreset(value: unknown): value is PetSizePreset {
   return typeof value === 'string' && PET_SIZE_PRESETS.has(value as PetSizePreset)
+}
+
+function isPetDisplayMode(value: unknown): value is PetDisplayMode {
+  return typeof value === 'string' && PET_DISPLAY_MODES.has(value as PetDisplayMode)
+}
+
+function clampIntegerSetting(value: unknown, min: number, max: number, fallback: number) {
+  const parsed = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(parsed)) return fallback
+  const rounded = Math.round(parsed)
+  if (rounded < min) return fallback
+  return Math.min(max, rounded)
 }

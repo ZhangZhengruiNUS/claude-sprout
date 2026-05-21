@@ -3,7 +3,7 @@ import type { CodexPetCandidate, PetAsset } from '../pet/petAssetsApi'
 import type { PetAnimation } from '../pet/petStateMapper'
 import { StoragePanel } from '../storage/StoragePanel'
 import type { StorageCleanKind, StorageSummary } from '../storage/storageApi'
-import type { AppSettings, PetSizePreset } from './appSettings'
+import type { AppSettings, PetDisplayMode, PetSizePreset } from './appSettings'
 import { PET_SIZE_OPTIONS } from './appSettings'
 
 type Props = {
@@ -33,6 +33,10 @@ type Props = {
 }
 
 const PET_SIZE_PRESETS = ['small', 'medium', 'large'] as const
+const PET_DISPLAY_MODES: Array<{ value: PetDisplayMode; label: string }> = [
+  { value: 'minimal', label: 'Minimal' },
+  { value: 'activity', label: 'Activity' },
+]
 
 export function SettingsPanel({
   settings,
@@ -78,6 +82,62 @@ export function SettingsPanel({
             onChange={(event) => onSettingsChange({ ...settings, doNotDisturb: event.target.checked })}
           />
         </span>
+      </label>
+      <div className="setting-row">
+        <span>
+          <strong>Pet information mode</strong>
+          <small>Choose between quiet daily counts and a persistent session activity stack.</small>
+        </span>
+        <div className="size-segment" role="group" aria-label="Pet information mode">
+          {PET_DISPLAY_MODES.map((mode) => (
+            <button
+              key={mode.value}
+              type="button"
+              className={settings.petDisplayMode === mode.value ? 'active' : ''}
+              onClick={() => onSettingsChange({ ...settings, petDisplayMode: mode.value })}
+            >
+              {mode.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <label className="setting-row">
+        <span>
+          <strong>Completion message</strong>
+          <small>Seconds to show finished-task cards. Use 0 to keep them until acknowledged.</small>
+        </span>
+        <input
+          className="setting-number"
+          type="number"
+          min={0}
+          max={120}
+          value={settings.petCompletionToastSeconds}
+          onChange={(event) =>
+            onSettingsChange({
+              ...settings,
+              petCompletionToastSeconds: Number(event.target.value),
+            })
+          }
+        />
+      </label>
+      <label className="setting-row">
+        <span>
+          <strong>Activity rows</strong>
+          <small>Number of open sessions shown before pager controls appear.</small>
+        </span>
+        <input
+          className="setting-number"
+          type="number"
+          min={1}
+          max={12}
+          value={settings.petActivityVisibleCount}
+          onChange={(event) =>
+            onSettingsChange({
+              ...settings,
+              petActivityVisibleCount: Number(event.target.value),
+            })
+          }
+        />
       </label>
       <label className="setting-row">
         <span>

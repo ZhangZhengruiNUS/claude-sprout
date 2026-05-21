@@ -51,6 +51,9 @@ describe('app settings persistence', () => {
         petLockPosition: true,
         petScale: 99,
         petSizePreset: 'large',
+        petDisplayMode: 'activity',
+        petCompletionToastSeconds: 0,
+        petActivityVisibleCount: 6,
       }),
     )
 
@@ -61,7 +64,24 @@ describe('app settings persistence', () => {
       petScale: PET_SIZE_OPTIONS.large.scale,
       petSizePreset: 'large',
       activePetId: null,
+      petDisplayMode: 'activity',
+      petCompletionToastSeconds: 0,
+      petActivityVisibleCount: 6,
     })
+  })
+
+  it('normalizes pet assistant settings from invalid stored values', () => {
+    const storage = new MemoryStorage()
+    storage.setItem(
+      'claude-sprout.settings.v1',
+      JSON.stringify({
+        petDisplayMode: 'dashboard',
+        petCompletionToastSeconds: -4,
+        petActivityVisibleCount: 0,
+      }),
+    )
+
+    expect(loadAppSettings(storage)).toEqual(DEFAULT_APP_SETTINGS)
   })
 
   it('falls back to the default scale when stored scale is not numeric', () => {

@@ -44,6 +44,8 @@
     "MSI packaging is now validated through the local WiX cache; the bundle icon config points at src-tauri\\icons\\icon.ico and npm run release:msi generates src-tauri\\target\\release\\bundle\\msi\\Claude Sprout_0.1.0_x64_en-US.msi",
     "Release artifact policy is documented: the official Windows artifacts are the standalone release exe and NSIS installer, while MSI remains an optional maintainer build behind npm run release:msi",
     "First tagged release checklist is documented at docs/release-checklist.md for v0.1.0 version alignment, tag conflict checks, official artifact builds, SHA256 capture, desktop and installer smoke, unsigned-release notes, GitHub release publishing, and rollback handling",
+    "Pet assistant modes are implemented: Minimal mode keeps the compact pet window with glass running/finished/action counts plus actionable message cards; Activity mode expands the pet window for a persistent glass activity stack with highlighted open sessions and pager controls",
+    "Pet assistant settings persist across frontend and Rust app-data settings: display mode, completion-card duration where 0 means persist until acknowledged, and visible activity row count",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -66,7 +68,8 @@
     "The release exe build works with npm run release:exe or npm run tauri -- build --no-bundle, and the NSIS installer build works while the verified local NSIS cache is present."
   ],
   "nextTasks": [
-    "Continue with release closure: run NSIS installer smoke, regenerate final official artifact hashes for the standalone exe and NSIS setup, then proceed through the v0.1.0 release checklist and GitHub release publication."
+    "Ask the user to run final acceptance testing for the new pet assistant modes in real desktop use, especially Minimal persistent intervention cards, completion-card timeout behavior, Activity mode paging, pet drag/resize/menu behavior, and real Claude Code session transitions.",
+    "After user acceptance, continue with release closure: run NSIS installer smoke, regenerate final official artifact hashes for the standalone exe and NSIS setup, then proceed through the v0.1.0 release checklist and GitHub release publication."
   ],
   "importantDecisions": [
     "Do not make the product a browser-style dashboard. The pet window is the first-class UI.",
@@ -74,6 +77,7 @@
     "Keep prompts/outputs out of stored state by default.",
     "PowerShell hook writer is the default for Windows; Node hook writer remains a fallback.",
     "Imported Codex-compatible pet assets are copied into Claude Sprout app data; do not reference or distribute official Codex assets.",
+    "Pet assistant summaries must stay privacy-preserving: use local session metadata such as project name, status, last event/tool, and timestamps; do not read or store full prompts, model outputs, secrets, or project file contents.",
     "Official Windows release artifacts are the standalone release exe and NSIS installer; MSI remains an optional maintainer build, not a required release artifact."
   ],
   "runCommands": [

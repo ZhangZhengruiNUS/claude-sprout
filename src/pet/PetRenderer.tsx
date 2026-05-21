@@ -15,6 +15,7 @@ type Props = {
   action?: PetAnimation | null
   actionReplayKey?: number
   petAsset?: PetAsset | null
+  showAlertBubble?: boolean
   onClick?: () => void
   onDoubleClick?: () => void
   onContextMenu?: (position: { x: number; y: number }) => void
@@ -31,6 +32,7 @@ export function PetRenderer({
   action,
   actionReplayKey = 0,
   petAsset,
+  showAlertBubble = true,
   onClick,
   onDoubleClick,
   onContextMenu,
@@ -161,7 +163,7 @@ export function PetRenderer({
           </div>
         </div>
       )}
-      {status === 'waiting_permission' ? (
+      {showAlertBubble && status === 'waiting_permission' ? (
         <div className="alert-bubble">Permission needed{alertCount > 1 ? ` x${alertCount}` : ''}</div>
       ) : null}
       {!compact ? (

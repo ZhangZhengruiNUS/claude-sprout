@@ -5,6 +5,8 @@ use std::{fs, path::Path};
 const SETTINGS_FILE: &str = "settings.json";
 pub const MIN_PET_SCALE: f64 = 0.75;
 pub const MAX_PET_SCALE: f64 = 1.65;
+pub const MAX_PET_COMPLETION_TOAST_SECONDS: u32 = 120;
+pub const MAX_PET_ACTIVITY_VISIBLE_COUNT: u32 = 12;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -13,6 +15,25 @@ pub enum PetSizePreset {
     Medium,
     Large,
     Custom,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum PetDisplayMode {
+    Minimal,
+    Activity,
+}
+
+fn default_pet_display_mode() -> PetDisplayMode {
+    PetDisplayMode::Minimal
+}
+
+fn default_pet_completion_toast_seconds() -> u32 {
+    5
+}
+
+fn default_pet_activity_visible_count() -> u32 {
+    3
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -25,6 +46,12 @@ pub struct AppSettings {
     pub pet_size_preset: PetSizePreset,
     #[serde(default)]
     pub active_pet_id: Option<String>,
+    #[serde(default = "default_pet_display_mode")]
+    pub pet_display_mode: PetDisplayMode,
+    #[serde(default = "default_pet_completion_toast_seconds")]
+    pub pet_completion_toast_seconds: u32,
+    #[serde(default = "default_pet_activity_visible_count")]
+    pub pet_activity_visible_count: u32,
 }
 
 impl Default for AppSettings {
@@ -36,6 +63,9 @@ impl Default for AppSettings {
             pet_scale: 1.0,
             pet_size_preset: PetSizePreset::Medium,
             active_pet_id: None,
+            pet_display_mode: PetDisplayMode::Minimal,
+            pet_completion_toast_seconds: default_pet_completion_toast_seconds(),
+            pet_activity_visible_count: default_pet_activity_visible_count(),
         }
     }
 }
@@ -74,6 +104,15 @@ fn normalize(mut settings: AppSettings) -> AppSettings {
         settings.pet_scale = AppSettings::default().pet_scale;
     }
     settings.pet_scale = settings.pet_scale.clamp(MIN_PET_SCALE, MAX_PET_SCALE);
+    settings.pet_completion_toast_seconds = settings
+        .pet_completion_toast_seconds
+        .min(MAX_PET_COMPLETION_TOAST_SECONDS);
+    if settings.pet_activity_visible_count == 0 {
+        settings.pet_activity_visible_count = default_pet_activity_visible_count();
+    }
+    settings.pet_activity_visible_count = settings
+        .pet_activity_visible_count
+        .min(MAX_PET_ACTIVITY_VISIBLE_COUNT);
     settings
 }
 
@@ -114,6 +153,9 @@ mod tests {
             pet_scale: 1.25,
             pet_size_preset: PetSizePreset::Large,
             active_pet_id: Some("custom-sprout".into()),
+            pet_display_mode: PetDisplayMode::Activity,
+            pet_completion_toast_seconds: 0,
+            pet_activity_visible_count: 6,
         };
 
         save_to_root(&root, &settings).expect("settings save should succeed");
@@ -155,6 +197,27 @@ mod tests {
 
         assert_eq!(settings.active_pet_id, None);
         assert!(settings.do_not_disturb);
+        assert_eq!(settings.pet_display_mode, PetDisplayMode::Minimal);
+        assert_eq!(settings.pet_completion_toast_seconds, 5);
+        assert_eq!(settings.pet_activity_visible_count, 3);
+        fs::remove_dir_all(root).expect("temp settings root should be removable");
+    }
+
+    #[test]
+    fn clamps_pet_assistant_numeric_settings_on_load() {
+        let root = temp_root();
+        fs::create_dir_all(&root).expect("temp settings root should be created");
+        fs::write(
+            root.join("settings.json"),
+            r#"{"doNotDisturb":false,"petAlwaysOnTop":true,"petLockPosition":false,"petScale":1.0,"petSizePreset":"medium","petDisplayMode":"activity","petCompletionToastSeconds":999,"petActivityVisibleCount":0}"#,
+        )
+        .expect("settings file should be writable");
+
+        let settings = load_from_root(&root).expect("settings load should succeed");
+
+        assert_eq!(settings.pet_display_mode, PetDisplayMode::Activity);
+        assert_eq!(settings.pet_completion_toast_seconds, 120);
+        assert_eq!(settings.pet_activity_visible_count, 3);
         fs::remove_dir_all(root).expect("temp settings root should be removable");
     }
 }

@@ -19,6 +19,7 @@ import {
   sendNotification,
 } from '@tauri-apps/plugin-notification'
 import { PetRenderer } from './pet/PetRenderer'
+import { FloatingPetAssistant } from './pet/FloatingPetAssistant'
 import {
   importCodexPet,
   listPetAssets,
@@ -35,6 +36,11 @@ import {
 } from './pet/petWindowControls'
 import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
+import {
+  buildPetAssistantView,
+  PET_ASSISTANT_MESSAGE_STATUSES,
+  petAssistantMessageKey,
+} from './pet/petAssistantViewModel'
 import { SessionPanel } from './sessions/SessionPanel'
 import { getDataRoot, loadSessions, refreshSessions, showSessionPanel } from './sessions/sessionApi'
 import { deliverSessionNotifications } from './sessions/sessionNotificationDelivery'
@@ -103,12 +109,18 @@ function App() {
   const [isStorageCleaning, setIsStorageCleaning] = useState(false)
   const [storageMessage, setStorageMessage] = useState<string | null>(null)
   const [petMenuPosition, setPetMenuPosition] = useState<{ x: number; y: number } | null>(null)
+  const [acknowledgedPetMessageKeys, setAcknowledgedPetMessageKeys] = useState<Set<string>>(
+    () => new Set(),
+  )
+  const [petActivityPage, setPetActivityPage] = useState(0)
+  const [petAssistantTick, setPetAssistantTick] = useState(() => Date.now())
   const settingsRef = useRef(settings)
   const sessionsRef = useRef<SessionSnapshot[]>([])
   const notifiedSessionKeysRef = useRef(new Set<string>())
   const pendingSessionNotificationsRef = useRef(new Map<string, SessionNotification>())
   const loadSequenceRef = useRef(0)
   const storageLoadSequenceRef = useRef(0)
+  const petMessageFirstSeenAtRef = useRef(new Map<string, number>())
 
   async function load(options: { showLoading?: boolean; notify?: boolean } = {}) {
     const sequence = loadSequenceRef.current + 1
@@ -196,10 +208,55 @@ function App() {
   const topStatus = useMemo(() => getHighestPriorityStatus(sessions), [sessions])
   const activeCount = sessions.filter((session) => !['closed'].includes(session.status)).length
   const waitingCount = sessions.filter((session) => session.status === 'waiting_permission').length
+  const petAssistantView = useMemo(
+    () =>
+      buildPetAssistantView({
+        sessions,
+        displayMode: settings.petDisplayMode,
+        visibleCount: settings.petActivityVisibleCount,
+        acknowledgedMessageKeys: acknowledgedPetMessageKeys,
+        now: new Date(petAssistantTick),
+        completionToastSeconds: settings.petCompletionToastSeconds,
+        messageFirstSeenAt: petMessageFirstSeenAtRef.current,
+      }),
+    [
+      acknowledgedPetMessageKeys,
+      petAssistantTick,
+      sessions,
+      settings.petActivityVisibleCount,
+      settings.petCompletionToastSeconds,
+      settings.petDisplayMode,
+    ],
+  )
 
   useEffect(() => {
     document.documentElement.dataset.window = windowKind
   }, [windowKind])
+
+  useEffect(() => {
+    if (windowKind !== 'pet') return
+    const id = window.setInterval(() => setPetAssistantTick(Date.now()), 1000)
+    return () => window.clearInterval(id)
+  }, [windowKind])
+
+  useEffect(() => {
+    const currentKeys = new Set<string>()
+    const now = Date.now()
+    for (const session of sessions) {
+      if (!PET_ASSISTANT_MESSAGE_STATUSES.has(session.status)) continue
+      const key = petAssistantMessageKey(session)
+      currentKeys.add(key)
+      if (!petMessageFirstSeenAtRef.current.has(key)) {
+        petMessageFirstSeenAtRef.current.set(key, now)
+      }
+    }
+
+    for (const key of petMessageFirstSeenAtRef.current.keys()) {
+      if (!currentKeys.has(key)) {
+        petMessageFirstSeenAtRef.current.delete(key)
+      }
+    }
+  }, [sessions])
 
   useEffect(() => {
     if (!isTauriRuntime() || windowKind !== 'panel') return
@@ -494,16 +551,17 @@ function App() {
 
   if (windowKind === 'pet') {
     return (
-      <main className="floating-pet-shell">
+      <main className={`floating-pet-shell ${settings.petDisplayMode}`}>
         <PetRenderer
           status={topStatus}
           alertCount={waitingCount}
           compact
           draggable={!settings.petLockPosition}
-          scale={settings.petScale}
+          scale={settings.petDisplayMode === 'activity' ? settings.petScale * 0.78 : settings.petScale}
           action={petAction}
           actionReplayKey={petActionReplayKey}
           petAsset={activePetAsset}
+          showAlertBubble={false}
           onClick={() => {
             setPetMenuPosition(null)
             void showSessionPanel()
@@ -516,6 +574,18 @@ function App() {
             void resizePet(delta)
           }}
           onDragStart={beginPetDrag}
+        />
+        <FloatingPetAssistant
+          view={petAssistantView}
+          activityPage={petActivityPage}
+          onActivityPageChange={setPetActivityPage}
+          onOpenPanel={() => {
+            setPetMenuPosition(null)
+            void showSessionPanel()
+          }}
+          onAcknowledgeMessage={(key) => {
+            setAcknowledgedPetMessageKeys((current) => new Set(current).add(key))
+          }}
         />
         {petMenuPosition ? (
           <div
@@ -736,7 +806,7 @@ function errorMessage(error: unknown) {
 async function applySettingsToPet(settings: AppSettings, windowKind: WindowKind) {
   if (windowKind === 'pet') {
     await Promise.all([
-      applyPetScale(settings.petScale),
+      applyPetScale(settings.petScale, undefined, settings),
       applyPetAlwaysOnTop(settings.petAlwaysOnTop),
     ])
     return
@@ -746,7 +816,7 @@ async function applySettingsToPet(settings: AppSettings, windowKind: WindowKind)
   if (!petWindow) return
 
   await Promise.all([
-    applyPetScale(settings.petScale, petWindow),
+    applyPetScale(settings.petScale, petWindow, settings),
     applyPetAlwaysOnTop(settings.petAlwaysOnTop, petWindow),
   ])
 }
