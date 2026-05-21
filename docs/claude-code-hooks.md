@@ -26,6 +26,20 @@ Copy-Item "$env:USERPROFILE\.claude\settings.json" "$env:USERPROFILE\.claude\set
 
 Then merge the `hooks` and `statusLine` sections manually.
 
+## Troubleshooting Empty Sessions
+
+The app does not query Claude Code for live sessions. It only reads snapshot files written by the hook and statusline writers.
+
+If the panel is empty after starting Claude Code:
+
+1. Confirm `~\.claude\settings.json` contains the Claude Sprout `hooks` and `statusLine` sections.
+2. Confirm every command path has replaced `C:/path/to/claude-sprout` with this checkout path, for example `E:/Codex Project/claude-sprout`.
+3. Start a new Claude Code session after saving the settings file.
+4. Confirm snapshot files appear under `%USERPROFILE%\.claude-sprout\sessions\*.json`.
+5. If `CLAUDE_SPROUT_HOME` is set for Claude Code or the app, confirm both processes point at the same directory.
+
+Refreshing the panel only reloads existing snapshot files, so it cannot discover a terminal session until Claude Code has written at least one snapshot.
+
 ## Captured Events
 
 - `SessionStart` -> `idle`

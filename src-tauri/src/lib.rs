@@ -7,6 +7,8 @@ mod session_watcher;
 mod storage_cleanup;
 mod tray;
 
+use tauri::Manager;
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
@@ -14,8 +16,21 @@ pub fn run() {
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
             tray::create_tray(app)?;
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.hide();
+            }
             session_watcher::start(app.handle().clone());
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if window.label() != "main" {
+                return;
+            }
+
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = window.hide();
+            }
         })
         .invoke_handler(tauri::generate_handler![
             commands::list_sessions,

@@ -24,19 +24,21 @@ pub fn create_tray(app: &mut App) -> tauri::Result<()> {
         &[&show_pet, &show_panel, &dnd, &refresh, &open_data, &settings, &quit],
     )?;
 
-    TrayIconBuilder::with_id("claude-sprout-tray")
+    let mut tray = TrayIconBuilder::with_id("claude-sprout-tray")
         .tooltip("Claude Sprout")
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "quit" => app.exit(0),
             "open_panel" => {
                 if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.unminimize();
                     let _ = window.show();
                     let _ = window.set_focus();
                 }
             }
             "settings" => {
                 if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.unminimize();
                     let _ = window.show();
                     let _ = window.set_focus();
                 }
@@ -79,12 +81,18 @@ pub fn create_tray(app: &mut App) -> tauri::Result<()> {
             } = event
             {
                 if let Some(app) = tray.app_handle().get_webview_window("main") {
+                    let _ = app.unminimize();
                     let _ = app.show();
                     let _ = app.set_focus();
                 }
             }
-        })
-        .build(app)?;
+        });
+
+    if let Some(icon) = app.default_window_icon().cloned() {
+        tray = tray.icon(icon);
+    }
+
+    tray.build(app)?;
 
     Ok(())
 }

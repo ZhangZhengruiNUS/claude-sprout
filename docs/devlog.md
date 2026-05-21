@@ -2,6 +2,12 @@
 
 ## 2026-05-21
 
+- Fixed release-smoke desktop issues found during manual testing:
+  - startup now re-hides the main session window after window-state restore so the pet remains the primary launch surface.
+  - the tray explicitly uses the bundled app icon.
+  - opening the panel from the pet/tray unminimizes the window before showing and focusing it.
+  - minimizing or closing the main window now hides it to the tray instead of leaving it as the primary surface.
+  - hook docs now include an empty-session troubleshooting flow for missing Claude Sprout hook/statusLine configuration.
 - Added the first tagged release checklist for `v0.1.0`:
   - official Windows artifacts are the standalone release exe and NSIS installer.
   - the checklist covers version alignment, tag conflict checks, preflight validation, release tool cache checks, builds, SHA256 capture, desktop and installer smoke, unsigned-release notes, GitHub release publication, and rollback handling.

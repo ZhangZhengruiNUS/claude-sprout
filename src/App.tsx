@@ -147,6 +147,37 @@ function App() {
   }, [windowKind])
 
   useEffect(() => {
+    if (!isTauriRuntime() || windowKind !== 'panel') return
+
+    const currentWindow = getCurrentWindow()
+    let isMounted = true
+    let isHidingToTray = false
+    let unlisten: (() => void) | null = null
+
+    void currentWindow.onResized(async () => {
+      if (!isMounted || isHidingToTray) return
+      if (!(await currentWindow.isMinimized())) return
+
+      isHidingToTray = true
+      try {
+        await currentWindow.hide()
+        await currentWindow.unminimize()
+      } finally {
+        window.setTimeout(() => {
+          isHidingToTray = false
+        }, 0)
+      }
+    }).then((handler) => {
+      unlisten = handler
+    })
+
+    return () => {
+      isMounted = false
+      unlisten?.()
+    }
+  }, [windowKind])
+
+  useEffect(() => {
     let isMounted = true
     void loadPersistedAppSettings().then((persistedSettings) => {
       if (!isMounted) return

@@ -46,6 +46,7 @@ export async function showSessionPanel(): Promise<void> {
   try {
     const panelWindow = await Window.getByLabel('main')
     if (panelWindow) {
+      await panelWindow.unminimize()
       await panelWindow.show()
       await panelWindow.setFocus()
       return

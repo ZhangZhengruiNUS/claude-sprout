@@ -39,13 +39,15 @@ describe('session api', () => {
   })
 
   it('opens and focuses the main session panel window from the pet window', async () => {
+    const unminimize = vi.fn().mockResolvedValue(undefined)
     const show = vi.fn().mockResolvedValue(undefined)
     const setFocus = vi.fn().mockResolvedValue(undefined)
-    getByLabelMock.mockResolvedValue({ show, setFocus })
+    getByLabelMock.mockResolvedValue({ unminimize, show, setFocus })
 
     await showSessionPanel()
 
     expect(getByLabelMock).toHaveBeenCalledWith('main')
+    expect(unminimize).toHaveBeenCalled()
     expect(show).toHaveBeenCalled()
     expect(setFocus).toHaveBeenCalled()
   })

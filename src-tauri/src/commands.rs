@@ -38,6 +38,7 @@ pub fn open_project_folder(path: String) -> Result<(), String> {
 #[tauri::command]
 pub fn show_session_panel(app: AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("main") {
+        window.unminimize().map_err(|error| error.to_string())?;
         window.show().map_err(|error| error.to_string())?;
         window.set_focus().map_err(|error| error.to_string())?;
     }
