@@ -2,10 +2,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { Window } from '@tauri-apps/api/window'
 import { mockSessions } from './mockSessions'
 import type { SessionSnapshot } from './sessionTypes'
-
-function isTauriRuntime() {
-  return '__TAURI_INTERNALS__' in window
-}
+import { isTauriRuntime } from '../tauriRuntime'
 
 export async function loadSessions(): Promise<SessionSnapshot[]> {
   if (!isTauriRuntime()) {
@@ -15,8 +12,8 @@ export async function loadSessions(): Promise<SessionSnapshot[]> {
   try {
     return await invoke<SessionSnapshot[]>('list_sessions')
   } catch (error) {
-    console.warn('Falling back to mock sessions after list_sessions failed.', error)
-    return mockSessions
+    console.error('Failed to load Claude Sprout sessions from Tauri.', error)
+    return []
   }
 }
 

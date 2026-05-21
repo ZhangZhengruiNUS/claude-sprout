@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { showSessionPanel } from './sessionApi'
+import { loadSessions, showSessionPanel } from './sessionApi'
 
 const invokeMock = vi.hoisted(() => vi.fn())
 const getByLabelMock = vi.hoisted(() => vi.fn())
@@ -21,6 +21,10 @@ function setTauriRuntime(enabled: boolean) {
   })
 
   if (enabled) {
+    Object.defineProperty(globalThis, 'isTauri', {
+      configurable: true,
+      value: true,
+    })
     Object.defineProperty(globalThis, '__TAURI_INTERNALS__', {
       configurable: true,
       value: {},
@@ -28,6 +32,7 @@ function setTauriRuntime(enabled: boolean) {
     return
   }
 
+  Reflect.deleteProperty(globalThis, 'isTauri')
   Reflect.deleteProperty(globalThis, '__TAURI_INTERNALS__')
 }
 
@@ -50,5 +55,11 @@ describe('session api', () => {
     expect(unminimize).toHaveBeenCalled()
     expect(show).toHaveBeenCalled()
     expect(setFocus).toHaveBeenCalled()
+  })
+
+  it('does not show mock sessions when Tauri session loading fails', async () => {
+    invokeMock.mockRejectedValueOnce(new Error('bad session file'))
+
+    await expect(loadSessions()).resolves.toEqual([])
   })
 })

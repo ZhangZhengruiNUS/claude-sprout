@@ -59,6 +59,7 @@ import {
   type StorageSummary,
 } from './storage/storageApi'
 import { cleanStorageConfirmationText, formatBytes } from './storage/storageFormatting'
+import { isTauriRuntime } from './tauriRuntime'
 import './styles/app.css'
 
 type WindowKind = 'panel' | 'pet'
@@ -78,10 +79,6 @@ function resolveInitialWindowKind(): WindowKind {
   } catch {
     return 'panel'
   }
-}
-
-function isTauriRuntime() {
-  return '__TAURI_INTERNALS__' in window
 }
 
 function App() {

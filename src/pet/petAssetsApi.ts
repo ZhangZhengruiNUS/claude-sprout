@@ -1,5 +1,6 @@
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { codexAtlasProfile } from './atlasProfiles/codex8x9'
+import { isTauriRuntime } from '../tauriRuntime'
 
 export type InstalledPet = {
   id: string
@@ -30,10 +31,6 @@ export type PetManifest = {
   spritesheet: string
   atlas: string
   importedAt: string
-}
-
-function isTauriRuntime() {
-  return '__TAURI_INTERNALS__' in window
 }
 
 export async function scanCodexPetCandidates(): Promise<CodexPetCandidate[]> {

@@ -1,6 +1,7 @@
 import { LogicalSize, PhysicalPosition } from '@tauri-apps/api/dpi'
 import { getCurrentWindow, Window } from '@tauri-apps/api/window'
 import { clampPetScale, loadAppSettings } from '../settings/appSettings'
+import { isTauriRuntime } from '../tauriRuntime'
 
 const BASE_WIDTH = 180
 const BASE_HEIGHT = 210
@@ -12,10 +13,6 @@ export type PetDragOrigin = {
 
 export type PetDragSession = {
   move: (screenX: number, screenY: number) => Promise<void>
-}
-
-function isTauriRuntime() {
-  return '__TAURI_INTERNALS__' in window
 }
 
 export function loadPetScale() {

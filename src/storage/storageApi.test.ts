@@ -14,6 +14,10 @@ function setTauriRuntime(enabled: boolean) {
   })
 
   if (enabled) {
+    Object.defineProperty(globalThis, 'isTauri', {
+      configurable: true,
+      value: true,
+    })
     Object.defineProperty(globalThis, '__TAURI_INTERNALS__', {
       configurable: true,
       value: {},
@@ -21,6 +25,7 @@ function setTauriRuntime(enabled: boolean) {
     return
   }
 
+  Reflect.deleteProperty(globalThis, 'isTauri')
   Reflect.deleteProperty(globalThis, '__TAURI_INTERNALS__')
 }
 

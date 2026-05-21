@@ -6,10 +6,7 @@ import {
   loadAppSettings,
   saveAppSettings,
 } from './appSettings'
-
-function isTauriRuntime() {
-  return '__TAURI_INTERNALS__' in window
-}
+import { isTauriRuntime } from '../tauriRuntime'
 
 export async function loadPersistedAppSettings(): Promise<AppSettings> {
   if (!isTauriRuntime()) {

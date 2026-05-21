@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import { isTauriRuntime } from '../tauriRuntime'
 
 export type StorageCleanKind = 'safe_sessions' | 'old_events'
 
@@ -42,10 +43,6 @@ const EMPTY_SUMMARY: StorageSummary = {
   sessions: EMPTY_BUCKET,
   events: EMPTY_BUCKET,
   pets: EMPTY_BUCKET,
-}
-
-function isTauriRuntime() {
-  return '__TAURI_INTERNALS__' in window
 }
 
 export async function getStorageSummary(): Promise<StorageSummary> {
