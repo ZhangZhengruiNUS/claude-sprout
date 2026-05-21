@@ -27,6 +27,8 @@ pub struct SessionSnapshot {
     pub project_name: String,
     #[serde(default)]
     pub display_name: Option<String>,
+    #[serde(default)]
+    pub conversation_preview: Option<String>,
     pub cwd: String,
     pub status: SessionStatus,
     pub last_event: String,
@@ -171,6 +173,7 @@ mod tests {
             session_id: "test".into(),
             project_name: "project".into(),
             display_name: None,
+            conversation_preview: None,
             cwd: "C:/project".into(),
             status: SessionStatus::Running,
             last_event: "UserPromptSubmit".into(),
@@ -255,6 +258,18 @@ mod tests {
         let session = parse_session_snapshot(raw).expect("renamed session snapshot should parse");
 
         assert_eq!(session.display_name.as_deref(), Some("Renamed release follow-up"));
+    }
+
+    #[test]
+    fn parses_optional_conversation_preview_for_opt_in_cards() {
+        let raw = r#"{"session_id":"preview-session","project_name":"ASUS","display_name":null,"conversation_preview":"Claude: running the release smoke now","cwd":"C:\\Users\\ASUS","status":"tool_running","last_event":"PreToolUse","notification_type":null,"last_tool":"Bash","context_used_percentage":4,"last_heartbeat_at":"2026-05-22T00:00:00Z","updated_at":"2026-05-22T00:00:00Z","ended_at":null,"end_reason":null,"source":"claude-code-statusline"}"#;
+
+        let session = parse_session_snapshot(raw).expect("preview session snapshot should parse");
+
+        assert_eq!(
+            session.conversation_preview.as_deref(),
+            Some("Claude: running the release smoke now")
+        );
     }
 
     #[test]

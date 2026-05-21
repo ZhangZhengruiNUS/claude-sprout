@@ -55,6 +55,7 @@ export async function writeSmokeSettings(root, doNotDisturb) {
         petDisplayMode: 'minimal',
         petCompletionToastSeconds: 5,
         petActivityVisibleCount: 3,
+        petConversationPreviewEnabled: false,
       },
       null,
       2,

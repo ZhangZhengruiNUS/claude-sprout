@@ -54,6 +54,7 @@ describe('app settings persistence', () => {
         petDisplayMode: 'activity',
         petCompletionToastSeconds: 0,
         petActivityVisibleCount: 6,
+        petConversationPreviewEnabled: true,
       }),
     )
 
@@ -67,6 +68,7 @@ describe('app settings persistence', () => {
       petDisplayMode: 'activity',
       petCompletionToastSeconds: 0,
       petActivityVisibleCount: 6,
+      petConversationPreviewEnabled: true,
     })
   })
 
@@ -135,5 +137,14 @@ describe('app settings persistence', () => {
     saveAppSettings({ ...DEFAULT_APP_SETTINGS, activePetId: 'sprout-custom' }, storage)
 
     expect(loadAppSettings(storage).activePetId).toBe('sprout-custom')
+  })
+
+  it('keeps conversation preview disabled unless explicitly enabled', () => {
+    const storage = new MemoryStorage()
+    expect(loadAppSettings(storage).petConversationPreviewEnabled).toBe(false)
+
+    saveAppSettings({ ...DEFAULT_APP_SETTINGS, petConversationPreviewEnabled: true }, storage)
+
+    expect(loadAppSettings(storage).petConversationPreviewEnabled).toBe(true)
   })
 })

@@ -19,6 +19,10 @@ async function readSnapshotBytes(root, sessionId) {
   return readFile(join(root, 'sessions', `${sessionId}.json`))
 }
 
+async function writeSettings(root, settings) {
+  await writeFile(join(root, 'settings.json'), JSON.stringify(settings))
+}
+
 async function runPowerShellScript(scriptPath, input, env) {
   await runWithStdin(
     'powershell',
@@ -214,6 +218,156 @@ describe('hook writers', () => {
     }
   }, 15_000)
 
+  it('does not capture Node conversation previews unless the setting is enabled', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      const transcriptPath = join(root, 'node-preview-off.jsonl')
+      await writeFile(
+        transcriptPath,
+        JSON.stringify({
+          type: 'assistant',
+          message: { content: [{ type: 'text', text: 'Sensitive local output should stay out' }] },
+        }),
+      )
+
+      await runNodeScript(
+        'hooks/node/claude-sprout-statusline.js',
+        JSON.stringify({
+          session_id: 'node-preview-off',
+          transcript_path: transcriptPath,
+          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'node-preview-off')
+      expect(snapshot.conversation_preview).toBeNull()
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('clears previous Node conversation preview after opt-out', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      await mkdir(join(root, 'sessions'), { recursive: true })
+      await writeFile(
+        join(root, 'sessions', 'node-preview-clear.json'),
+        JSON.stringify({
+          session_id: 'node-preview-clear',
+          project_name: 'claude-sprout',
+          display_name: null,
+          conversation_preview: 'Claude: old preview',
+          cwd: 'E:/Codex Project/claude-sprout',
+          status: 'tool_running',
+          last_event: 'PreToolUse',
+          notification_type: null,
+          last_tool: 'Edit',
+          context_used_percentage: null,
+          last_heartbeat_at: '2026-05-22T00:00:00Z',
+          updated_at: '2026-05-22T00:00:00Z',
+          ended_at: null,
+          end_reason: null,
+          source: 'test',
+        }),
+      )
+
+      await runNodeScript(
+        'hooks/node/claude-sprout-statusline.js',
+        JSON.stringify({
+          session_id: 'node-preview-clear',
+          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'node-preview-clear')
+      expect(snapshot.conversation_preview).toBeNull()
+      expect(snapshot.last_tool).toBe('Edit')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('skips Node tool result blocks when finding conversation previews', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      await writeSettings(root, { petConversationPreviewEnabled: true })
+      const transcriptPath = join(root, 'node-preview-tools.jsonl')
+      await writeFile(
+        transcriptPath,
+        [
+          JSON.stringify({
+            type: 'assistant',
+            message: { content: [{ type: 'text', text: 'Visible assistant message' }] },
+          }),
+          JSON.stringify({
+            type: 'assistant',
+            message: { content: [{ type: 'tool_result', content: 'secret command output' }] },
+          }),
+        ].join('\n'),
+      )
+
+      await runNodeScript(
+        'hooks/node/claude-sprout-statusline.js',
+        JSON.stringify({
+          session_id: 'node-preview-tools',
+          transcript_path: transcriptPath,
+          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'node-preview-tools')
+      expect(snapshot.conversation_preview).toBe('Claude: Visible assistant message')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+
+  it('captures a truncated Node conversation preview when enabled', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      await writeSettings(root, { petConversationPreviewEnabled: true })
+      const transcriptPath = join(root, 'node-preview-on.jsonl')
+      await writeFile(
+        transcriptPath,
+        [
+          JSON.stringify({ type: 'user', message: { content: 'Older user request' } }),
+          JSON.stringify({
+            type: 'assistant',
+            message: {
+              content: [
+                {
+                  type: 'text',
+                  text: 'Implemented the activity preview toggle and started the focused verification pass with a deliberately long line that should be clipped before it fills the pet card.',
+                },
+              ],
+            },
+          }),
+        ].join('\n'),
+      )
+
+      await runNodeScript(
+        'hooks/node/claude-sprout-statusline.js',
+        JSON.stringify({
+          session_id: 'node-preview-on',
+          transcript_path: transcriptPath,
+          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'node-preview-on')
+      expect(snapshot.conversation_preview).toBe(
+        'Claude: Implemented the activity preview toggle and started the focused verification pass with a deliberately long line that sho',
+      )
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
   it('captures and preserves safe display names from PowerShell hook payloads', async () => {
     const root = await tempRoot('claude-sprout-hook-writers')
     try {
@@ -270,6 +424,41 @@ describe('hook writers', () => {
 
       const snapshot = await readSnapshot(root, 'ps-summary-session')
       expect(snapshot.display_name).toBe('Renamed PowerShell session')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('captures a truncated PowerShell conversation preview when enabled', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      await writeSettings(root, { petConversationPreviewEnabled: true })
+      const transcriptPath = join(root, 'ps-preview-on.jsonl')
+      await writeFile(
+        transcriptPath,
+        [
+          JSON.stringify({ type: 'assistant', message: { content: 'Older assistant reply' } }),
+          JSON.stringify({
+            type: 'user',
+            message: { content: [{ type: 'text', text: 'Please run the final desktop smoke after this change.' }] },
+          }),
+        ].join('\n'),
+      )
+
+      await runPowerShellScript(
+        'hooks/windows/claude-sprout-statusline.ps1',
+        JSON.stringify({
+          session_id: 'ps-preview-on',
+          transcript_path: transcriptPath,
+          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'ps-preview-on')
+      expect(snapshot.conversation_preview).toBe(
+        'User: Please run the final desktop smoke after this change.',
+      )
     } finally {
       await rm(root, { recursive: true, force: true })
     }

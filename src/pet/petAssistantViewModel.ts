@@ -44,6 +44,7 @@ type BuildPetAssistantViewOptions = {
   now?: Date
   completionToastSeconds?: number
   messageFirstSeenAt?: ReadonlyMap<string, number>
+  conversationPreviewEnabled?: boolean
 }
 
 const STATUS_PRIORITY: Record<SessionStatus, number> = {
@@ -78,6 +79,7 @@ export function buildPetAssistantView({
   now = new Date(),
   completionToastSeconds = 5,
   messageFirstSeenAt = new Map(),
+  conversationPreviewEnabled = false,
 }: BuildPetAssistantViewOptions): PetAssistantView {
   const runningCount = sessions.filter((session) => RUNNING_STATUSES.has(session.status)).length
   const finishedUnclosedCount = sessions.filter((session) =>
@@ -86,7 +88,7 @@ export function buildPetAssistantView({
   const actionableCount = sessions.filter((session) => INTERVENTION_STATUSES.has(session.status)).length
   const activityCards = sessions
     .filter((session) => session.status !== 'closed')
-    .map(activityCardForSession)
+    .map((session) => activityCardForSession(session, conversationPreviewEnabled))
     .sort(compareCards)
   const safeVisibleCount = clampVisibleCount(visibleCount)
   const visibleActivityCards = activityCards.slice(0, safeVisibleCount)
@@ -159,12 +161,15 @@ function messageForSession(
   }
 }
 
-function activityCardForSession(session: SessionSnapshot): PetAssistantActivityCard {
+function activityCardForSession(
+  session: SessionSnapshot,
+  conversationPreviewEnabled: boolean,
+): PetAssistantActivityCard {
   return {
     key: `${session.session_id}:${session.status}:${session.updated_at}`,
     sessionId: session.session_id,
     title: activityTitle(session),
-    detail: sessionActivityDetail(session),
+    detail: sessionActivityDetail(session, conversationPreviewEnabled),
     meta: sessionActivityMeta(session),
     status: session.status,
     tone: cardTone(session.status),
@@ -193,22 +198,23 @@ function sessionMessageDetail(session: SessionSnapshot) {
   return `${statusLabel(session.status)} - ${projectNameFromCwd(session.cwd)}`
 }
 
-function sessionActivityDetail(session: SessionSnapshot) {
+function sessionActivityDetail(session: SessionSnapshot, conversationPreviewEnabled: boolean) {
   const tool = safeInlineText(session.last_tool)
   const event = safeInlineText(session.last_event)
+  const preview = conversationPreviewEnabled ? safeInlineText(session.conversation_preview) : null
   switch (session.status) {
     case 'waiting_permission':
       return tool ? `Needs permission for ${tool}` : 'Needs permission'
     case 'waiting_input':
       return 'Waiting for your reply'
     case 'tool_running':
-      return tool ? `Using ${tool}` : 'Using tool'
+      return preview ?? (tool ? `Using ${tool}` : 'Using tool')
     case 'running':
-      return tool ? `Continuing after ${tool}` : event ? `Running after ${event}` : 'Running'
+      return preview ?? (tool ? `Continuing after ${tool}` : event ? `Running after ${event}` : 'Running')
     case 'done':
-      return 'Completed'
+      return preview ?? 'Completed'
     case 'error':
-      return tool ? `Failed around ${tool}` : 'Failed'
+      return preview ?? (tool ? `Failed around ${tool}` : 'Failed')
     case 'stale':
       return 'No heartbeat recently'
     case 'probably_closed':

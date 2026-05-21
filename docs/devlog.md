@@ -17,6 +17,12 @@
   - cards now include metadata-only activity details such as permission/tool state and context percentage without reading full prompt or assistant-output content.
   - PowerShell and Node hook/statusline writers preserve `display_name` across later events and can derive it from Claude transcript summary/title metadata when present.
   - added executable coverage for Node and PowerShell display-name preservation plus transcript-summary title extraction.
+- Added opt-in conversation previews for Activity cards:
+  - Settings now includes `Read conversation preview`, defaulting off so cards remain metadata-only unless the user explicitly enables transcript snippets.
+  - PowerShell and Node hook/statusline writers read only a bounded transcript tail when enabled, skip tool_use/tool_result blocks, normalize whitespace, and write one truncated `User:` or `Claude:` preview into the session snapshot.
+  - opt-out clears `conversation_preview` on the next hook/statusline write instead of preserving old snippets.
+  - Activity card details use the preview only when the current frontend setting is enabled; waiting-permission and waiting-input cards still prioritize intervention text.
+  - expanded Activity mode sizing to support the default three visible session cards; browser QA at 300x364 measured about 12px of gap between pet and panel.
 
 ## 2026-05-21
 

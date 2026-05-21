@@ -14,6 +14,7 @@ export type SessionSnapshot = {
   session_id: string
   project_name: string
   display_name?: string | null
+  conversation_preview?: string | null
   cwd: string
   status: SessionStatus
   last_event: string

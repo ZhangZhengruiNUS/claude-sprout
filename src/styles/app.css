@@ -138,7 +138,9 @@ button:disabled {
 }
 
 .floating-pet-shell.activity .pet-surface.compact {
-  padding-bottom: 10.6rem;
+  justify-content: flex-start;
+  padding-top: 1rem;
+  padding-bottom: 0;
 }
 
 .pet-surface.compact .sprout-pet {

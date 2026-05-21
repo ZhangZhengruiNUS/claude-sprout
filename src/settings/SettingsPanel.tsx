@@ -1,4 +1,4 @@
-import { Download, Lock, Pin, RefreshCw, Search, VolumeX } from 'lucide-react'
+import { Download, FileText, Lock, Pin, RefreshCw, Search, VolumeX } from 'lucide-react'
 import type { CodexPetCandidate, PetAsset } from '../pet/petAssetsApi'
 import type { PetAnimation } from '../pet/petStateMapper'
 import { StoragePanel } from '../storage/StoragePanel'
@@ -138,6 +138,25 @@ export function SettingsPanel({
             })
           }
         />
+      </label>
+      <label className="setting-row">
+        <span>
+          <strong>Read conversation preview</strong>
+          <small>Allow Activity cards to show short transcript snippets. Leave off for metadata-only cards.</small>
+        </span>
+        <span className="setting-control">
+          <FileText size={16} />
+          <input
+            type="checkbox"
+            checked={settings.petConversationPreviewEnabled}
+            onChange={(event) =>
+              onSettingsChange({
+                ...settings,
+                petConversationPreviewEnabled: event.target.checked,
+              })
+            }
+          />
+        </span>
       </label>
       <label className="setting-row">
         <span>

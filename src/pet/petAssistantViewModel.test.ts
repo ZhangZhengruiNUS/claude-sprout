@@ -94,6 +94,7 @@ describe('pet assistant view model', () => {
       ],
       displayMode: 'activity',
       visibleCount: 3,
+      conversationPreviewEnabled: true,
     })
 
     expect(view.visibleActivityCards[0]).toEqual(
@@ -123,6 +124,31 @@ describe('pet assistant view model', () => {
         detail: 'Using Edit',
         meta: 'tool running',
       }),
+    )
+  })
+
+  it('shows conversation preview only when the setting is enabled', () => {
+    const previewSession = session('preview', 'tool_running', undefined, {
+      conversation_preview: 'Claude: Implemented the release checklist and is running tests',
+      last_tool: 'Edit',
+    })
+
+    const disabled = buildPetAssistantView({
+      sessions: [previewSession],
+      displayMode: 'activity',
+      visibleCount: 3,
+      conversationPreviewEnabled: false,
+    })
+    const enabled = buildPetAssistantView({
+      sessions: [previewSession],
+      displayMode: 'activity',
+      visibleCount: 3,
+      conversationPreviewEnabled: true,
+    })
+
+    expect(disabled.visibleActivityCards[0].detail).toBe('Using Edit')
+    expect(enabled.visibleActivityCards[0].detail).toBe(
+      'Claude: Implemented the release checklist and is running tests',
     )
   })
 })

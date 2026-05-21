@@ -36,6 +36,10 @@ fn default_pet_activity_visible_count() -> u32 {
     3
 }
 
+fn default_pet_conversation_preview_enabled() -> bool {
+    false
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSettings {
@@ -52,6 +56,8 @@ pub struct AppSettings {
     pub pet_completion_toast_seconds: u32,
     #[serde(default = "default_pet_activity_visible_count")]
     pub pet_activity_visible_count: u32,
+    #[serde(default = "default_pet_conversation_preview_enabled")]
+    pub pet_conversation_preview_enabled: bool,
 }
 
 impl Default for AppSettings {
@@ -66,6 +72,7 @@ impl Default for AppSettings {
             pet_display_mode: PetDisplayMode::Minimal,
             pet_completion_toast_seconds: default_pet_completion_toast_seconds(),
             pet_activity_visible_count: default_pet_activity_visible_count(),
+            pet_conversation_preview_enabled: default_pet_conversation_preview_enabled(),
         }
     }
 }
@@ -156,6 +163,7 @@ mod tests {
             pet_display_mode: PetDisplayMode::Activity,
             pet_completion_toast_seconds: 0,
             pet_activity_visible_count: 6,
+            pet_conversation_preview_enabled: true,
         };
 
         save_to_root(&root, &settings).expect("settings save should succeed");
@@ -200,6 +208,7 @@ mod tests {
         assert_eq!(settings.pet_display_mode, PetDisplayMode::Minimal);
         assert_eq!(settings.pet_completion_toast_seconds, 5);
         assert_eq!(settings.pet_activity_visible_count, 3);
+        assert!(!settings.pet_conversation_preview_enabled);
         fs::remove_dir_all(root).expect("temp settings root should be removable");
     }
 

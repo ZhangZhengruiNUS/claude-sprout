@@ -218,6 +218,7 @@ function App() {
         now: new Date(petAssistantTick),
         completionToastSeconds: settings.petCompletionToastSeconds,
         messageFirstSeenAt: petMessageFirstSeenAtRef.current,
+        conversationPreviewEnabled: settings.petConversationPreviewEnabled,
       }),
     [
       acknowledgedPetMessageKeys,
@@ -225,6 +226,7 @@ function App() {
       sessions,
       settings.petActivityVisibleCount,
       settings.petCompletionToastSeconds,
+      settings.petConversationPreviewEnabled,
       settings.petDisplayMode,
     ],
   )

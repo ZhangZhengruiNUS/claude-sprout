@@ -3,7 +3,7 @@ import { clampPetScale, type PetDisplayMode } from '../settings/appSettings'
 const MINIMAL_WIDTH = 180
 const MINIMAL_HEIGHT = 210
 const ACTIVITY_WIDTH = 300
-const ACTIVITY_BASE_HEIGHT = 190
+const ACTIVITY_BASE_HEIGHT = 226
 const ACTIVITY_ROW_HEIGHT = 46
 
 type PetWindowSizeOptions = {

@@ -20,6 +20,30 @@ function Get-CleanDisplayName($value) {
   return $trimmed
 }
 
+function Get-CleanPreviewText($value) {
+  if ($null -eq $value) { return $null }
+  $trimmed = ([string]$value).Trim() -replace "\s+", " "
+  if ([string]::IsNullOrWhiteSpace($trimmed)) { return $null }
+  if ($trimmed.Length -gt 120) { return $trimmed.Substring(0, 120) }
+  return $trimmed
+}
+
+function Get-AppSettings($root) {
+  $settingsPath = Join-Path $root "settings.json"
+  if (-not (Test-Path -LiteralPath $settingsPath)) { return $null }
+  try {
+    return Get-Content -Raw -LiteralPath $settingsPath | ConvertFrom-Json
+  }
+  catch {
+    return $null
+  }
+}
+
+function Test-ConversationPreviewEnabled($root) {
+  $settings = Get-AppSettings $root
+  return $null -ne $settings -and $settings.petConversationPreviewEnabled -eq $true
+}
+
 function Get-TranscriptDisplayName($path) {
   $transcriptPath = if ($null -ne $path) { ([string]$path).Trim() } else { "" }
   if (-not $transcriptPath -or -not (Test-Path -LiteralPath $transcriptPath)) { return $null }
@@ -40,6 +64,63 @@ function Get-TranscriptDisplayName($path) {
       catch {
         continue
       }
+    }
+  }
+  catch {
+    return $null
+  }
+
+  return $null
+}
+
+function Get-TextFromContent($content) {
+  if ($null -eq $content) { return "" }
+  if ($content -is [string]) { return $content }
+  if ($content -is [array]) {
+    $parts = @()
+    foreach ($item in $content) {
+      if ($item -is [string]) {
+        $parts += $item
+      }
+      elseif ($null -ne $item -and $item.type -eq "text" -and $item.text -is [string]) {
+        $parts += [string]$item.text
+      }
+    }
+    return ($parts -join " ")
+  }
+  if ($content.type -eq "text" -and $content.text -is [string]) { return [string]$content.text }
+  return ""
+}
+
+function Get-PreviewFromLine([string]$line) {
+  if ([string]::IsNullOrWhiteSpace($line)) { return $null }
+  try {
+    $entry = $line | ConvertFrom-Json
+  }
+  catch {
+    return $null
+  }
+
+  $role = if ($entry.message.role) { [string]$entry.message.role } elseif ($entry.role) { [string]$entry.role } else { [string]$entry.type }
+  if ($role -ne "assistant" -and $role -ne "user") { return $null }
+  $content = if ($entry.message.content) { $entry.message.content } elseif ($entry.content) { $entry.content } else { $entry.text }
+  $text = Get-CleanPreviewText (Get-TextFromContent $content)
+  if (-not $text) { return $null }
+  $prefix = if ($role -eq "assistant") { "Claude" } else { "User" }
+  $preview = "${prefix}: $text"
+  if ($preview.Length -gt 128) { return $preview.Substring(0, 128) }
+  return $preview
+}
+
+function Get-TranscriptPreview($path) {
+  $transcriptPath = if ($null -ne $path) { ([string]$path).Trim() } else { "" }
+  if (-not $transcriptPath -or -not (Test-Path -LiteralPath $transcriptPath)) { return $null }
+
+  try {
+    $lines = Get-Content -LiteralPath $transcriptPath -Tail 120 -ErrorAction Stop
+    for ($index = $lines.Count - 1; $index -ge 0; $index--) {
+      $preview = Get-PreviewFromLine ([string]$lines[$index])
+      if ($preview) { return $preview }
     }
   }
   catch {
@@ -92,6 +173,12 @@ try {
   $project = if ($cwd) { Split-Path -Leaf $cwd } else { "Unknown project" }
   $context = if ($payload.context_window -and $null -ne $payload.context_window.used_percentage) { [double]$payload.context_window.used_percentage } else { $null }
   $sessionPath = Join-Path $sessionsDir "$sessionId.json"
+  $conversationPreview = if (Test-ConversationPreviewEnabled $root) {
+    $preview = Get-TranscriptPreview $payload.transcript_path
+    if ($preview) { $preview } else { Get-TranscriptPreview $payload.transcriptPath }
+  } else {
+    $null
+  }
 
   $previousStatus = "idle"
   $lastEvent = "statusLine"
@@ -115,6 +202,7 @@ try {
     session_id = $sessionId
     project_name = $project
     display_name = $displayName
+    conversation_preview = $conversationPreview
     cwd = $cwd
     status = $previousStatus
     last_event = $lastEvent

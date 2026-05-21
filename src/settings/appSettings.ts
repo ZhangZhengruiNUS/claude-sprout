@@ -11,6 +11,7 @@ export type AppSettings = {
   petDisplayMode: PetDisplayMode
   petCompletionToastSeconds: number
   petActivityVisibleCount: number
+  petConversationPreviewEnabled: boolean
 }
 
 type StoredAppSettings = Partial<AppSettings>
@@ -39,6 +40,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   petDisplayMode: 'minimal',
   petCompletionToastSeconds: 5,
   petActivityVisibleCount: 3,
+  petConversationPreviewEnabled: false,
 }
 
 const PET_SIZE_PRESETS = new Set<PetSizePreset>(['small', 'medium', 'large', 'custom'])
@@ -122,6 +124,10 @@ function normalizeAppSettings(settings: StoredAppSettings): AppSettings {
       PET_ACTIVITY_VISIBLE_COUNT_MAX,
       DEFAULT_APP_SETTINGS.petActivityVisibleCount,
     ),
+    petConversationPreviewEnabled:
+      settings.petConversationPreviewEnabled === true
+        ? true
+        : DEFAULT_APP_SETTINGS.petConversationPreviewEnabled,
   }
 }
 
