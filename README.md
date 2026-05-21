@@ -90,9 +90,9 @@ See [docs/release-checklist.md](docs/release-checklist.md) before creating a tag
 
 Claude Code command hooks receive JSON on stdin. Claude Code status lines also receive JSON on stdin and are configured through `statusLine` in `~/.claude/settings.json`.
 
-Use the example at [hooks/windows/claude-settings.example.json](hooks/windows/claude-settings.example.json) as a patch reference. Replace `C:/path/to/claude-sprout` with this checkout path using forward slashes.
+Use the example at [hooks/windows/claude-settings.example.json](hooks/windows/claude-settings.example.json) as a patch reference. Replace `C:/path/to/claude-sprout` with this checkout path using forward slashes, and keep quotes around the `.ps1` path if the checkout path contains spaces.
 
-Do not overwrite your existing `~/.claude/settings.json` blindly. Back it up first and merge the `hooks` plus `statusLine` sections intentionally.
+Do not overwrite your existing settings blindly. If `CLAUDE_CONFIG_DIR` is set, Claude Code reads `<CLAUDE_CONFIG_DIR>\settings.json`; otherwise it reads `~/.claude/settings.json`. Back it up first and merge the `hooks` plus `statusLine` sections intentionally.
 
 ## Codex-Compatible Pet Importer
 

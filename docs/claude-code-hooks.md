@@ -16,7 +16,7 @@ See:
 hooks/windows/claude-settings.example.json
 ```
 
-Replace `C:/path/to/claude-sprout` with this repository path. Use forward slashes so the command works whether Claude Code routes through Git Bash or PowerShell.
+Replace `C:/path/to/claude-sprout` with this repository path. Keep the script path quoted and use forward slashes so paths with spaces work whether Claude Code routes through Git Bash or PowerShell.
 
 Back up existing settings first:
 
@@ -32,8 +32,8 @@ The app does not query Claude Code for live sessions. It only reads snapshot fil
 
 If the panel is empty after starting Claude Code:
 
-1. Confirm `~\.claude\settings.json` contains the Claude Sprout `hooks` and `statusLine` sections.
-2. Confirm every command path has replaced `C:/path/to/claude-sprout` with this checkout path, for example `E:/Codex Project/claude-sprout`.
+1. Confirm Claude Code's active settings file contains the Claude Sprout `hooks` and `statusLine` sections. If `CLAUDE_CONFIG_DIR` is set, Claude Code reads `<CLAUDE_CONFIG_DIR>\settings.json`; otherwise check `~\.claude\settings.json`.
+2. Confirm every command path has replaced `C:/path/to/claude-sprout` with this checkout path, for example `"E:/Codex Project/claude-sprout/hooks/windows/claude-sprout-hook.ps1"`. Keep quotes around the `.ps1` path when the checkout path contains spaces.
 3. Start a new Claude Code session after saving the settings file.
 4. Confirm snapshot files appear under `%USERPROFILE%\.claude-sprout\sessions\*.json`.
 5. If `CLAUDE_SPROUT_HOME` is set for Claude Code or the app, confirm both processes point at the same directory.

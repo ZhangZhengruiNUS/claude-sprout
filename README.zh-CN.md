@@ -90,9 +90,9 @@ npm run release:nsis
 
 Claude Code command hooks 会从 stdin 接收 JSON。Claude Code status line 同样从 stdin 接收 JSON，并通过 `~/.claude/settings.json` 中的 `statusLine` 配置。
 
-可以参考 [hooks/windows/claude-settings.example.json](hooks/windows/claude-settings.example.json)。使用时把 `C:/path/to/claude-sprout` 替换成当前仓库路径，建议使用正斜杠路径。
+可以参考 [hooks/windows/claude-settings.example.json](hooks/windows/claude-settings.example.json)。使用时把 `C:/path/to/claude-sprout` 替换成当前仓库路径，建议使用正斜杠路径；如果仓库路径包含空格，请保留 `.ps1` 路径外层的引号。
 
-不要直接覆盖已有的 `~/.claude/settings.json`。请先备份，再有意识地合并 `hooks` 和 `statusLine` 配置。
+不要直接覆盖已有配置。如果设置了 `CLAUDE_CONFIG_DIR`，Claude Code 会读取 `<CLAUDE_CONFIG_DIR>\settings.json`；否则读取 `~/.claude/settings.json`。请先备份，再有意识地合并 `hooks` 和 `statusLine` 配置。
 
 ## Codex-Compatible Pet Importer
 

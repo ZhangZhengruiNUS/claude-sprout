@@ -2,6 +2,10 @@
 
 ## 2026-05-21
 
+- Fixed Claude Code hook command quoting for checkout paths with spaces:
+  - active local config under `E:\claude-code-config\settings.json` now quotes the Claude Sprout `.ps1` paths.
+  - `hooks/windows/claude-settings.example.json` now quotes the placeholder `.ps1` paths.
+  - hook docs now call out `CLAUDE_CONFIG_DIR` and quote preservation for paths like `E:/Codex Project/claude-sprout`.
 - Fixed release-smoke desktop issues found during manual testing:
   - startup now re-hides the main session window after window-state restore so the pet remains the primary launch surface.
   - the tray explicitly uses the bundled app icon.
