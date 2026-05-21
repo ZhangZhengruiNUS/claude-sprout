@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Fixed pet context menu dismissal:
+  - clicking outside the right-click pet menu now closes it.
+  - pet window blur also closes the menu so clicks on the desktop or another window do not leave the menu stuck open.
+  - added focused regression coverage for inside/outside menu dismissal logic.
 - Aligned imported Codex-compatible pet animation with the local Codex/Hatch Pet atlas contract:
   - corrected `codex-8x9` geometry to 8 columns by 9 rows with 192x208 cells.
   - added row-specific Codex animation metadata for idle, running-right, running-left, waving, jumping, failed, waiting, running, and review.

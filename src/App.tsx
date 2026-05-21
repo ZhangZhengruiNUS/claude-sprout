@@ -34,6 +34,7 @@ import {
   getPetWindow,
   hideCurrentPetWindow,
 } from './pet/petWindowControls'
+import { shouldDismissPetContextMenu } from './pet/petContextMenu'
 import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
 import {
@@ -121,6 +122,7 @@ function App() {
   const loadSequenceRef = useRef(0)
   const storageLoadSequenceRef = useRef(0)
   const petMessageFirstSeenAtRef = useRef(new Map<string, number>())
+  const petContextMenuRef = useRef<HTMLDivElement | null>(null)
 
   async function load(options: { showLoading?: boolean; notify?: boolean } = {}) {
     const sequence = loadSequenceRef.current + 1
@@ -338,6 +340,27 @@ function App() {
       unlisten?.()
     }
   }, [windowKind])
+
+  useEffect(() => {
+    if (windowKind !== 'pet' || !petMenuPosition) return
+
+    function closeMenuOnOutsidePointer(event: PointerEvent) {
+      if (shouldDismissPetContextMenu(event.target, petContextMenuRef.current)) {
+        setPetMenuPosition(null)
+      }
+    }
+
+    function closeMenuOnWindowBlur() {
+      setPetMenuPosition(null)
+    }
+
+    window.addEventListener('pointerdown', closeMenuOnOutsidePointer, true)
+    window.addEventListener('blur', closeMenuOnWindowBlur)
+    return () => {
+      window.removeEventListener('pointerdown', closeMenuOnOutsidePointer, true)
+      window.removeEventListener('blur', closeMenuOnWindowBlur)
+    }
+  }, [petMenuPosition, windowKind])
 
   useEffect(() => {
     if (windowKind !== 'panel' || activeTab !== 'settings') return
@@ -595,6 +618,7 @@ function App() {
         />
         {petMenuPosition ? (
           <div
+            ref={petContextMenuRef}
             className="pet-context-menu"
             style={
               {
