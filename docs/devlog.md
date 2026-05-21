@@ -167,3 +167,4 @@
   - Rust now strips a leading BOM before parsing session snapshots so existing files under `C:\Users\ASUS\.claude-sprout\sessions` remain readable
   - PowerShell hook/statusline writers now use `.NET` `UTF8Encoding(false)` file writes so new snapshots are UTF-8 without BOM
   - tests cover BOM parsing and no-BOM PowerShell output
+  - user manually confirmed the rebuilt release app shows real Claude Code sessions in the panel
