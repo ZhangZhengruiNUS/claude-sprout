@@ -43,9 +43,6 @@ const now = new Intl.DateTimeFormat('sv-SE', {
   hour12: false,
 }).format(new Date())
 
-const branchStatus = run('git', ['status', '--short', '--branch'])
-const recentCommits = run('git', ['log', '--oneline', '--decorate', '-5'])
-const latestCommit = run('git', ['log', '-1', '--oneline'])
 const remotes = run('git', ['remote', '-v'])
 const packageJson = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'))
 const scripts = Object.entries(packageJson.scripts ?? {})
@@ -64,22 +61,14 @@ When a new Codex session starts in this repository:
 1. Read \`AGENTS.md\`.
 2. Read this file.
 3. Skim \`docs/devlog.md\`.
-4. Run \`git status --short --branch\` and compare with the snapshot below.
+4. Run \`git status --short --branch\` and \`git log --oneline --decorate -5\` for live Git context.
 5. If the user says "continue" or gives a new Claude Sprout requirement, continue from "Next Tasks" unless newer user instructions override it.
 
-## Git Snapshot
+## Git Context
 
-Latest commit at generation time:
+This file intentionally does not embed \`git status\` or \`git log\` output.
 
-${codeBlock('text', latestCommit)}
-
-Branch status at generation time:
-
-${codeBlock('text', branchStatus)}
-
-Recent commits:
-
-${codeBlock('text', recentCommits)}
+Reason: \`docs/next-session.md\` is committed to the repository. Embedding the current commit hash makes the file self-referential, so a pre-commit-generated handoff is always one commit behind after the commit completes. Always use live command output for Git state.
 
 Remotes:
 
@@ -129,7 +118,7 @@ ${bulletList(state.importantDecisions)}
 
 ## Update Mechanism
 
-This file is generated from \`docs/handoff-state.json\` plus live git/package metadata.
+This file is generated from \`docs/handoff-state.json\` plus stable package metadata. Git state is deliberately checked live at session start to avoid stale committed snapshots.
 
 Use:
 

@@ -50,6 +50,7 @@
     "PowerShell and Node hook/statusline writers preserve display_name across events and can read only Claude transcript summary/title metadata for renamed sessions while avoiding prompt, assistant-output, secret, or project-content capture",
     "Conversation preview reading is now opt-in from Settings: when petConversationPreviewEnabled is true, PowerShell and Node hook/statusline writers read only a bounded tail of the Claude transcript, skip tool_use/tool_result blocks, write a single truncated User/Claude preview into session snapshots, and clear the preview on later writes after opt-out",
     "Activity mode window sizing now supports the default three visible session cards without covering the pet; the 300x364 browser preview leaves visible space between the pet and glass activity panel",
+    "Handoff generation no longer embeds live git status/log output because a committed handoff file cannot accurately contain the commit hash that includes itself; sessions now read live Git context at startup",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],

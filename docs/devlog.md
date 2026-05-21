@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Fixed recurring stale Git snapshots in `docs/next-session.md`:
+  - removed embedded `git status` / `git log` output from the generated handoff because the file is committed and therefore cannot accurately contain the commit hash that includes itself.
+  - kept the startup protocol requirement to run live `git status --short --branch` and `git log --oneline --decorate -5`.
+  - updated the generated handoff wording so live Git command output is the source of truth.
 - Implemented the next pet-assistant interaction slice:
   - added configurable pet information modes: Minimal shows compact running/finished/action counts plus transient or persistent glass message cards; Activity shows a larger always-on-top glass activity stack with pager controls.
   - waiting-permission and waiting-input sessions stay persistent until acknowledged in Minimal mode; done/error cards use the configured completion timeout, with `0` meaning persist until acknowledged.
