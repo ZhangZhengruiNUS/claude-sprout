@@ -27,6 +27,8 @@ Official Windows release artifacts are:
 - standalone release executable, built with `npm run release:exe`
 - NSIS installer, built with `npm run release:nsis`
 
+Use [docs/release-checklist.md](release-checklist.md) for the first tagged release checklist and artifact publication steps.
+
 MSI packaging is kept as an optional maintainer build for enterprise-style distribution checks. It is validated when WiX is available, but it is not required for the normal release path.
 
 Build the release executable without creating an installer:
@@ -56,18 +58,17 @@ Check the local installer tool cache:
 npm run release:doctor
 ```
 
-If the machine cannot download Tauri's installer tools because the Windows SChannel path fails with `UnknownIssuer`, `SEC_E_NO_CREDENTIALS`, or a closed TLS connection, pre-cache the tools with Node's HTTPS stack:
+If the machine cannot download Tauri's installer tools because the Windows SChannel path fails with `UnknownIssuer`, `SEC_E_NO_CREDENTIALS`, or a closed TLS connection, pre-cache the official NSIS release tools with Node's HTTPS stack:
 
 ```powershell
-npm run release:precache-tools
-npm run release:doctor -- --target all
+npm run release:precache-tools -- --target nsis
+npm run release:doctor
 ```
 
 The script downloads the fixed tool archives, verifies hashes, and writes the local Tauri cache under:
 
 ```text
 src-tauri\target\.tauri\NSIS
-src-tauri\target\.tauri\WixTools314
 ```
 
 Limit the pre-cache to one installer family when needed:
@@ -76,6 +77,8 @@ Limit the pre-cache to one installer family when needed:
 npm run release:precache-tools -- --target nsis
 npm run release:precache-tools -- --target wix
 ```
+
+Use `npm run release:precache-tools` without a target only when you intentionally want both NSIS and WiX caches.
 
 Reference downloads and expected hashes are printed by `npm run release:doctor`. The current fixed inputs are:
 

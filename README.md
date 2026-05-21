@@ -10,11 +10,12 @@ The MVP optimizes for low idle overhead, local-only data, and fast attention cue
 - Display `idle`, `running`, `tool_running`, `waiting_permission`, `waiting_input`, `done`, `error`, `stale`, `probably_closed`, and `closed`.
 - Strong visual reminder for `waiting_permission`; lighter cues for `waiting_input`; notifications for `done` and `error`.
 - Session panel with project name, cwd, session id, status, last event, last tool, heartbeat, context usage, and update time.
-- Tauri v2 tray skeleton with panel entry, refresh, settings, and quit menu items.
+- Tauri v2 tray with panel entry, refresh, settings, Do Not Disturb, data-folder, and quit menu items.
 - Tauri pet window configured as transparent, frameless, always-on-top, and hidden from the taskbar.
 - PowerShell hook/statusline writers for Windows, with Node.js fallback scripts.
 - Local status directory at `%USERPROFILE%\.claude-sprout`.
-- Codex-compatible custom pet importer skeleton for folders containing `pet.json` and `spritesheet.webp`.
+- Codex-compatible custom pet importer for folders containing `pet.json` and `spritesheet.webp`.
+- Windows release scripts for the standalone exe and NSIS installer, plus release doctor and smoke tooling.
 
 ## Architecture
 
@@ -43,7 +44,7 @@ flowchart LR
     <pet_id>\
       manifest.json
       spritesheet.webp
-  config.json
+  settings.json
 ```
 
 ## Development
@@ -75,6 +76,15 @@ Build the frontend:
 ```powershell
 npm run build
 ```
+
+Build official Windows release artifacts:
+
+```powershell
+npm run release:exe
+npm run release:nsis
+```
+
+See [docs/release-checklist.md](docs/release-checklist.md) before creating a tagged release.
 
 ## Claude Code Hooks / Statusline
 
@@ -121,12 +131,11 @@ Claude Sprout is an independent open-source project. It is not affiliated with A
 
 ## Roadmap
 
-- Finish Tauri tray commands and native notifications.
 - Add file watching with debounce instead of UI polling.
-- Add detachable transparent pet window with position lock.
-- Add full Codex-compatible pet preview and import UI.
-- Add settings UI for cleanup TTL, do-not-disturb, and always-on-top.
-- Add Windows installer and release workflow.
+- Prepare and publish the first tagged Windows release.
+- Add signed release flow.
+- Add GitHub Actions release builds.
+- Add optional wrapper/PID enhancement for process-level closed detection.
 
 ## License
 

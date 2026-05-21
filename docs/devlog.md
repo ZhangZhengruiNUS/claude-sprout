@@ -2,6 +2,12 @@
 
 ## 2026-05-21
 
+- Added the first tagged release checklist for `v0.1.0`:
+  - official Windows artifacts are the standalone release exe and NSIS installer.
+  - the checklist covers version alignment, tag conflict checks, preflight validation, release tool cache checks, builds, SHA256 capture, desktop and installer smoke, unsigned-release notes, GitHub release publication, and rollback handling.
+  - package metadata is aligned with the Tauri/Cargo `0.1.0` release version.
+  - Windows install docs now link to the release checklist and prefer `release:precache-tools -- --target nsis` for the official release path.
+  - README, Chinese README, and roadmap release-facing status are refreshed so completed tray, notification, pet import, settings, cleanup, and release-tooling work no longer appears as future work.
 - Completed native release smoke validation for Settings Storage cleanup:
   - launched `src-tauri\target\release\claude-sprout.exe` against a temporary `CLAUDE_SPROUT_HOME` at `C:\tmp\claude-sprout-storage-smoke`.
   - verified Settings shows the Storage panel with the temporary data root, safe session counts, old event counts, and imported pets as counted-only.
