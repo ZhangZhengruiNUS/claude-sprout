@@ -48,6 +48,6 @@
     "active": true,
     "useLocalToolsDir": true,
     "targets": ["nsis"],
-    "icon": []
+    "icon": ["icons/icon.ico"]
   }
 }

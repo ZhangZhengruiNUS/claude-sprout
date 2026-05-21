@@ -30,6 +30,8 @@
     "Conservative local storage cleanup design is specified at docs/superpowers/specs/2026-05-21-storage-cleanup-design.md: Settings owns the Storage entry, safe sessions and old events are cleanable, imported pets are counted but not deleted",
     "Settings Storage cleanup is implemented: storage summary counts sessions/events/pets, safe session cleanup deletes only raw done/error/closed/probably_closed files and keeps running/waiting/idle/stale/unparseable files, old event cleanup deletes only regular files older than 14 days, and imported pets remain read-only",
     "Storage cleanup is preview-bound: frontend sends expected cleanable file count/bytes, Rust rechecks candidates before deleting and rejects stale previews; frontend storage summary loads ignore stale responses; API and StoragePanel tests cover the cleanup request contract and clean-button enablement",
+    "Repeatable installer tool pre-cache workflow: npm run release:precache-tools downloads NSIS, nsis_tauri_utils.dll, and WiX with Node HTTPS, verifies fixed hashes, and populates src-tauri\\target\\.tauri so Tauri does not depend on the Windows SChannel download path during installer builds",
+    "MSI packaging is now validated through the local WiX cache; the bundle icon config points at src-tauri\\icons\\icon.ico and npm run release:msi generates src-tauri\\target\\release\\bundle\\msi\\Claude Sprout_0.1.0_x64_en-US.msi",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -41,17 +43,19 @@
     "npm run tauri -- build --no-bundle",
     "npm run release:exe",
     "npm run release:doctor",
+    "npm run release:precache-tools -- --target nsis",
     "npm run smoke:sessions",
-    "npm run release:nsis"
+    "npm run release:nsis",
+    "npm run release:msi"
   ],
   "knownBlockers": [
-    "Direct NSIS/WiX tool downloads through the normal Tauri/PowerShell TLS stack can still fail on this machine because GitHub TLS validation reports UnknownIssuer. NSIS is currently unblocked by a verified local cache under src-tauri\\target\\.tauri\\NSIS; the root machine certificate/proxy-chain issue still exists.",
-    "MSI bundling with npm run release:msi can fail on this machine: Tauri auto-download of WiX hit TLS UnknownIssuer, and winget install WiXToolset.WiXToolset requires admin rights to enable NetFx3.",
+    "Direct NSIS/WiX tool downloads through the normal Tauri/PowerShell TLS stack can still fail in the Codex sandbox because SChannel cannot create TLS client credentials. Use npm run release:precache-tools to populate the local Tauri tool cache through Node HTTPS before installer builds.",
+    "MSI bundling still depends on WiX being present in src-tauri\\target\\.tauri\\WixTools314 or installed on PATH; npm run release:precache-tools now populates the local WiX cache without requiring winget or NetFx3.",
     "The release exe build works with npm run release:exe or npm run tauri -- build --no-bundle, and the NSIS installer build works while the verified local NSIS cache is present."
   ],
   "nextTasks": [
     "Run a native release smoke pass for the Settings Storage cleanup panel if user-facing desktop validation is needed.",
-    "Fix the root machine certificate/proxy-chain issue for GitHub release downloads, or add a documented repeatable pre-cache workflow for NSIS/WiX tools."
+    "For future release hardening, decide whether MSI should become a documented first-class artifact or remain optional behind npm run release:msi."
   ],
   "importantDecisions": [
     "Do not make the product a browser-style dashboard. The pet window is the first-class UI.",

@@ -2,6 +2,12 @@
 
 ## 2026-05-21
 
+- Added a repeatable installer tool pre-cache workflow:
+  - `npm run release:precache-tools` downloads NSIS, `nsis_tauri_utils.dll`, and WiX through Node HTTPS instead of the Windows SChannel download path.
+  - downloads are verified against fixed SHA1/SHA256 hashes before populating `src-tauri\target\.tauri`.
+  - Windows install docs now route TLS/SChannel download failures through the pre-cache script plus `release:doctor` verification.
+  - fixed the Tauri bundle icon config to use the existing `src-tauri\icons\icon.ico`.
+  - confirmed the cached WiX path builds `src-tauri\target\release\bundle\msi\Claude Sprout_0.1.0_x64_en-US.msi`.
 - Completed manual desktop smoke validation for the release exe:
   - Windows native notifications appear for controlled session transitions.
   - Do Not Disturb suppresses the later waiting-input notification.

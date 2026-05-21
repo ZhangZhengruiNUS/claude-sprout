@@ -18,6 +18,7 @@
     "release:nsis": "tauri build --bundles nsis",
     "release:msi": "tauri build --bundles msi",
     "release:doctor": "node scripts/release-doctor.mjs",
+    "release:precache-tools": "node scripts/precache-release-tools.mjs",
     "smoke:sessions": "node scripts/session-smoke.mjs",
     "handoff:update": "node scripts/update-handoff.mjs",
     "hooks:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-dev-hooks.ps1"

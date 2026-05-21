@@ -49,33 +49,35 @@ Check the local installer tool cache:
 npm run release:doctor
 ```
 
-If the machine cannot download Tauri's NSIS tools because the GitHub TLS certificate is reported as `UnknownIssuer`, pre-cache NSIS under:
+If the machine cannot download Tauri's installer tools because the Windows SChannel path fails with `UnknownIssuer`, `SEC_E_NO_CREDENTIALS`, or a closed TLS connection, pre-cache the tools with Node's HTTPS stack:
+
+```powershell
+npm run release:precache-tools
+npm run release:doctor -- --target all
+```
+
+The script downloads the fixed tool archives, verifies hashes, and writes the local Tauri cache under:
 
 ```text
 src-tauri\target\.tauri\NSIS
+src-tauri\target\.tauri\WixTools314
 ```
 
-Tauri expects the extracted NSIS files directly inside that folder, including:
+Limit the pre-cache to one installer family when needed:
 
-```text
-makensis.exe
-Bin\makensis.exe
-Stubs\lzma-x86-unicode
-Stubs\lzma_solid-x86-unicode
-Include\MUI2.nsh
-Include\FileFunc.nsh
-Include\x64.nsh
-Include\nsDialogs.nsh
-Include\WinMessages.nsh
-Plugins\x86-unicode\additional\nsis_tauri_utils.dll
+```powershell
+npm run release:precache-tools -- --target nsis
+npm run release:precache-tools -- --target wix
 ```
 
-Reference downloads:
+Reference downloads and expected hashes are printed by `npm run release:doctor`. The current fixed inputs are:
 
 - `https://github.com/tauri-apps/binary-releases/releases/download/nsis-3.11/nsis-3.11.zip`
   - SHA1: `EF7FF767E5CBD9EDD22ADD3A32C9B8F4500BB10D`
 - `https://github.com/tauri-apps/nsis-tauri-utils/releases/download/nsis_tauri_utils-v0.5.3/nsis_tauri_utils.dll`
   - SHA1: `75197FEE3C6A814FE035788D1C34EAD39349B860`
+- `https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip`
+  - SHA256: `6ac824e1642d6f7277d0ed7ea09411a508f6116ba6fae0aa5f2c7daa2ff43d31`
 
 After the cache is populated, `npm run release:nsis` writes the installer to:
 
@@ -89,7 +91,7 @@ Build an MSI only when WiX is installed and working:
 npm run release:msi
 ```
 
-Known local blocker: MSI bundling can also fail here because Tauri's WiX download hits TLS `UnknownIssuer`, and installing `WiXToolset.WiXToolset` through `winget` requires administrator rights to enable NetFx3.
+If `npm run release:doctor -- --target msi` reports `candle.exe` and `light.exe` as present, the local WiX cache is ready and Tauri should not need to download WiX during `release:msi`. Installing `WiXToolset.WiXToolset` through `winget` is still optional and can require administrator rights to enable NetFx3.
 
 ## Desktop Smoke Test
 
