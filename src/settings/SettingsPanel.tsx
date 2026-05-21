@@ -4,7 +4,13 @@ import type { PetAnimation } from '../pet/petStateMapper'
 import { StoragePanel } from '../storage/StoragePanel'
 import type { StorageCleanKind, StorageSummary } from '../storage/storageApi'
 import type { AppSettings, PetDisplayMode, PetSizePreset } from './appSettings'
-import { PET_ACTIVITY_WINDOW_WIDTH_MAX, PET_ACTIVITY_WINDOW_WIDTH_MIN, PET_SIZE_OPTIONS } from './appSettings'
+import {
+  PET_ACTIVITY_WINDOW_WIDTH_MAX,
+  PET_ACTIVITY_WINDOW_WIDTH_MIN,
+  PET_MESSAGE_BOX_OPACITY_MAX,
+  PET_MESSAGE_BOX_OPACITY_MIN,
+  PET_SIZE_OPTIONS,
+} from './appSettings'
 
 type Props = {
   settings: AppSettings
@@ -158,6 +164,28 @@ export function SettingsPanel({
             })
           }
         />
+      </label>
+      <label className="setting-row">
+        <span>
+          <strong>Message opacity</strong>
+          <small>Adjust the glass background opacity for pet message and activity cards.</small>
+        </span>
+        <span className="setting-slider">
+          <input
+            type="range"
+            min={PET_MESSAGE_BOX_OPACITY_MIN}
+            max={PET_MESSAGE_BOX_OPACITY_MAX}
+            step={5}
+            value={settings.petMessageBoxOpacity}
+            onChange={(event) =>
+              onSettingsChange({
+                ...settings,
+                petMessageBoxOpacity: Number(event.target.value),
+              })
+            }
+          />
+          <small>{settings.petMessageBoxOpacity}%</small>
+        </span>
       </label>
       <label className="setting-row">
         <span>

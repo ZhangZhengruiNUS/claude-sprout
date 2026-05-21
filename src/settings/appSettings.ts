@@ -12,6 +12,7 @@ export type AppSettings = {
   petCompletionToastSeconds: number
   petActivityVisibleCount: number
   petActivityWindowWidth: number
+  petMessageBoxOpacity: number
   petConversationPreviewEnabled: boolean
 }
 
@@ -26,6 +27,8 @@ export const PET_COMPLETION_TOAST_SECONDS_MAX = 120
 export const PET_ACTIVITY_VISIBLE_COUNT_MAX = 12
 export const PET_ACTIVITY_WINDOW_WIDTH_MIN = 300
 export const PET_ACTIVITY_WINDOW_WIDTH_MAX = 520
+export const PET_MESSAGE_BOX_OPACITY_MIN = 25
+export const PET_MESSAGE_BOX_OPACITY_MAX = 95
 
 export const PET_SIZE_OPTIONS = {
   small: { label: 'Small', scale: 0.85 },
@@ -44,6 +47,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   petCompletionToastSeconds: 5,
   petActivityVisibleCount: 3,
   petActivityWindowWidth: 360,
+  petMessageBoxOpacity: 68,
   petConversationPreviewEnabled: false,
 }
 
@@ -133,6 +137,12 @@ function normalizeAppSettings(settings: StoredAppSettings): AppSettings {
       PET_ACTIVITY_WINDOW_WIDTH_MIN,
       PET_ACTIVITY_WINDOW_WIDTH_MAX,
       DEFAULT_APP_SETTINGS.petActivityWindowWidth,
+    ),
+    petMessageBoxOpacity: clampIntegerSetting(
+      settings.petMessageBoxOpacity,
+      PET_MESSAGE_BOX_OPACITY_MIN,
+      PET_MESSAGE_BOX_OPACITY_MAX,
+      DEFAULT_APP_SETTINGS.petMessageBoxOpacity,
     ),
     petConversationPreviewEnabled:
       settings.petConversationPreviewEnabled === true

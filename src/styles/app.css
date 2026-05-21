@@ -190,7 +190,11 @@ button:disabled {
 .pet-message-card,
 .pet-activity-hud {
   border: 1px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(135deg, rgba(25, 31, 35, 0.68), rgba(17, 22, 25, 0.42));
+  background: linear-gradient(
+    135deg,
+    rgba(25, 31, 35, var(--pet-glass-strong-alpha, 0.68)),
+    rgba(17, 22, 25, var(--pet-glass-soft-alpha, 0.42))
+  );
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.32),
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
@@ -378,7 +382,7 @@ button:disabled {
   min-height: 3.42rem;
   padding: 0.46rem 0.52rem;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.065);
+  background: rgba(255, 255, 255, var(--pet-card-fill-alpha, 0.065));
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -388,28 +392,28 @@ button:disabled {
 
 .pet-activity-card:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, var(--pet-card-fill-hover-alpha, 0.1));
 }
 
 .pet-activity-card.intervention {
-  background: rgba(233, 177, 90, 0.18);
+  background: rgba(233, 177, 90, var(--pet-tone-intervention-alpha, 0.18));
   box-shadow:
     inset 3px 0 0 rgba(233, 177, 90, 0.9),
     0 0 22px rgba(233, 177, 90, 0.14);
 }
 
 .pet-activity-card.failed {
-  background: rgba(216, 115, 115, 0.14);
+  background: rgba(216, 115, 115, var(--pet-tone-failed-alpha, 0.14));
   box-shadow: inset 3px 0 0 rgba(216, 115, 115, 0.84);
 }
 
 .pet-activity-card.running {
-  background: rgba(131, 185, 161, 0.13);
+  background: rgba(131, 185, 161, var(--pet-tone-active-alpha, 0.13));
   box-shadow: inset 3px 0 0 rgba(131, 185, 161, 0.8);
 }
 
 .pet-activity-card.complete {
-  background: rgba(184, 200, 122, 0.13);
+  background: rgba(184, 200, 122, var(--pet-tone-active-alpha, 0.13));
   box-shadow: inset 3px 0 0 rgba(184, 200, 122, 0.8);
 }
 
@@ -821,6 +825,24 @@ h1 {
   align-items: center;
   gap: 0.5rem;
   flex: 0 0 auto;
+}
+
+.setting-slider {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 1fr) 2.8rem;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 11rem;
+}
+
+.setting-slider input {
+  width: 100%;
+  accent-color: #8fb894;
+}
+
+.setting-slider small {
+  color: rgba(237, 243, 247, 0.62);
+  text-align: right;
 }
 
 .setting-actions {

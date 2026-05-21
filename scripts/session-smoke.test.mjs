@@ -54,6 +54,7 @@ describe('session smoke helpers', () => {
         petCompletionToastSeconds: 5,
         petActivityVisibleCount: 3,
         petActivityWindowWidth: 360,
+        petMessageBoxOpacity: 68,
         petConversationPreviewEnabled: false,
       })
     } finally {

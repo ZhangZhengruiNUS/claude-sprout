@@ -553,7 +553,10 @@ function App() {
 
   if (windowKind === 'pet') {
     return (
-      <main className={`floating-pet-shell ${settings.petDisplayMode}`}>
+      <main
+        className={`floating-pet-shell ${settings.petDisplayMode}`}
+        style={petMessageBoxOpacityStyle(settings.petMessageBoxOpacity)}
+      >
         <PetRenderer
           status={topStatus}
           alertCount={waitingCount}
@@ -821,6 +824,20 @@ async function applySettingsToPet(settings: AppSettings, windowKind: WindowKind)
     applyPetScale(settings.petScale, petWindow, settings),
     applyPetAlwaysOnTop(settings.petAlwaysOnTop, petWindow),
   ])
+}
+
+function petMessageBoxOpacityStyle(opacityPercent: number): CSSProperties {
+  const opacity = Math.min(0.95, Math.max(0.25, opacityPercent / 100))
+
+  return {
+    '--pet-glass-strong-alpha': opacity.toFixed(2),
+    '--pet-glass-soft-alpha': Math.max(0.12, opacity * 0.62).toFixed(2),
+    '--pet-card-fill-alpha': Math.max(0.03, opacity * 0.1).toFixed(2),
+    '--pet-card-fill-hover-alpha': Math.max(0.05, opacity * 0.15).toFixed(2),
+    '--pet-tone-intervention-alpha': Math.max(0.07, opacity * 0.26).toFixed(2),
+    '--pet-tone-failed-alpha': Math.max(0.06, opacity * 0.21).toFixed(2),
+    '--pet-tone-active-alpha': Math.max(0.05, opacity * 0.19).toFixed(2),
+  } as CSSProperties
 }
 
 export default App

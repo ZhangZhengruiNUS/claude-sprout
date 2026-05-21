@@ -9,6 +9,8 @@ pub const MAX_PET_COMPLETION_TOAST_SECONDS: u32 = 120;
 pub const MAX_PET_ACTIVITY_VISIBLE_COUNT: u32 = 12;
 pub const MIN_PET_ACTIVITY_WINDOW_WIDTH: u32 = 300;
 pub const MAX_PET_ACTIVITY_WINDOW_WIDTH: u32 = 520;
+pub const MIN_PET_MESSAGE_BOX_OPACITY: u32 = 25;
+pub const MAX_PET_MESSAGE_BOX_OPACITY: u32 = 95;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -42,6 +44,10 @@ fn default_pet_activity_window_width() -> u32 {
     360
 }
 
+fn default_pet_message_box_opacity() -> u32 {
+    68
+}
+
 fn default_pet_conversation_preview_enabled() -> bool {
     false
 }
@@ -64,6 +70,8 @@ pub struct AppSettings {
     pub pet_activity_visible_count: u32,
     #[serde(default = "default_pet_activity_window_width")]
     pub pet_activity_window_width: u32,
+    #[serde(default = "default_pet_message_box_opacity")]
+    pub pet_message_box_opacity: u32,
     #[serde(default = "default_pet_conversation_preview_enabled")]
     pub pet_conversation_preview_enabled: bool,
 }
@@ -81,6 +89,7 @@ impl Default for AppSettings {
             pet_completion_toast_seconds: default_pet_completion_toast_seconds(),
             pet_activity_visible_count: default_pet_activity_visible_count(),
             pet_activity_window_width: default_pet_activity_window_width(),
+            pet_message_box_opacity: default_pet_message_box_opacity(),
             pet_conversation_preview_enabled: default_pet_conversation_preview_enabled(),
         }
     }
@@ -135,6 +144,12 @@ fn normalize(mut settings: AppSettings) -> AppSettings {
     settings.pet_activity_window_width = settings
         .pet_activity_window_width
         .min(MAX_PET_ACTIVITY_WINDOW_WIDTH);
+    if settings.pet_message_box_opacity < MIN_PET_MESSAGE_BOX_OPACITY {
+        settings.pet_message_box_opacity = default_pet_message_box_opacity();
+    }
+    settings.pet_message_box_opacity = settings
+        .pet_message_box_opacity
+        .min(MAX_PET_MESSAGE_BOX_OPACITY);
     settings
 }
 
@@ -179,6 +194,7 @@ mod tests {
             pet_completion_toast_seconds: 0,
             pet_activity_visible_count: 6,
             pet_activity_window_width: 420,
+            pet_message_box_opacity: 55,
             pet_conversation_preview_enabled: true,
         };
 
@@ -225,6 +241,7 @@ mod tests {
         assert_eq!(settings.pet_completion_toast_seconds, 5);
         assert_eq!(settings.pet_activity_visible_count, 3);
         assert_eq!(settings.pet_activity_window_width, 360);
+        assert_eq!(settings.pet_message_box_opacity, 68);
         assert!(!settings.pet_conversation_preview_enabled);
         fs::remove_dir_all(root).expect("temp settings root should be removable");
     }
@@ -235,7 +252,7 @@ mod tests {
         fs::create_dir_all(&root).expect("temp settings root should be created");
         fs::write(
             root.join("settings.json"),
-            r#"{"doNotDisturb":false,"petAlwaysOnTop":true,"petLockPosition":false,"petScale":1.0,"petSizePreset":"medium","petDisplayMode":"activity","petCompletionToastSeconds":999,"petActivityVisibleCount":0,"petActivityWindowWidth":999}"#,
+            r#"{"doNotDisturb":false,"petAlwaysOnTop":true,"petLockPosition":false,"petScale":1.0,"petSizePreset":"medium","petDisplayMode":"activity","petCompletionToastSeconds":999,"petActivityVisibleCount":0,"petActivityWindowWidth":999,"petMessageBoxOpacity":10}"#,
         )
         .expect("settings file should be writable");
 
@@ -245,6 +262,7 @@ mod tests {
         assert_eq!(settings.pet_completion_toast_seconds, 120);
         assert_eq!(settings.pet_activity_visible_count, 3);
         assert_eq!(settings.pet_activity_window_width, 520);
+        assert_eq!(settings.pet_message_box_opacity, 68);
         fs::remove_dir_all(root).expect("temp settings root should be removable");
     }
 }

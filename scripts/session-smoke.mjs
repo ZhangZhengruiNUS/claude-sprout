@@ -56,6 +56,7 @@ export async function writeSmokeSettings(root, doNotDisturb) {
         petCompletionToastSeconds: 5,
         petActivityVisibleCount: 3,
         petActivityWindowWidth: 360,
+        petMessageBoxOpacity: 68,
         petConversationPreviewEnabled: false,
       },
       null,

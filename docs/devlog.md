@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Added configurable pet message opacity:
+  - Settings now exposes a `Message opacity` slider for pet HUD, Minimal message cards, and Activity session cards.
+  - opacity persists through frontend localStorage and Rust app-data settings as `petMessageBoxOpacity`.
+  - pet glass/card backgrounds now use CSS variables so the background transparency changes without dimming text.
 - Hardened hook writers against malformed historical session snapshots:
   - PowerShell hook/statusline now read previous session snapshots as UTF-8 inside a tolerant helper and ignore malformed JSON instead of failing the hook.
   - Node hook/statusline now use the same tolerant previous-snapshot behavior.
