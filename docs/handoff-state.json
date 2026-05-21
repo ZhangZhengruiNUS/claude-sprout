@@ -28,6 +28,7 @@
     "More accurate terminal session handling: Stop, StopFailure, and SessionEnd set ended_at; statusline writers preserve terminal state; Rust derives non-terminal snapshots with ended_at as closed; executable tests cover both PowerShell and Node writers",
     "Manual desktop smoke verified native Windows notifications, DND suppression, tray menu actions, Settings, Open Data Folder, and pet click opening the session panel; pet click now opens/focuses the main window directly with a backend command fallback",
     "Manual release smoke follow-up fixed desktop launch behavior: startup re-hides the main window after window-state restore, tray icon uses the bundled app icon, main-window minimize/close hides to tray, and panel open unminimizes before show/focus",
+    "Pet release-smoke polish: tray icon uses a generated tighter 32px sprout icon for better notification-area visibility, and pet right-click opens a context menu with Open, Hide, Larger, and Smaller actions",
     "Claude Code hook docs include an empty-session troubleshooting flow for missing hooks/statusLine config, missing sessions/*.json snapshots, and CLAUDE_SPROUT_HOME mismatches",
     "Conservative local storage cleanup design is specified at docs/superpowers/specs/2026-05-21-storage-cleanup-design.md: Settings owns the Storage entry, safe sessions and old events are cleanable, imported pets are counted but not deleted",
     "Settings Storage cleanup is implemented: storage summary counts sessions/events/pets, safe session cleanup deletes only raw done/error/closed/probably_closed files and keeps running/waiting/idle/stale/unparseable files, old event cleanup deletes only regular files older than 14 days, and imported pets remain read-only",
@@ -59,7 +60,7 @@
     "The release exe build works with npm run release:exe or npm run tauri -- build --no-bundle, and the NSIS installer build works while the verified local NSIS cache is present."
   ],
   "nextTasks": [
-    "Re-run the v0.1.0 release desktop smoke after the launch/tray fixes: verify pet-only startup, visible tray icon, minimize-to-tray, hook-config troubleshooting, final hashes, then continue with NSIS installer smoke and tag when ready."
+    "Re-run the v0.1.0 release desktop smoke after the launch/tray/pet-menu fixes: verify pet-only startup, larger visible tray icon, pet right-click Hide/Open/Larger/Smaller menu, minimize-to-tray, hook-config troubleshooting, final hashes, then continue with NSIS installer smoke and tag when ready."
   ],
   "importantDecisions": [
     "Do not make the product a browser-style dashboard. The pet window is the first-class UI.",

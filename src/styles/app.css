@@ -109,6 +109,7 @@ button:disabled {
   display: grid;
   place-items: center;
   background: transparent;
+  position: relative;
 }
 
 .floating-pet-shell .pet-surface,
@@ -171,6 +172,39 @@ button:disabled {
 
 .pet-surface.compact:hover .pet-hint {
   opacity: 1;
+}
+
+.pet-context-menu {
+  position: absolute;
+  left: min(var(--pet-menu-x), calc(100% - 7.25rem));
+  top: min(var(--pet-menu-y), calc(100% - 9.8rem));
+  width: 7rem;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(22, 27, 31, 0.96);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(10px);
+  z-index: 3;
+}
+
+.pet-context-menu button {
+  min-height: 1.9rem;
+  justify-content: flex-start;
+  gap: 0.35rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 6px;
+  background: transparent;
+  color: #edf3f7;
+  font-size: 0.75rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.pet-context-menu button:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .sprout-pet {

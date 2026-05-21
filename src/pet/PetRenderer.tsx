@@ -17,7 +17,7 @@ type Props = {
   petAsset?: PetAsset | null
   onClick?: () => void
   onDoubleClick?: () => void
-  onContextMenu?: () => void
+  onContextMenu?: (position: { x: number; y: number }) => void
   onWheel?: (delta: number) => void
   onDragStart?: (origin: PetDragOrigin) => Promise<PetDragSession | null>
 }
@@ -121,7 +121,7 @@ export function PetRenderer({
       onDoubleClick={onDoubleClick}
       onContextMenu={(event) => {
         event.preventDefault()
-        onContextMenu?.()
+        onContextMenu?.({ x: event.clientX, y: event.clientY })
       }}
       onWheel={(event) => {
         if (!compact) return

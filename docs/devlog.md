@@ -8,6 +8,9 @@
   - opening the panel from the pet/tray unminimizes the window before showing and focusing it.
   - minimizing or closing the main window now hides it to the tray instead of leaving it as the primary surface.
   - hook docs now include an empty-session troubleshooting flow for missing Claude Sprout hook/statusLine configuration.
+- Polished follow-up release-smoke feedback:
+  - tray icon now uses a generated tighter 32px sprout icon for a larger visual footprint in the Windows notification area.
+  - right-clicking the pet opens a compact context menu with Open, Hide, Larger, and Smaller actions.
 - Added the first tagged release checklist for `v0.1.0`:
   - official Windows artifacts are the standalone release exe and NSIS installer.
   - the checklist covers version alignment, tag conflict checks, preflight validation, release tool cache checks, builds, SHA256 capture, desktop and installer smoke, unsigned-release notes, GitHub release publication, and rollback handling.

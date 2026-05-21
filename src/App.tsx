@@ -1,5 +1,16 @@
-import { Bell, FolderOpen, Moon, PawPrint, RefreshCw, Settings } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Bell,
+  EyeOff,
+  FolderOpen,
+  Moon,
+  PanelTopOpen,
+  PawPrint,
+  RefreshCw,
+  Settings,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import {
@@ -20,6 +31,7 @@ import {
   applyPetScale,
   beginPetDrag,
   getPetWindow,
+  hideCurrentPetWindow,
 } from './pet/petWindowControls'
 import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
@@ -91,6 +103,7 @@ function App() {
   const [isStorageLoading, setIsStorageLoading] = useState(false)
   const [isStorageCleaning, setIsStorageCleaning] = useState(false)
   const [storageMessage, setStorageMessage] = useState<string | null>(null)
+  const [petMenuPosition, setPetMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const settingsRef = useRef(settings)
   const sessionsRef = useRef<SessionSnapshot[]>([])
   const notifiedSessionKeysRef = useRef(new Set<string>())
@@ -287,13 +300,20 @@ function App() {
   }, [windowKind])
 
   function playPetAction(action: PetAnimation) {
+    setPetMenuPosition(null)
     setPetActionReplayKey((current) => current + 1)
     setPetAction(action)
     window.setTimeout(() => setPetAction(null), 950)
   }
 
   async function resizePet(delta: number) {
+    setPetMenuPosition(null)
     await updateSettings(settingsWithPetScale(settings, settings.petScale + delta * 0.1))
+  }
+
+  async function hidePet() {
+    setPetMenuPosition(null)
+    await hideCurrentPetWindow()
   }
 
   async function updateSettings(nextSettings: AppSettings) {
@@ -443,17 +463,72 @@ function App() {
           actionReplayKey={petActionReplayKey}
           petAsset={activePetAsset}
           onClick={() => {
+            setPetMenuPosition(null)
             void showSessionPanel()
           }}
           onDoubleClick={() => playPetAction('wave')}
-          onContextMenu={() => {
-            void resizePet(1)
+          onContextMenu={(position) => {
+            setPetMenuPosition(position)
           }}
           onWheel={(delta) => {
             void resizePet(delta)
           }}
           onDragStart={beginPetDrag}
         />
+        {petMenuPosition ? (
+          <div
+            className="pet-context-menu"
+            style={
+              {
+                '--pet-menu-x': `${petMenuPosition.x}px`,
+                '--pet-menu-y': `${petMenuPosition.y}px`,
+              } as CSSProperties
+            }
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              title="Open session panel"
+              onClick={() => {
+                setPetMenuPosition(null)
+                void showSessionPanel()
+              }}
+            >
+              <PanelTopOpen size={14} />
+              Open
+            </button>
+            <button
+              type="button"
+              title="Hide pet window"
+              onClick={() => {
+                void hidePet()
+              }}
+            >
+              <EyeOff size={14} />
+              Hide
+            </button>
+            <button
+              type="button"
+              title="Make pet larger"
+              onClick={() => {
+                void resizePet(1)
+              }}
+            >
+              <ZoomIn size={14} />
+              Larger
+            </button>
+            <button
+              type="button"
+              title="Make pet smaller"
+              onClick={() => {
+                void resizePet(-1)
+              }}
+            >
+              <ZoomOut size={14} />
+              Smaller
+            </button>
+          </div>
+        ) : null}
       </main>
     )
   }

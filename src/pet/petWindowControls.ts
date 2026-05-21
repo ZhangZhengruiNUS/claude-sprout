@@ -64,3 +64,8 @@ export async function getPetWindow() {
   if (!isTauriRuntime()) return null
   return Window.getByLabel('pet')
 }
+
+export async function hideCurrentPetWindow() {
+  if (!isTauriRuntime()) return
+  await getCurrentWindow().hide()
+}
