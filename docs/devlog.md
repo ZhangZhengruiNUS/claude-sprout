@@ -2,6 +2,11 @@
 
 ## 2026-05-21
 
+- Completed native release smoke validation for Settings Storage cleanup:
+  - launched `src-tauri\target\release\claude-sprout.exe` against a temporary `CLAUDE_SPROUT_HOME` at `C:\tmp\claude-sprout-storage-smoke`.
+  - verified Settings shows the Storage panel with the temporary data root, safe session counts, old event counts, and imported pets as counted-only.
+  - cleaned 2 safe session files and 1 old event file through the UI; running/waiting session files, recent event files, event directories, and imported pet files were preserved on disk.
+  - captured before/after screenshots under `C:\tmp\claude-sprout-storage-cdp-before-clean.png` and `C:\tmp\claude-sprout-storage-cdp-after-clean.png`.
 - Added a repeatable installer tool pre-cache workflow:
   - `npm run release:precache-tools` downloads NSIS, `nsis_tauri_utils.dll`, and WiX through Node HTTPS instead of the Windows SChannel download path.
   - downloads are verified against fixed SHA1/SHA256 hashes before populating `src-tauri\target\.tauri`.
