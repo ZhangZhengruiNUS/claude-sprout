@@ -62,16 +62,26 @@ describe('storage api', () => {
     expect(invokeMock).toHaveBeenCalledWith('get_storage_summary')
   })
 
-  it('cleans selected storage kind through Tauri', async () => {
+  it('cleans selected storage kind through Tauri with confirmed summary counts', async () => {
     invokeMock.mockResolvedValueOnce({
       deletedFileCount: 2,
       deletedBytes: 100,
       keptFileCount: 1,
     })
 
-    await cleanStorage('safe_sessions')
+    await cleanStorage({
+      kind: 'safe_sessions',
+      expectedCleanableFileCount: 2,
+      expectedCleanableBytes: 100,
+    })
 
-    expect(invokeMock).toHaveBeenCalledWith('clean_storage', { kind: 'safe_sessions' })
+    expect(invokeMock).toHaveBeenCalledWith('clean_storage', {
+      request: {
+        kind: 'safe_sessions',
+        expectedCleanableFileCount: 2,
+        expectedCleanableBytes: 100,
+      },
+    })
   })
 
   it('opens the data folder through Tauri', async () => {
@@ -86,7 +96,11 @@ describe('storage api', () => {
     setTauriRuntime(false)
 
     const summary = await getStorageSummary()
-    const result = await cleanStorage('old_events')
+    const result = await cleanStorage({
+      kind: 'old_events',
+      expectedCleanableFileCount: 0,
+      expectedCleanableBytes: 0,
+    })
     await openDataFolder()
 
     expect(summary.sessions.fileCount).toBe(0)

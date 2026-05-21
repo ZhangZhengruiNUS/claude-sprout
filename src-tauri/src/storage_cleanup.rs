@@ -2,7 +2,7 @@ use crate::session_store::{self, SessionSnapshot, SessionStatus};
 use serde::{Deserialize, Serialize};
 use std::{
     fs,
-    path::Path,
+    path::{Path, PathBuf},
     time::{Duration, SystemTime},
 };
 
@@ -42,14 +42,28 @@ pub struct StorageCleanResult {
     pub kept_file_count: u64,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct StorageCleanRequest {
+    pub kind: StorageCleanKind,
+    pub expected_cleanable_file_count: u64,
+    pub expected_cleanable_bytes: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CleanCandidate {
+    path: PathBuf,
+    bytes: u64,
+}
+
 pub fn summarize() -> Result<StorageSummary, String> {
     let root = session_store::ensure_layout()?;
     summarize_from_root(&root)
 }
 
-pub fn clean(kind: StorageCleanKind) -> Result<StorageCleanResult, String> {
+pub fn clean(request: StorageCleanRequest) -> Result<StorageCleanResult, String> {
     let root = session_store::ensure_layout()?;
-    clean_from_root(&root, kind)
+    clean_from_root_checked(&root, request)
 }
 
 pub(crate) fn summarize_from_root(root: &Path) -> Result<StorageSummary, String> {
@@ -68,6 +82,7 @@ pub(crate) fn summarize_from_root_at(
     })
 }
 
+#[cfg(test)]
 pub(crate) fn clean_from_root(
     root: &Path,
     kind: StorageCleanKind,
@@ -75,17 +90,45 @@ pub(crate) fn clean_from_root(
     clean_from_root_at(root, kind, SystemTime::now())
 }
 
+pub(crate) fn clean_from_root_checked(
+    root: &Path,
+    request: StorageCleanRequest,
+) -> Result<StorageCleanResult, String> {
+    clean_from_root_checked_at(root, request, SystemTime::now())
+}
+
+pub(crate) fn clean_from_root_checked_at(
+    root: &Path,
+    request: StorageCleanRequest,
+    now: SystemTime,
+) -> Result<StorageCleanResult, String> {
+    let (candidates, kept_file_count) = collect_clean_candidates_for_kind(root, request.kind, now)?;
+    let cleanable_file_count = candidates.len() as u64;
+    let cleanable_bytes = candidates.iter().map(|candidate| candidate.bytes).sum::<u64>();
+
+    if cleanable_file_count != request.expected_cleanable_file_count
+        || cleanable_bytes != request.expected_cleanable_bytes
+    {
+        return Err(format!(
+            "Storage changed since preview. Expected {} files / {} bytes, found {} files / {} bytes. Refresh storage and try again.",
+            request.expected_cleanable_file_count,
+            request.expected_cleanable_bytes,
+            cleanable_file_count,
+            cleanable_bytes
+        ));
+    }
+
+    delete_candidates(candidates, kept_file_count)
+}
+
+#[cfg(test)]
 pub(crate) fn clean_from_root_at(
     root: &Path,
     kind: StorageCleanKind,
     now: SystemTime,
 ) -> Result<StorageCleanResult, String> {
-    match kind {
-        StorageCleanKind::SafeSessions => clean_files(&root.join("sessions"), is_safe_session_file),
-        StorageCleanKind::OldEvents => clean_files(&root.join("events"), |_, metadata| {
-            is_old_event_file(metadata, now)
-        }),
-    }
+    let (candidates, kept_file_count) = collect_clean_candidates_for_kind(root, kind, now)?;
+    delete_candidates(candidates, kept_file_count)
 }
 
 fn summarize_sessions(path: &Path) -> Result<StorageBucketSummary, String> {
@@ -179,13 +222,32 @@ fn count_recursive(path: &Path, summary: &mut StorageBucketSummary) -> Result<()
     Ok(())
 }
 
-fn clean_files<F>(path: &Path, mut cleanable: F) -> Result<StorageCleanResult, String>
+fn collect_clean_candidates_for_kind(
+    root: &Path,
+    kind: StorageCleanKind,
+    now: SystemTime,
+) -> Result<(Vec<CleanCandidate>, u64), String> {
+    match kind {
+        StorageCleanKind::SafeSessions => {
+            collect_clean_candidates(&root.join("sessions"), is_safe_session_file)
+        }
+        StorageCleanKind::OldEvents => collect_clean_candidates(&root.join("events"), |_, metadata| {
+            is_old_event_file(metadata, now)
+        }),
+    }
+}
+
+fn collect_clean_candidates<F>(
+    path: &Path,
+    mut cleanable: F,
+) -> Result<(Vec<CleanCandidate>, u64), String>
 where
     F: FnMut(&Path, &fs::Metadata) -> bool,
 {
-    let mut result = StorageCleanResult::default();
+    let mut candidates = Vec::new();
+    let mut kept_file_count = 0;
     if !path.exists() {
-        return Ok(result);
+        return Ok((candidates, kept_file_count));
     }
 
     for entry in fs::read_dir(path).map_err(|error| error.to_string())? {
@@ -205,13 +267,31 @@ where
             Err(_) => continue,
         };
         if cleanable(&path, &metadata) {
-            let bytes = metadata.len();
-            fs::remove_file(&path).map_err(|error| error.to_string())?;
-            result.deleted_file_count += 1;
-            result.deleted_bytes += bytes;
+            candidates.push(CleanCandidate {
+                path,
+                bytes: metadata.len(),
+            });
         } else {
-            result.kept_file_count += 1;
+            kept_file_count += 1;
         }
+    }
+
+    Ok((candidates, kept_file_count))
+}
+
+fn delete_candidates(
+    candidates: Vec<CleanCandidate>,
+    kept_file_count: u64,
+) -> Result<StorageCleanResult, String> {
+    let mut result = StorageCleanResult {
+        kept_file_count,
+        ..StorageCleanResult::default()
+    };
+
+    for candidate in candidates {
+        fs::remove_file(&candidate.path).map_err(|error| error.to_string())?;
+        result.deleted_file_count += 1;
+        result.deleted_bytes += candidate.bytes;
     }
 
     Ok(result)
@@ -414,6 +494,29 @@ mod tests {
         assert!(root.join("sessions").join("stale.json").exists());
         assert!(root.join("sessions").join("raw-stale-old.json").exists());
         assert!(root.join("sessions").join("broken.json").exists());
+
+        fs::remove_dir_all(root).expect("temp root should be removable");
+    }
+
+    #[test]
+    fn checked_cleanup_rejects_stale_preview_counts() {
+        let root = temp_root("stale-preview");
+        write_file(
+            &root.join("sessions").join("done.json"),
+            &session_json("done", None),
+        );
+
+        let result = clean_from_root_checked(
+            &root,
+            StorageCleanRequest {
+                kind: StorageCleanKind::SafeSessions,
+                expected_cleanable_file_count: 0,
+                expected_cleanable_bytes: 0,
+            },
+        );
+
+        assert!(result.is_err());
+        assert!(root.join("sessions").join("done.json").exists());
 
         fs::remove_dir_all(root).expect("temp root should be removable");
     }

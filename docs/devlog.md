@@ -22,6 +22,11 @@
   - safe session cleanup deletes only raw done, error, closed, or probably_closed session files while keeping raw stale, running, waiting, idle, and unparseable files.
   - old event cleanup deletes only regular event files older than 14 days.
   - imported pets remain read-only and counted only.
+- Hardened Storage cleanup after code review:
+  - cleanup requests now include the previewed cleanable file count and bytes.
+  - Rust rechecks current candidates before deletion and rejects cleanup if the preview is stale.
+  - frontend storage summary loads ignore stale responses so old refreshes cannot re-enable outdated cleanup counts.
+  - added StoragePanel enable/disable coverage and updated API tests for the preview-bound cleanup request.
 
 ## 2026-05-20
 

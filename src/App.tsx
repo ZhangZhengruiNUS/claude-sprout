@@ -96,6 +96,7 @@ function App() {
   const notifiedSessionKeysRef = useRef(new Set<string>())
   const pendingSessionNotificationsRef = useRef(new Map<string, SessionNotification>())
   const loadSequenceRef = useRef(0)
+  const storageLoadSequenceRef = useRef(0)
 
   async function load(options: { showLoading?: boolean; notify?: boolean } = {}) {
     const sequence = loadSequenceRef.current + 1
@@ -334,18 +335,29 @@ function App() {
   }
 
   async function loadStorageSummary(options: { clearMessage?: boolean } = {}) {
+    const sequence = storageLoadSequenceRef.current + 1
+    storageLoadSequenceRef.current = sequence
     setIsStorageLoading(true)
     if (options.clearMessage ?? true) {
       setStorageMessage(null)
     }
     try {
-      setStorageSummary(await getStorageSummary())
+      const summary = await getStorageSummary()
+      if (sequence !== storageLoadSequenceRef.current) {
+        return false
+      }
+      setStorageSummary(summary)
       return true
     } catch (error) {
+      if (sequence !== storageLoadSequenceRef.current) {
+        return false
+      }
       setStorageMessage(`Storage summary failed: ${errorMessage(error)}`)
       return false
     } finally {
-      setIsStorageLoading(false)
+      if (sequence === storageLoadSequenceRef.current) {
+        setIsStorageLoading(false)
+      }
     }
   }
 
@@ -361,7 +373,11 @@ function App() {
     setIsStorageCleaning(true)
     setStorageMessage(null)
     try {
-      const result = await cleanStorage(kind)
+      const result = await cleanStorage({
+        kind,
+        expectedCleanableFileCount: bucket.cleanableFileCount,
+        expectedCleanableBytes: bucket.cleanableBytes,
+      })
       const refreshed = await loadStorageSummary({ clearMessage: false })
       if (!refreshed) return
       setStorageMessage(

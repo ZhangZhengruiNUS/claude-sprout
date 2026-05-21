@@ -23,6 +23,12 @@ export type StorageCleanResult = {
   keptFileCount: number
 }
 
+export type StorageCleanRequest = {
+  kind: StorageCleanKind
+  expectedCleanableFileCount: number
+  expectedCleanableBytes: number
+}
+
 const EMPTY_BUCKET: StorageBucketSummary = {
   fileCount: 0,
   directoryCount: 0,
@@ -50,7 +56,7 @@ export async function getStorageSummary(): Promise<StorageSummary> {
   return invoke<StorageSummary>('get_storage_summary')
 }
 
-export async function cleanStorage(kind: StorageCleanKind): Promise<StorageCleanResult> {
+export async function cleanStorage(request: StorageCleanRequest): Promise<StorageCleanResult> {
   if (!isTauriRuntime()) {
     return {
       deletedFileCount: 0,
@@ -59,7 +65,7 @@ export async function cleanStorage(kind: StorageCleanKind): Promise<StorageClean
     }
   }
 
-  return invoke<StorageCleanResult>('clean_storage', { kind })
+  return invoke<StorageCleanResult>('clean_storage', { request })
 }
 
 export async function openDataFolder(): Promise<void> {

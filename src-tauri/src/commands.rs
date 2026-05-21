@@ -79,9 +79,9 @@ pub fn get_storage_summary() -> Result<storage_cleanup::StorageSummary, String> 
 
 #[tauri::command]
 pub fn clean_storage(
-    kind: storage_cleanup::StorageCleanKind,
+    request: storage_cleanup::StorageCleanRequest,
 ) -> Result<storage_cleanup::StorageCleanResult, String> {
-    storage_cleanup::clean(kind)
+    storage_cleanup::clean(request)
 }
 
 fn open_path(path: &Path) -> Result<(), String> {
