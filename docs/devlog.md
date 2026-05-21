@@ -8,6 +8,7 @@
   - package metadata is aligned with the Tauri/Cargo `0.1.0` release version.
   - Windows install docs now link to the release checklist and prefer `release:precache-tools -- --target nsis` for the official release path.
   - README, Chinese README, and roadmap release-facing status are refreshed so completed tray, notification, pet import, settings, cleanup, and release-tooling work no longer appears as future work.
+  - the checklist notes that `release:exe` should be re-run after `release:nsis` before hashing/publishing the standalone exe because Tauri patches the release executable while producing the installer bundle.
 - Completed native release smoke validation for Settings Storage cleanup:
   - launched `src-tauri\target\release\claude-sprout.exe` against a temporary `CLAUDE_SPROUT_HOME` at `C:\tmp\claude-sprout-storage-smoke`.
   - verified Settings shows the Storage panel with the temporary data root, safe session counts, old event counts, and imported pets as counted-only.

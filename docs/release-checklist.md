@@ -79,6 +79,12 @@ Build the official installer:
 npm run release:nsis
 ```
 
+Tauri patches `src-tauri\target\release\claude-sprout.exe` with bundle metadata while producing the NSIS installer. Re-run the standalone executable build after `release:nsis` before hashing or publishing the standalone exe:
+
+```powershell
+npm run release:exe
+```
+
 Optional maintainer-only MSI validation:
 
 ```powershell
