@@ -29,7 +29,7 @@ function Get-CleanPreviewText($value) {
   if ($null -eq $value) { return $null }
   $trimmed = ([string]$value).Trim() -replace "\s+", " "
   if ([string]::IsNullOrWhiteSpace($trimmed)) { return $null }
-  if ($trimmed.Length -gt 120) { return $trimmed.Substring(0, 120) }
+  if ($trimmed.Length -gt 240) { return $trimmed.Substring(0, 240) }
   return $trimmed
 }
 
@@ -37,7 +37,7 @@ function Get-AppSettings($root) {
   $settingsPath = Join-Path $root "settings.json"
   if (-not (Test-Path -LiteralPath $settingsPath)) { return $null }
   try {
-    return Get-Content -Raw -LiteralPath $settingsPath | ConvertFrom-Json
+    return Get-Content -Raw -Encoding UTF8 -LiteralPath $settingsPath | ConvertFrom-Json
   }
   catch {
     return $null
@@ -54,7 +54,7 @@ function Get-TranscriptDisplayName($path) {
   if (-not $transcriptPath -or -not (Test-Path -LiteralPath $transcriptPath)) { return $null }
 
   try {
-    $lines = Get-Content -LiteralPath $transcriptPath -TotalCount 120 -ErrorAction Stop
+    $lines = @(Get-Content -LiteralPath $transcriptPath -Encoding UTF8 -TotalCount 120 -ErrorAction Stop)
     foreach ($line in $lines) {
       if (-not ($line.Contains("summary") -or $line.Contains("title"))) { continue }
       try {
@@ -113,7 +113,7 @@ function Get-PreviewFromLine([string]$line) {
   if (-not $text) { return $null }
   $prefix = if ($role -eq "assistant") { "Claude" } else { "User" }
   $preview = "${prefix}: $text"
-  if ($preview.Length -gt 128) { return $preview.Substring(0, 128) }
+  if ($preview.Length -gt 260) { return $preview.Substring(0, 260) }
   return $preview
 }
 
@@ -122,7 +122,7 @@ function Get-TranscriptPreview($path) {
   if (-not $transcriptPath -or -not (Test-Path -LiteralPath $transcriptPath)) { return $null }
 
   try {
-    $lines = Get-Content -LiteralPath $transcriptPath -Tail 120 -ErrorAction Stop
+    $lines = @(Get-Content -LiteralPath $transcriptPath -Encoding UTF8 -Tail 120 -ErrorAction Stop)
     for ($index = $lines.Count - 1; $index -ge 0; $index--) {
       $preview = Get-PreviewFromLine ([string]$lines[$index])
       if ($preview) { return $preview }

@@ -168,23 +168,6 @@ button:disabled {
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
 }
 
-.pet-surface.compact .pet-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 0.2rem;
-  transform: translateX(-50%);
-  color: rgba(231, 237, 244, 0.66);
-  font-size: 0.68rem;
-  opacity: 0;
-  transition: opacity 150ms ease;
-  pointer-events: none;
-  white-space: nowrap;
-}
-
-.pet-surface.compact:hover .pet-hint {
-  opacity: 1;
-}
-
 .pet-assistant-shell {
   position: absolute;
   inset: 0;
@@ -302,11 +285,22 @@ button:disabled {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
   margin-top: 0.14rem;
   color: rgba(223, 231, 236, 0.68);
   font-size: 0.6rem;
   line-height: 1.15;
+}
+
+.pet-message-card small {
+  white-space: nowrap;
+}
+
+.pet-activity-card small {
+  display: -webkit-box;
+  min-height: 1.38rem;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
 }
 
 .pet-activity-card em {
@@ -373,17 +367,16 @@ button:disabled {
 .pet-activity-list {
   display: grid;
   gap: 0.34rem;
-  max-height: 10.2rem;
   overflow: hidden;
 }
 
 .pet-activity-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(3.8rem, auto);
+  grid-template-columns: minmax(0, 1fr) minmax(4.4rem, auto);
   align-items: start;
   gap: 0.45rem;
-  min-height: 2.55rem;
-  padding: 0.42rem 0.48rem;
+  min-height: 3.42rem;
+  padding: 0.46rem 0.52rem;
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.065);
   cursor: pointer;

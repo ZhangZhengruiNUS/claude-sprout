@@ -166,11 +166,7 @@ export function PetRenderer({
       {showAlertBubble && status === 'waiting_permission' ? (
         <div className="alert-bubble">Permission needed{alertCount > 1 ? ` x${alertCount}` : ''}</div>
       ) : null}
-      {!compact ? (
-        <div className="pet-caption">{status}</div>
-      ) : (
-        <div className="pet-hint">{draggable ? 'drag / wheel / double-click' : 'locked / wheel / double-click'}</div>
-      )}
+      {!compact ? <div className="pet-caption">{status}</div> : null}
     </button>
   )
 }

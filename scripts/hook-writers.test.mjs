@@ -361,7 +361,7 @@ describe('hook writers', () => {
 
       const snapshot = await readSnapshot(root, 'node-preview-on')
       expect(snapshot.conversation_preview).toBe(
-        'Claude: Implemented the activity preview toggle and started the focused verification pass with a deliberately long line that sho',
+        'Claude: Implemented the activity preview toggle and started the focused verification pass with a deliberately long line that should be clipped before it fills the pet card.',
       )
     } finally {
       await rm(root, { recursive: true, force: true })
@@ -459,6 +459,37 @@ describe('hook writers', () => {
       expect(snapshot.conversation_preview).toBe(
         'User: Please run the final desktop smoke after this change.',
       )
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('reads UTF-8 PowerShell conversation previews without mojibake', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      await writeSettings(root, { petConversationPreviewEnabled: true })
+      const transcriptPath = join(root, 'ps-preview-cjk.jsonl')
+      await writeFile(
+        transcriptPath,
+        JSON.stringify({
+          type: 'user',
+          message: { content: [{ type: 'text', text: '测试1：请继续检查悬停提示和窗口宽度。' }] },
+        }),
+        'utf8',
+      )
+
+      await runPowerShellScript(
+        'hooks/windows/claude-sprout-statusline.ps1',
+        JSON.stringify({
+          session_id: 'ps-preview-cjk',
+          transcript_path: transcriptPath,
+          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'ps-preview-cjk')
+      expect(snapshot.conversation_preview).toBe('User: 测试1：请继续检查悬停提示和窗口宽度。')
     } finally {
       await rm(root, { recursive: true, force: true })
     }

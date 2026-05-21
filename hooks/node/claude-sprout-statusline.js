@@ -33,7 +33,7 @@ function cleanPreviewText(value) {
   if (typeof value !== 'string') return null
   const trimmed = value.trim().replace(/\s+/g, ' ')
   if (!trimmed) return null
-  return trimmed.slice(0, 120)
+  return trimmed.slice(0, 240)
 }
 
 function appSettingsFor(root) {
@@ -120,7 +120,7 @@ function previewFromLine(line) {
   if (role !== 'assistant' && role !== 'user') return null
   const text = cleanPreviewText(textFromContent(entry?.message?.content ?? entry?.content ?? entry?.text))
   if (!text) return null
-  return `${role === 'assistant' ? 'Claude' : 'User'}: ${text}`.slice(0, 128)
+  return `${role === 'assistant' ? 'Claude' : 'User'}: ${text}`.slice(0, 260)
 }
 
 function textFromContent(content) {

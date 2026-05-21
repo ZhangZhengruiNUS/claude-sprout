@@ -20,12 +20,13 @@ export function loadPetScale() {
 export async function applyPetScale(
   value: number,
   targetWindow?: Window,
-  layoutSettings?: Pick<AppSettings, 'petDisplayMode' | 'petActivityVisibleCount'>,
+  layoutSettings?: Pick<AppSettings, 'petDisplayMode' | 'petActivityVisibleCount' | 'petActivityWindowWidth'>,
 ) {
   const size = petWindowSizeForDisplay({
     scale: value,
     displayMode: layoutSettings?.petDisplayMode ?? 'minimal',
     visibleCount: layoutSettings?.petActivityVisibleCount ?? 3,
+    activityWidth: layoutSettings?.petActivityWindowWidth,
   })
 
   if (isTauriRuntime()) {

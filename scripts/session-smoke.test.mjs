@@ -53,6 +53,7 @@ describe('session smoke helpers', () => {
         petDisplayMode: 'minimal',
         petCompletionToastSeconds: 5,
         petActivityVisibleCount: 3,
+        petActivityWindowWidth: 360,
         petConversationPreviewEnabled: false,
       })
     } finally {

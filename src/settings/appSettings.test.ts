@@ -54,6 +54,7 @@ describe('app settings persistence', () => {
         petDisplayMode: 'activity',
         petCompletionToastSeconds: 0,
         petActivityVisibleCount: 6,
+        petActivityWindowWidth: 420,
         petConversationPreviewEnabled: true,
       }),
     )
@@ -68,6 +69,7 @@ describe('app settings persistence', () => {
       petDisplayMode: 'activity',
       petCompletionToastSeconds: 0,
       petActivityVisibleCount: 6,
+      petActivityWindowWidth: 420,
       petConversationPreviewEnabled: true,
     })
   })
@@ -80,6 +82,7 @@ describe('app settings persistence', () => {
         petDisplayMode: 'dashboard',
         petCompletionToastSeconds: -4,
         petActivityVisibleCount: 0,
+        petActivityWindowWidth: 120,
       }),
     )
 

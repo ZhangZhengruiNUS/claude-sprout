@@ -2,6 +2,12 @@
 
 ## 2026-05-22
 
+- Improved Activity mode conversation preview readability after desktop feedback:
+  - PowerShell hook/statusline transcript reads now force UTF-8 and wrap single-line `Get-Content` results as arrays, fixing missing/garbled previews for short CJK transcripts.
+  - Node and PowerShell preview snippets now retain up to 260 characters instead of 128.
+  - Activity cards show preview details across two lines and use a taller row layout.
+  - Settings now includes configurable Activity window width, defaulting wider than before.
+  - removed the compact pet hover hint that showed `drag / wheel / double-click`.
 - Fixed recurring stale Git snapshots in `docs/next-session.md`:
   - removed embedded `git status` / `git log` output from the generated handoff because the file is committed and therefore cannot accurately contain the commit hash that includes itself.
   - kept the startup protocol requirement to run live `git status --short --branch` and `git log --oneline --decorate -5`.

@@ -4,7 +4,7 @@ import type { PetAnimation } from '../pet/petStateMapper'
 import { StoragePanel } from '../storage/StoragePanel'
 import type { StorageCleanKind, StorageSummary } from '../storage/storageApi'
 import type { AppSettings, PetDisplayMode, PetSizePreset } from './appSettings'
-import { PET_SIZE_OPTIONS } from './appSettings'
+import { PET_ACTIVITY_WINDOW_WIDTH_MAX, PET_ACTIVITY_WINDOW_WIDTH_MIN, PET_SIZE_OPTIONS } from './appSettings'
 
 type Props = {
   settings: AppSettings
@@ -135,6 +135,26 @@ export function SettingsPanel({
             onSettingsChange({
               ...settings,
               petActivityVisibleCount: Number(event.target.value),
+            })
+          }
+        />
+      </label>
+      <label className="setting-row">
+        <span>
+          <strong>Activity width</strong>
+          <small>Wider Activity cards can show longer conversation previews.</small>
+        </span>
+        <input
+          className="setting-number"
+          type="number"
+          min={PET_ACTIVITY_WINDOW_WIDTH_MIN}
+          max={PET_ACTIVITY_WINDOW_WIDTH_MAX}
+          step={20}
+          value={settings.petActivityWindowWidth}
+          onChange={(event) =>
+            onSettingsChange({
+              ...settings,
+              petActivityWindowWidth: Number(event.target.value),
             })
           }
         />
