@@ -193,6 +193,16 @@ function Is-TerminalEvent([string]$eventName) {
   return $eventName -eq "Stop" -or $eventName -eq "StopFailure" -or $eventName -eq "SessionEnd"
 }
 
+function Get-PreviousSnapshot([string]$path) {
+  if (-not (Test-Path -LiteralPath $path)) { return $null }
+  try {
+    return Get-Content -Raw -Encoding UTF8 -LiteralPath $path | ConvertFrom-Json
+  }
+  catch {
+    return $null
+  }
+}
+
 try {
   $raw = [Console]::In.ReadToEnd()
   if ([string]::IsNullOrWhiteSpace($raw)) { exit 0 }
@@ -222,8 +232,8 @@ try {
   } else {
     $null
   }
-  if (-not $displayName -and (Test-Path $sessionPath)) {
-    $previous = Get-Content -Raw -LiteralPath $sessionPath | ConvertFrom-Json
+  if (-not $displayName) {
+    $previous = Get-PreviousSnapshot $sessionPath
     if ($previous.display_name) { $displayName = [string]$previous.display_name }
   }
 

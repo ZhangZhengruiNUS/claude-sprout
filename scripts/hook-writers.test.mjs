@@ -494,4 +494,118 @@ describe('hook writers', () => {
       await rm(root, { recursive: true, force: true })
     }
   }, 15_000)
+
+  it('overwrites malformed previous PowerShell snapshots instead of failing hooks', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      await mkdir(join(root, 'sessions'), { recursive: true })
+      await writeFile(
+        join(root, 'sessions', 'ps-malformed-previous.json'),
+        '{"session_id":"ps-malformed-previous","display_name":"broken","conversation_preview":"User: "quoted"}',
+        'utf8',
+      )
+
+      await runPowerShellScript(
+        'hooks/windows/claude-sprout-hook.ps1',
+        JSON.stringify({
+          session_id: 'ps-malformed-previous',
+          hook_event_name: 'Notification',
+          notification_type: 'idle_prompt',
+          cwd: 'C:/Users/ASUS',
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'ps-malformed-previous')
+      expect(snapshot.status).toBe('waiting_input')
+      expect(snapshot.display_name).toBeNull()
+      expect(snapshot.project_name).toBe('ASUS')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('overwrites malformed previous Node snapshots instead of failing hooks', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      await mkdir(join(root, 'sessions'), { recursive: true })
+      await writeFile(
+        join(root, 'sessions', 'node-malformed-previous.json'),
+        '{"session_id":"node-malformed-previous","display_name":',
+        'utf8',
+      )
+
+      await runNodeScript(
+        'hooks/node/claude-sprout-hook.js',
+        JSON.stringify({
+          session_id: 'node-malformed-previous',
+          hook_event_name: 'Notification',
+          notification_type: 'idle_prompt',
+          cwd: 'C:/Users/ASUS',
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'node-malformed-previous')
+      expect(snapshot.status).toBe('waiting_input')
+      expect(snapshot.display_name).toBeNull()
+      expect(snapshot.project_name).toBe('ASUS')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('ignores malformed previous PowerShell snapshots in statusline updates', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      await mkdir(join(root, 'sessions'), { recursive: true })
+      await writeFile(
+        join(root, 'sessions', 'ps-statusline-malformed.json'),
+        '{"session_id":"ps-statusline-malformed","status":"waiting_input","display_name":',
+        'utf8',
+      )
+
+      await runPowerShellScript(
+        'hooks/windows/claude-sprout-statusline.ps1',
+        JSON.stringify({
+          session_id: 'ps-statusline-malformed',
+          workspace: { current_dir: 'C:/Users/ASUS' },
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'ps-statusline-malformed')
+      expect(snapshot.status).toBe('idle')
+      expect(snapshot.project_name).toBe('ASUS')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('ignores malformed previous Node snapshots in statusline updates', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      await mkdir(join(root, 'sessions'), { recursive: true })
+      await writeFile(
+        join(root, 'sessions', 'node-statusline-malformed.json'),
+        '{"session_id":"node-statusline-malformed","status":"waiting_input","display_name":',
+        'utf8',
+      )
+
+      await runNodeScript(
+        'hooks/node/claude-sprout-statusline.js',
+        JSON.stringify({
+          session_id: 'node-statusline-malformed',
+          workspace: { current_dir: 'C:/Users/ASUS' },
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'node-statusline-malformed')
+      expect(snapshot.status).toBe('idle')
+      expect(snapshot.project_name).toBe('ASUS')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
 })

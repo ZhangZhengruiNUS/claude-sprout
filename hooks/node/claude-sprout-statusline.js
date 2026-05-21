@@ -48,6 +48,15 @@ function isConversationPreviewEnabled(root) {
   return appSettingsFor(root).petConversationPreviewEnabled === true
 }
 
+function previousSnapshot(path) {
+  if (!existsSync(path)) return {}
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    return {}
+  }
+}
+
 function transcriptDisplayName(path) {
   const transcriptPath = typeof path === 'string' ? path.trim() : ''
   if (!transcriptPath || !existsSync(transcriptPath)) return null
@@ -166,7 +175,7 @@ try {
   const sessionsDir = join(root, 'sessions')
   mkdirSync(sessionsDir, { recursive: true })
   const sessionPath = join(sessionsDir, `${sessionId}.json`)
-  const previous = existsSync(sessionPath) ? JSON.parse(readFileSync(sessionPath, 'utf8')) : {}
+  const previous = previousSnapshot(sessionPath)
   const cwd = payload.workspace?.current_dir || payload.cwd || ''
   const project = cwd ? basename(cwd) : 'Unknown project'
   const context = payload.context_window?.used_percentage ?? null

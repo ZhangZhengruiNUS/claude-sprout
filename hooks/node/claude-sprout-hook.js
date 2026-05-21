@@ -59,6 +59,15 @@ function isConversationPreviewEnabled(root) {
   return appSettingsFor(root).petConversationPreviewEnabled === true
 }
 
+function previousSnapshot(path) {
+  if (!existsSync(path)) return {}
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    return {}
+  }
+}
+
 function transcriptDisplayName(path) {
   const transcriptPath = typeof path === 'string' ? path.trim() : ''
   if (!transcriptPath || !existsSync(transcriptPath)) return null
@@ -199,7 +208,7 @@ const cwd = payload.cwd || ''
 const status = statusFor(payload)
 const eventName = payload.hook_event_name
 const sessionPath = join(sessionsDir, `${sessionId}.json`)
-const previous = existsSync(sessionPath) ? JSON.parse(readFileSync(sessionPath, 'utf8')) : {}
+const previous = previousSnapshot(sessionPath)
 const displayName = displayNameFor(payload) ?? previous.display_name ?? null
 const conversationPreview = isConversationPreviewEnabled(root)
   ? transcriptPreview(payload.transcript_path ?? payload.transcriptPath)

@@ -153,6 +153,16 @@ function Get-DisplayName($payload) {
   return $null
 }
 
+function Get-PreviousSnapshot([string]$path) {
+  if (-not (Test-Path -LiteralPath $path)) { return $null }
+  try {
+    return Get-Content -Raw -Encoding UTF8 -LiteralPath $path | ConvertFrom-Json
+  }
+  catch {
+    return $null
+  }
+}
+
 try {
   $raw = [Console]::In.ReadToEnd()
   if ([string]::IsNullOrWhiteSpace($raw)) { exit 0 }
@@ -187,8 +197,8 @@ try {
   $displayName = Get-DisplayName $payload
   $endedAt = $null
   $endReason = $null
-  if (Test-Path $sessionPath) {
-    $previous = Get-Content -Raw -LiteralPath $sessionPath | ConvertFrom-Json
+  $previous = Get-PreviousSnapshot $sessionPath
+  if ($previous) {
     $previousStatus = [string]$previous.status
     $lastEvent = if ($previous.last_event) { [string]$previous.last_event } else { $lastEvent }
     $lastTool = if ($previous.last_tool) { [string]$previous.last_tool } else { $null }

@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Hardened hook writers against malformed historical session snapshots:
+  - PowerShell hook/statusline now read previous session snapshots as UTF-8 inside a tolerant helper and ignore malformed JSON instead of failing the hook.
+  - Node hook/statusline now use the same tolerant previous-snapshot behavior.
+  - added regression coverage for malformed previous snapshots in hook and statusline paths.
 - Improved Activity mode conversation preview readability after desktop feedback:
   - PowerShell hook/statusline transcript reads now force UTF-8 and wrap single-line `Get-Content` results as arrays, fixing missing/garbled previews for short CJK transcripts.
   - Node and PowerShell preview snippets now retain up to 260 characters instead of 128.
