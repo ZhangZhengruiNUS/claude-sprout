@@ -5,6 +5,8 @@ $ErrorActionPreference = "Stop"
 [Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 
+$Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+
 function Get-SproutRoot {
   if ($env:CLAUDE_SPROUT_HOME) { return $env:CLAUDE_SPROUT_HOME }
   return Join-Path $env:USERPROFILE ".claude-sprout"
@@ -64,7 +66,8 @@ try {
   }
 
   $tmpPath = "$sessionPath.tmp"
-  $snapshot | ConvertTo-Json -Depth 16 -Compress | Set-Content -LiteralPath $tmpPath -Encoding utf8
+  $snapshotJson = $snapshot | ConvertTo-Json -Depth 16 -Compress
+  [System.IO.File]::WriteAllText($tmpPath, $snapshotJson, $Utf8NoBom)
   Move-Item -LiteralPath $tmpPath -Destination $sessionPath -Force
 
   $contextText = if ($null -ne $context) { "$([math]::Round($context))% ctx" } else { "ctx n/a" }

@@ -162,3 +162,8 @@
   - the panel displays the active app data root and any Tauri session-load error instead of silently showing an empty list
   - added Rust coverage for the real statusline snapshot shape and malformed-file tolerance
   - rebuilt the release exe and verified `claude -p` writes a real hook snapshot under `C:\Users\ASUS\.claude-sprout\sessions`
+- Fixed Windows PowerShell snapshot encoding for the real session panel:
+  - root cause was UTF-8 BOM-prefixed JSON from Windows PowerShell `Set-Content -Encoding utf8`; `serde_json` rejected the BOM and the tolerant reader skipped every snapshot
+  - Rust now strips a leading BOM before parsing session snapshots so existing files under `C:\Users\ASUS\.claude-sprout\sessions` remain readable
+  - PowerShell hook/statusline writers now use `.NET` `UTF8Encoding(false)` file writes so new snapshots are UTF-8 without BOM
+  - tests cover BOM parsing and no-BOM PowerShell output

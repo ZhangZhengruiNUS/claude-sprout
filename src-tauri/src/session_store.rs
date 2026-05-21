@@ -76,7 +76,7 @@ fn list_sessions_from_root(root: &Path) -> Result<Vec<SessionSnapshot>, String> 
         let Ok(raw) = fs::read_to_string(entry.path()) else {
             continue;
         };
-        let Ok(mut session) = serde_json::from_str::<SessionSnapshot>(&raw) else {
+        let Ok(mut session) = parse_session_snapshot(&raw) else {
             continue;
         };
         session.status = derive_status(&session);
@@ -120,6 +120,10 @@ fn session_dir_fingerprint_from_root(root: &Path) -> Result<Vec<String>, String>
 
     fingerprint.sort();
     Ok(fingerprint)
+}
+
+fn parse_session_snapshot(raw: &str) -> Result<SessionSnapshot, serde_json::Error> {
+    serde_json::from_str(raw.trim_start_matches('\u{feff}'))
 }
 
 fn system_time_ms(value: SystemTime) -> Option<u128> {
@@ -223,12 +227,22 @@ mod tests {
     fn parses_real_statusline_snapshot_with_waiting_input() {
         let raw = r#"{"session_id":"585b245a-9664-492d-b7f2-377b6cee236e","project_name":"ASUS","cwd":"C:\\Users\\ASUS","status":"waiting_input","last_event":"Notification","notification_type":"idle_prompt","last_tool":null,"context_used_percentage":12,"last_heartbeat_at":"2026-05-21T10:08:57.9219847Z","updated_at":"2026-05-21T10:08:57.9219847Z","ended_at":null,"end_reason":null,"source":"claude-code-statusline"}"#;
 
-        let session: SessionSnapshot =
-            serde_json::from_str(raw).expect("real statusline snapshot should parse");
+        let session = parse_session_snapshot(raw).expect("real statusline snapshot should parse");
 
         assert_eq!(session.status, SessionStatus::WaitingInput);
         assert_eq!(session.project_name, "ASUS");
         assert_eq!(session.context_used_percentage, Some(12.0));
+    }
+
+    #[test]
+    fn parses_powershell_utf8_bom_snapshot() {
+        let raw = "\u{feff}{\"session_id\":\"ps-session\",\"project_name\":\"ASUS\",\"cwd\":\"C:\\\\Users\\\\ASUS\",\"status\":\"waiting_input\",\"last_event\":\"Notification\",\"notification_type\":\"idle_prompt\",\"last_tool\":null,\"context_used_percentage\":2,\"last_heartbeat_at\":\"2026-05-21T10:31:20.8214442Z\",\"updated_at\":\"2026-05-21T10:31:20.8214442Z\",\"ended_at\":null,\"end_reason\":null,\"source\":\"claude-code-statusline\"}";
+
+        let session =
+            parse_session_snapshot(raw).expect("PowerShell UTF-8 BOM snapshot should parse");
+
+        assert_eq!(session.session_id, "ps-session");
+        assert_eq!(session.status, SessionStatus::WaitingInput);
     }
 
     #[test]

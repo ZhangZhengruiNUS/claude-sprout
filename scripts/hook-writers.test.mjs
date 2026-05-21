@@ -15,6 +15,10 @@ async function readSnapshot(root, sessionId) {
   return JSON.parse(raw.replace(/^\uFEFF/, ''))
 }
 
+async function readSnapshotBytes(root, sessionId) {
+  return readFile(join(root, 'sessions', `${sessionId}.json`))
+}
+
 async function runPowerShellScript(scriptPath, input, env) {
   await runWithStdin(
     'powershell',
@@ -108,6 +112,9 @@ describe('hook writers', () => {
       expect(snapshot.status).toBe('done')
       expect(snapshot.project_name).toBe('ASUS')
       expect(snapshot.ended_at).toEqual(expect.any(String))
+
+      const raw = await readSnapshotBytes(root, 'ps-cjk-session')
+      expect([...raw.subarray(0, 3)]).not.toEqual([0xef, 0xbb, 0xbf])
     } finally {
       await rm(root, { recursive: true, force: true })
     }

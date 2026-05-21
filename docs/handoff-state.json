@@ -35,6 +35,7 @@
     "Frontend Tauri runtime detection accepts globalThis.isTauri as well as __TAURI_INTERNALS__, and Tauri session-load failures no longer fall back to mock sessions so release builds do not show fake Permission needed rows",
     "PowerShell hook/statusline scripts force UTF-8 console input/output before reading Claude Code JSON payloads; executable tests cover CJK assistant text and claude -p verified a real snapshot without hook errors",
     "Session panel diagnostics now expose the active app data root, surface Tauri session-load errors instead of silently showing an empty list, and tolerate malformed historical session snapshots while keeping valid sessions visible",
+    "PowerShell hook/statusline session snapshots are now written as UTF-8 without BOM, and the Rust session reader accepts existing BOM-prefixed snapshots so real Windows PowerShell files remain visible in the panel",
     "Conservative local storage cleanup design is specified at docs/superpowers/specs/2026-05-21-storage-cleanup-design.md: Settings owns the Storage entry, safe sessions and old events are cleanable, imported pets are counted but not deleted",
     "Settings Storage cleanup is implemented: storage summary counts sessions/events/pets, safe session cleanup deletes only raw done/error/closed/probably_closed files and keeps running/waiting/idle/stale/unparseable files, old event cleanup deletes only regular files older than 14 days, and imported pets remain read-only",
     "Storage cleanup is preview-bound: frontend sends expected cleanable file count/bytes, Rust rechecks candidates before deleting and rejects stale previews; frontend storage summary loads ignore stale responses; API and StoragePanel tests cover the cleanup request contract and clean-button enablement",
@@ -65,7 +66,7 @@
     "The release exe build works with npm run release:exe or npm run tauri -- build --no-bundle, and the NSIS installer build works while the verified local NSIS cache is present."
   ],
   "nextTasks": [
-    "Have the user confirm the restarted release exe shows real Claude Code sessions from C:\\Users\\ASUS\\.claude-sprout in the panel; then continue with NSIS installer smoke and v0.1.0 tag/release publication when ready."
+    "Have the user confirm the restarted release exe shows real Claude Code sessions from C:\\Users\\ASUS\\.claude-sprout in the panel after the UTF-8 BOM fix; then continue with NSIS installer smoke and v0.1.0 tag/release publication when ready."
   ],
   "importantDecisions": [
     "Do not make the product a browser-style dashboard. The pet window is the first-class UI.",

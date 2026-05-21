@@ -5,6 +5,8 @@ $ErrorActionPreference = "Stop"
 [Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 
+$Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+
 function Get-SproutRoot {
   if ($env:CLAUDE_SPROUT_HOME) { return $env:CLAUDE_SPROUT_HOME }
   return Join-Path $env:USERPROFILE ".claude-sprout"
@@ -42,7 +44,7 @@ function Limit-EventFile([string]$path) {
   $maxBytes = 5MB
   if ((Test-Path $path) -and ((Get-Item $path).Length -gt $maxBytes)) {
     $tail = Get-Content -LiteralPath $path -Tail 2000
-    Set-Content -LiteralPath $path -Value $tail -Encoding utf8
+    [System.IO.File]::WriteAllText($path, (($tail -join [Environment]::NewLine) + [Environment]::NewLine), $Utf8NoBom)
   }
 }
 
@@ -90,7 +92,8 @@ try {
 
   $sessionPath = Join-Path $sessionsDir "$sessionId.json"
   $tmpPath = "$sessionPath.tmp"
-  $snapshot | ConvertTo-Json -Depth 16 -Compress | Set-Content -LiteralPath $tmpPath -Encoding utf8
+  $snapshotJson = $snapshot | ConvertTo-Json -Depth 16 -Compress
+  [System.IO.File]::WriteAllText($tmpPath, $snapshotJson, $Utf8NoBom)
   Move-Item -LiteralPath $tmpPath -Destination $sessionPath -Force
 
   $event = [ordered]@{
@@ -102,7 +105,8 @@ try {
     notification_type = if ($payload.notification_type) { [string]$payload.notification_type } else { $null }
   }
   $eventPath = Join-Path $eventsDir "$sessionId.jsonl"
-  ($event | ConvertTo-Json -Depth 8 -Compress) | Add-Content -LiteralPath $eventPath -Encoding utf8
+  $eventJson = $event | ConvertTo-Json -Depth 8 -Compress
+  [System.IO.File]::AppendAllText($eventPath, ($eventJson + [Environment]::NewLine), $Utf8NoBom)
   Limit-EventFile $eventPath
 }
 catch {
