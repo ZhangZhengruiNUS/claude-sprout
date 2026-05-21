@@ -13,6 +13,9 @@
   - Windows install docs now route TLS/SChannel download failures through the pre-cache script plus `release:doctor` verification.
   - fixed the Tauri bundle icon config to use the existing `src-tauri\icons\icon.ico`.
   - confirmed the cached WiX path builds `src-tauri\target\release\bundle\msi\Claude Sprout_0.1.0_x64_en-US.msi`.
+- Documented the Windows release artifact policy:
+  - standalone release exe and NSIS installer are the official Windows release artifacts.
+  - MSI remains an optional maintainer build behind `npm run release:msi`, useful when a specific distribution requirement needs it.
 - Completed manual desktop smoke validation for the release exe:
   - Windows native notifications appear for controlled session transitions.
   - Do Not Disturb suppresses the later waiting-input notification.

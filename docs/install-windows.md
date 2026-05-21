@@ -22,6 +22,13 @@ npm run dev
 
 ## Build
 
+Official Windows release artifacts are:
+
+- standalone release executable, built with `npm run release:exe`
+- NSIS installer, built with `npm run release:nsis`
+
+MSI packaging is kept as an optional maintainer build for enterprise-style distribution checks. It is validated when WiX is available, but it is not required for the normal release path.
+
 Build the release executable without creating an installer:
 
 ```powershell
@@ -85,13 +92,13 @@ After the cache is populated, `npm run release:nsis` writes the installer to:
 src-tauri\target\release\bundle\nsis\Claude Sprout_0.1.0_x64-setup.exe
 ```
 
-Build an MSI only when WiX is installed and working:
+Optionally build an MSI only when WiX is installed and working:
 
 ```powershell
 npm run release:msi
 ```
 
-If `npm run release:doctor -- --target msi` reports `candle.exe` and `light.exe` as present, the local WiX cache is ready and Tauri should not need to download WiX during `release:msi`. Installing `WiXToolset.WiXToolset` through `winget` is still optional and can require administrator rights to enable NetFx3.
+If `npm run release:doctor -- --target msi` reports `candle.exe` and `light.exe` as present, the local WiX cache is ready and Tauri should not need to download WiX during `release:msi`. Installing `WiXToolset.WiXToolset` through `winget` is still optional and can require administrator rights to enable NetFx3. Do not block a normal release on MSI unless a specific distribution requirement needs it.
 
 ## Desktop Smoke Test
 

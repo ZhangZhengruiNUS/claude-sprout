@@ -33,6 +33,7 @@
     "Native release smoke for Settings Storage cleanup is complete: the release exe was launched against C:\\tmp\\claude-sprout-storage-smoke, Storage showed expected cleanable counts, UI cleanup deleted only safe session and old event files, and preserved running/waiting sessions, recent events, event directories, and imported pets",
     "Repeatable installer tool pre-cache workflow: npm run release:precache-tools downloads NSIS, nsis_tauri_utils.dll, and WiX with Node HTTPS, verifies fixed hashes, and populates src-tauri\\target\\.tauri so Tauri does not depend on the Windows SChannel download path during installer builds",
     "MSI packaging is now validated through the local WiX cache; the bundle icon config points at src-tauri\\icons\\icon.ico and npm run release:msi generates src-tauri\\target\\release\\bundle\\msi\\Claude Sprout_0.1.0_x64_en-US.msi",
+    "Release artifact policy is documented: the official Windows artifacts are the standalone release exe and NSIS installer, while MSI remains an optional maintainer build behind npm run release:msi",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -51,18 +52,19 @@
   ],
   "knownBlockers": [
     "Direct NSIS/WiX tool downloads through the normal Tauri/PowerShell TLS stack can still fail in the Codex sandbox because SChannel cannot create TLS client credentials. Use npm run release:precache-tools to populate the local Tauri tool cache through Node HTTPS before installer builds.",
-    "MSI bundling still depends on WiX being present in src-tauri\\target\\.tauri\\WixTools314 or installed on PATH; npm run release:precache-tools now populates the local WiX cache without requiring winget or NetFx3.",
+    "MSI bundling is optional and still depends on WiX being present in src-tauri\\target\\.tauri\\WixTools314 or installed on PATH; npm run release:precache-tools now populates the local WiX cache without requiring winget or NetFx3.",
     "The release exe build works with npm run release:exe or npm run tauri -- build --no-bundle, and the NSIS installer build works while the verified local NSIS cache is present."
   ],
   "nextTasks": [
-    "For future release hardening, decide whether MSI should become a documented first-class artifact or remain optional behind npm run release:msi."
+    "Prepare the first tagged release checklist around the official Windows artifacts: standalone release exe plus NSIS installer."
   ],
   "importantDecisions": [
     "Do not make the product a browser-style dashboard. The pet window is the first-class UI.",
     "Do not auto-approve Claude Code permission prompts.",
     "Keep prompts/outputs out of stored state by default.",
     "PowerShell hook writer is the default for Windows; Node hook writer remains a fallback.",
-    "Imported Codex-compatible pet assets are copied into Claude Sprout app data; do not reference or distribute official Codex assets."
+    "Imported Codex-compatible pet assets are copied into Claude Sprout app data; do not reference or distribute official Codex assets.",
+    "Official Windows release artifacts are the standalone release exe and NSIS installer; MSI remains an optional maintainer build, not a required release artifact."
   ],
   "runCommands": [
     ".\\src-tauri\\target\\release\\claude-sprout.exe",
