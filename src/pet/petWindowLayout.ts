@@ -43,7 +43,7 @@ export function petWindowSizeForDisplay({
 
 function clampVisibleCount(value: number) {
   if (!Number.isFinite(value)) return 3
-  return Math.min(12, Math.max(1, Math.round(value)))
+  return Math.min(12, Math.max(0, Math.round(value)))
 }
 
 function clampActivityWidth(value: number | undefined) {

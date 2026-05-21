@@ -38,4 +38,11 @@ describe('pet window layout', () => {
       height: 296,
     })
   })
+
+  it('allows activity mode to collapse when there are no visible cards', () => {
+    expect(petWindowSizeForDisplay({ scale: 1, displayMode: 'activity', visibleCount: 0 })).toEqual({
+      width: 360,
+      height: 232,
+    })
+  })
 })

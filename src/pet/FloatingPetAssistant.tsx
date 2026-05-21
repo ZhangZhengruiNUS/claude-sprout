@@ -30,14 +30,16 @@ export function FloatingPetAssistant({
           actionableCount={view.actionableCount}
         />
       ) : (
-        <ActivityHud
-          cards={activityCards}
-          page={safePage}
-          pageCount={pageCount}
-          overflowCount={view.overflowCount}
-          onPageChange={onActivityPageChange}
-          onOpenPanel={onOpenPanel}
-        />
+        view.activityCards.length > 0 ? (
+          <ActivityHud
+            cards={activityCards}
+            page={safePage}
+            pageCount={pageCount}
+            overflowCount={view.overflowCount}
+            onPageChange={onActivityPageChange}
+            onOpenPanel={onOpenPanel}
+          />
+        ) : null
       )}
 
       {view.displayMode === 'minimal' ? (

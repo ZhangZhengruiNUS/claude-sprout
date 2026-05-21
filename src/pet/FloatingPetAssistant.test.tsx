@@ -1,0 +1,73 @@
+import { renderToStaticMarkup } from 'react-dom/server'
+import { describe, expect, it, vi } from 'vitest'
+import { FloatingPetAssistant } from './FloatingPetAssistant'
+import type { PetAssistantView } from './petAssistantViewModel'
+
+const baseView: PetAssistantView = {
+  displayMode: 'activity',
+  runningCount: 0,
+  finishedUnclosedCount: 0,
+  actionableCount: 0,
+  activityCards: [],
+  visibleActivityCards: [],
+  overflowCount: 0,
+  messages: [],
+}
+
+describe('FloatingPetAssistant', () => {
+  it('does not render the activity HUD when there are no open activity cards', () => {
+    const html = renderToStaticMarkup(
+      <FloatingPetAssistant
+        view={baseView}
+        activityPage={0}
+        onActivityPageChange={vi.fn()}
+        onAcknowledgeMessage={vi.fn()}
+        onOpenPanel={vi.fn()}
+      />,
+    )
+
+    expect(html).not.toContain('pet-activity-hud')
+    expect(html).not.toContain('No open sessions')
+  })
+
+  it('renders the activity HUD when at least one activity card is visible', () => {
+    const html = renderToStaticMarkup(
+      <FloatingPetAssistant
+        view={{
+          ...baseView,
+          activityCards: [
+            {
+              key: 'session:running:now',
+              sessionId: 'session',
+              title: 'claude-sprout - session',
+              detail: 'Using Edit',
+              meta: 'running - 12% ctx',
+              status: 'tool_running',
+              tone: 'running',
+              updatedAt: '2026-05-22T00:00:00.000Z',
+            },
+          ],
+          visibleActivityCards: [
+            {
+              key: 'session:running:now',
+              sessionId: 'session',
+              title: 'claude-sprout - session',
+              detail: 'Using Edit',
+              meta: 'running - 12% ctx',
+              status: 'tool_running',
+              tone: 'running',
+              updatedAt: '2026-05-22T00:00:00.000Z',
+            },
+          ],
+        }}
+        activityPage={0}
+        onActivityPageChange={vi.fn()}
+        onAcknowledgeMessage={vi.fn()}
+        onOpenPanel={vi.fn()}
+      />,
+    )
+
+    expect(html).toContain('pet-activity-hud')
+    expect(html).toContain('Using Edit')
+  })
+})

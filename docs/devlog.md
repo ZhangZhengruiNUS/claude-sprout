@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Made Activity mode layout respond to the actual open-session count:
+  - Activity HUD no longer renders when there are no non-closed sessions.
+  - pet window height now uses `min(configured activity rows, current activity card count)`, so closing sessions pulls the remaining card stack closer to the pet.
+  - added component and layout tests for empty Activity HUD suppression and zero-card activity window sizing.
 - Added configurable pet message opacity:
   - Settings now exposes a `Message opacity` slider for pet HUD, Minimal message cards, and Activity session cards.
   - opacity persists through frontend localStorage and Rust app-data settings as `petMessageBoxOpacity`.

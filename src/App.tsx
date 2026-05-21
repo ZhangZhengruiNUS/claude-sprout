@@ -230,6 +230,7 @@ function App() {
       settings.petDisplayMode,
     ],
   )
+  const activityCardCount = petAssistantView.activityCards.length
 
   useEffect(() => {
     document.documentElement.dataset.window = windowKind
@@ -310,8 +311,8 @@ function App() {
   }, [settings])
 
   useEffect(() => {
-    void applySettingsToPet(settings, windowKind)
-  }, [settings, windowKind])
+    void applySettingsToPet(settings, windowKind, activityCardCount)
+  }, [activityCardCount, settings, windowKind])
 
   useEffect(() => {
     if (!isTauriRuntime()) return
@@ -327,7 +328,7 @@ function App() {
         currentPreviewPetId === previousAppliedPetId ? event.payload.activePetId : currentPreviewPetId,
       )
       void refreshPetAssets()
-      void applySettingsToPet(event.payload, windowKind)
+      void applySettingsToPet(event.payload, windowKind, countOpenSessions(sessionsRef.current))
     }).then((handler) => {
       unlisten = handler
     })
@@ -422,7 +423,7 @@ function App() {
     const savedSettings = await savePersistedAppSettings(nextSettings)
     settingsRef.current = savedSettings
     setSettings(savedSettings)
-    await applySettingsToPet(savedSettings, windowKind)
+    await applySettingsToPet(savedSettings, windowKind, countOpenSessions(sessionsRef.current))
 
     if (isTauriRuntime()) {
       await emit(SETTINGS_CHANGED_EVENT, savedSettings)
@@ -808,10 +809,19 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error)
 }
 
-async function applySettingsToPet(settings: AppSettings, windowKind: WindowKind) {
+async function applySettingsToPet(
+  settings: AppSettings,
+  windowKind: WindowKind,
+  activityCardCount = settings.petActivityVisibleCount,
+) {
+  const layoutSettings = {
+    ...settings,
+    petActivityVisibleCount: effectiveActivityVisibleCount(settings, activityCardCount),
+  }
+
   if (windowKind === 'pet') {
     await Promise.all([
-      applyPetScale(settings.petScale, undefined, settings),
+      applyPetScale(settings.petScale, undefined, layoutSettings),
       applyPetAlwaysOnTop(settings.petAlwaysOnTop),
     ])
     return
@@ -821,9 +831,18 @@ async function applySettingsToPet(settings: AppSettings, windowKind: WindowKind)
   if (!petWindow) return
 
   await Promise.all([
-    applyPetScale(settings.petScale, petWindow, settings),
+    applyPetScale(settings.petScale, petWindow, layoutSettings),
     applyPetAlwaysOnTop(settings.petAlwaysOnTop, petWindow),
   ])
+}
+
+function effectiveActivityVisibleCount(settings: AppSettings, activityCardCount: number) {
+  if (settings.petDisplayMode !== 'activity') return settings.petActivityVisibleCount
+  return Math.min(settings.petActivityVisibleCount, Math.max(0, activityCardCount))
+}
+
+function countOpenSessions(sessions: SessionSnapshot[]) {
+  return sessions.filter((session) => session.status !== 'closed').length
 }
 
 function petMessageBoxOpacityStyle(opacityPercent: number): CSSProperties {
