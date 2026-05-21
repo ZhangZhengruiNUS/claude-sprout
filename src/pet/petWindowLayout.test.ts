@@ -11,15 +11,15 @@ describe('pet window layout', () => {
 
   it('expands activity mode for the configured visible session rows', () => {
     expect(petWindowSizeForDisplay({ scale: 1, displayMode: 'activity', visibleCount: 3 })).toEqual({
-      width: 260,
-      height: 292,
+      width: 300,
+      height: 328,
     })
   })
 
   it('applies the pet scale after choosing the display-mode size', () => {
     expect(petWindowSizeForDisplay({ scale: 1.25, displayMode: 'activity', visibleCount: 2 })).toEqual({
-      width: 325,
-      height: 313,
+      width: 375,
+      height: 353,
     })
   })
 })

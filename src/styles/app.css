@@ -138,7 +138,7 @@ button:disabled {
 }
 
 .floating-pet-shell.activity .pet-surface.compact {
-  padding-bottom: 7rem;
+  padding-bottom: 10.6rem;
 }
 
 .pet-surface.compact .sprout-pet {
@@ -307,6 +307,18 @@ button:disabled {
   line-height: 1.15;
 }
 
+.pet-activity-card em {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 0.12rem;
+  color: rgba(223, 231, 236, 0.52);
+  font-size: 0.54rem;
+  font-style: normal;
+  line-height: 1.1;
+}
+
 .pet-message-card button,
 .pet-activity-pager button {
   width: 1.45rem;
@@ -328,10 +340,10 @@ button:disabled {
   position: absolute;
   left: 0.35rem;
   right: 0.35rem;
-  bottom: 0.35rem;
+  bottom: 0.45rem;
   display: grid;
-  gap: 0.35rem;
-  padding: 0.45rem;
+  gap: 0.38rem;
+  padding: 0.5rem;
   border-radius: 8px;
 }
 
@@ -358,18 +370,18 @@ button:disabled {
 
 .pet-activity-list {
   display: grid;
-  gap: 0.3rem;
-  max-height: 7.6rem;
+  gap: 0.34rem;
+  max-height: 10.2rem;
   overflow: hidden;
 }
 
 .pet-activity-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: 2rem;
-  padding: 0.34rem 0.38rem;
+  grid-template-columns: minmax(0, 1fr) minmax(3.8rem, auto);
+  align-items: start;
+  gap: 0.45rem;
+  min-height: 2.55rem;
+  padding: 0.42rem 0.48rem;
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.065);
   cursor: pointer;
@@ -386,7 +398,9 @@ button:disabled {
 
 .pet-activity-card.intervention {
   background: rgba(233, 177, 90, 0.18);
-  box-shadow: inset 3px 0 0 rgba(233, 177, 90, 0.9);
+  box-shadow:
+    inset 3px 0 0 rgba(233, 177, 90, 0.9),
+    0 0 22px rgba(233, 177, 90, 0.14);
 }
 
 .pet-activity-card.failed {
@@ -405,13 +419,14 @@ button:disabled {
 }
 
 .pet-activity-card span {
-  max-width: 4.2rem;
+  max-width: 5.2rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: rgba(237, 243, 247, 0.72);
   font-size: 0.55rem;
   text-align: right;
+  padding-top: 0.08rem;
 }
 
 .pet-activity-empty {

@@ -10,6 +10,7 @@ function session(
   session_id: string,
   status: SessionStatus,
   updated_at = '2026-05-22T00:00:00Z',
+  extra: Partial<SessionSnapshot> = {},
 ): SessionSnapshot {
   return {
     session_id,
@@ -20,6 +21,7 @@ function session(
     last_tool: status === 'tool_running' ? 'Edit' : null,
     updated_at,
     source: 'test',
+    ...extra,
   }
 }
 
@@ -78,5 +80,49 @@ describe('pet assistant view model', () => {
 
     expect(view.visibleActivityCards.map((card) => card.sessionId)).toEqual(['waiting', 'running'])
     expect(view.overflowCount).toBe(1)
+  })
+
+  it('uses a renamed display name and short session id to distinguish activity cards', () => {
+    const view = buildPetAssistantView({
+      sessions: [
+        session('4b05e339-c239-4363-a5b7-801b9dd2a734', 'waiting_permission', undefined, {
+          project_name: 'ASUS',
+          display_name: 'Release checklist polish',
+          last_tool: 'Bash',
+          context_used_percentage: 18,
+        }),
+      ],
+      displayMode: 'activity',
+      visibleCount: 3,
+    })
+
+    expect(view.visibleActivityCards[0]).toEqual(
+      expect.objectContaining({
+        title: 'Release checklist polish',
+        detail: 'Needs permission for Bash',
+        meta: 'ASUS - 4b05e3 - 18% ctx',
+      }),
+    )
+  })
+
+  it('falls back to project name plus short session id when no display name is available', () => {
+    const view = buildPetAssistantView({
+      sessions: [
+        session('705f8d92-4463-4553-9842-a090d5129c58', 'tool_running', undefined, {
+          project_name: 'ASUS',
+          last_tool: 'Edit',
+        }),
+      ],
+      displayMode: 'activity',
+      visibleCount: 3,
+    })
+
+    expect(view.visibleActivityCards[0]).toEqual(
+      expect.objectContaining({
+        title: 'ASUS - 705f8d',
+        detail: 'Using Edit',
+        meta: 'tool running',
+      }),
+    )
   })
 })

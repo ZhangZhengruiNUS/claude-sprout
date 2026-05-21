@@ -11,6 +11,12 @@
 - Added persisted settings for `petDisplayMode`, `petCompletionToastSeconds`, and `petActivityVisibleCount` across frontend localStorage, Rust app-data settings, and smoke fixtures.
 - Added focused tests for pet assistant summaries, message persistence/overflow behavior, settings migration/normalization, and pet window sizing.
 - Verified the new UI in browser preview at the compact Minimal size and the expanded Activity size.
+- Improved Activity mode after user desktop testing:
+  - increased the expanded pet window footprint and lifted the pet so the glass activity panel no longer covers the pet body; browser QA measured an 8px gap between the pet and panel at the 300x328 preview size.
+  - Activity cards now show a safer session identity: Claude rename/session-title metadata when available, otherwise project plus short session id so same-project sessions remain distinguishable.
+  - cards now include metadata-only activity details such as permission/tool state and context percentage without reading full prompt or assistant-output content.
+  - PowerShell and Node hook/statusline writers preserve `display_name` across later events and can derive it from Claude transcript summary/title metadata when present.
+  - added executable coverage for Node and PowerShell display-name preservation plus transcript-summary title extraction.
 
 ## 2026-05-21
 

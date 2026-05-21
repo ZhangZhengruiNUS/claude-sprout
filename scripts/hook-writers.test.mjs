@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { spawn } from 'node:child_process'
@@ -148,6 +148,128 @@ describe('hook writers', () => {
       expect(snapshot.status).toBe('done')
       expect(snapshot.ended_at).toEqual(expect.any(String))
       expect(snapshot.end_reason).toBe('complete')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('captures and preserves safe display names from Node hook payloads', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      const env = { CLAUDE_SPROUT_HOME: root }
+      await runNodeScript(
+        'hooks/node/claude-sprout-statusline.js',
+        JSON.stringify({
+          session_id: 'node-named-session',
+          session_title: 'Renamed release follow-up',
+          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+        }),
+        env,
+      )
+      await runNodeScript(
+        'hooks/node/claude-sprout-hook.js',
+        JSON.stringify({
+          session_id: 'node-named-session',
+          hook_event_name: 'PreToolUse',
+          cwd: 'E:/Codex Project/claude-sprout',
+          tool_name: 'Edit',
+        }),
+        env,
+      )
+
+      const snapshot = await readSnapshot(root, 'node-named-session')
+      expect(snapshot.display_name).toBe('Renamed release follow-up')
+      expect(snapshot.last_tool).toBe('Edit')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('uses Claude transcript summary metadata as a Node display name without assistant text', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      const transcriptPath = join(root, 'node-transcript.jsonl')
+      await writeFile(
+        transcriptPath,
+        [
+          JSON.stringify({ type: 'summary', summary: 'Renamed from slash command' }),
+          JSON.stringify({ type: 'assistant', message: { content: 'assistant output not for cards' } }),
+        ].join('\n'),
+      )
+
+      await runNodeScript(
+        'hooks/node/claude-sprout-statusline.js',
+        JSON.stringify({
+          session_id: 'node-summary-session',
+          transcript_path: transcriptPath,
+          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'node-summary-session')
+      expect(snapshot.display_name).toBe('Renamed from slash command')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('captures and preserves safe display names from PowerShell hook payloads', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      const env = { CLAUDE_SPROUT_HOME: root }
+      await runPowerShellScript(
+        'hooks/windows/claude-sprout-statusline.ps1',
+        JSON.stringify({
+          session_id: 'ps-named-session',
+          session_title: 'Renamed Windows follow-up',
+          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+        }),
+        env,
+      )
+      await runPowerShellScript(
+        'hooks/windows/claude-sprout-hook.ps1',
+        JSON.stringify({
+          session_id: 'ps-named-session',
+          hook_event_name: 'PreToolUse',
+          cwd: 'E:/Codex Project/claude-sprout',
+          tool_name: 'Bash',
+        }),
+        env,
+      )
+
+      const snapshot = await readSnapshot(root, 'ps-named-session')
+      expect(snapshot.display_name).toBe('Renamed Windows follow-up')
+      expect(snapshot.last_tool).toBe('Bash')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('uses Claude transcript summary metadata as a PowerShell display name', async () => {
+    const root = await tempRoot('claude-sprout-hook-writers')
+    try {
+      const transcriptPath = join(root, 'ps-transcript.jsonl')
+      await writeFile(
+        transcriptPath,
+        [
+          JSON.stringify({ type: 'summary', summary: 'Renamed PowerShell session' }),
+          JSON.stringify({ type: 'user', message: { content: 'prompt text not for cards' } }),
+        ].join('\n'),
+      )
+
+      await runPowerShellScript(
+        'hooks/windows/claude-sprout-statusline.ps1',
+        JSON.stringify({
+          session_id: 'ps-summary-session',
+          transcript_path: transcriptPath,
+          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'ps-summary-session')
+      expect(snapshot.display_name).toBe('Renamed PowerShell session')
     } finally {
       await rm(root, { recursive: true, force: true })
     }

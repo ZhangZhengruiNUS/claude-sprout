@@ -17,6 +17,66 @@ function Get-ProjectName([string]$cwd) {
   return Split-Path -Leaf $cwd
 }
 
+function Get-CleanDisplayName($value) {
+  if ($null -eq $value) { return $null }
+  $trimmed = ([string]$value).Trim() -replace "\s+", " "
+  if ([string]::IsNullOrWhiteSpace($trimmed)) { return $null }
+  if ($trimmed.Length -gt 80) { return $trimmed.Substring(0, 80) }
+  return $trimmed
+}
+
+function Get-TranscriptDisplayName($path) {
+  $transcriptPath = if ($null -ne $path) { ([string]$path).Trim() } else { "" }
+  if (-not $transcriptPath -or -not (Test-Path -LiteralPath $transcriptPath)) { return $null }
+
+  try {
+    $lines = Get-Content -LiteralPath $transcriptPath -TotalCount 120 -ErrorAction Stop
+    foreach ($line in $lines) {
+      if (-not ($line.Contains("summary") -or $line.Contains("title"))) { continue }
+      try {
+        $entry = $line | ConvertFrom-Json
+        $isSummary = [string]$entry.type -eq "summary" -or [string]$entry.type -eq "session_summary"
+        if (-not $isSummary -and -not $entry.summary -and -not $entry.title) { continue }
+        foreach ($candidate in @($entry.summary, $entry.title, $entry.session_title, $entry.name)) {
+          $cleaned = Get-CleanDisplayName $candidate
+          if ($cleaned) { return $cleaned }
+        }
+      }
+      catch {
+        continue
+      }
+    }
+  }
+  catch {
+    return $null
+  }
+
+  return $null
+}
+
+function Get-DisplayName($payload) {
+  $candidates = @(
+    $payload.session_title,
+    $payload.session_name,
+    $payload.conversation_title,
+    $payload.conversation_name,
+    $payload.title,
+    $payload.name,
+    $payload.workspace.name
+  )
+  foreach ($candidate in $candidates) {
+    $cleaned = Get-CleanDisplayName $candidate
+    if ($cleaned) { return $cleaned }
+  }
+  foreach ($candidate in @(
+    (Get-TranscriptDisplayName $payload.transcript_path),
+    (Get-TranscriptDisplayName $payload.transcriptPath)
+  )) {
+    if ($candidate) { return $candidate }
+  }
+  return $null
+}
+
 function Get-Status($payload) {
   $eventName = [string]$payload.hook_event_name
   switch ($eventName) {
@@ -73,10 +133,17 @@ try {
   if ($payload.context_window -and $null -ne $payload.context_window.used_percentage) {
     $context = [double]$payload.context_window.used_percentage
   }
+  $sessionPath = Join-Path $sessionsDir "$sessionId.json"
+  $displayName = Get-DisplayName $payload
+  if (-not $displayName -and (Test-Path $sessionPath)) {
+    $previous = Get-Content -Raw -LiteralPath $sessionPath | ConvertFrom-Json
+    if ($previous.display_name) { $displayName = [string]$previous.display_name }
+  }
 
   $snapshot = [ordered]@{
     session_id = $sessionId
     project_name = Get-ProjectName $cwd
+    display_name = $displayName
     cwd = $cwd
     status = $status
     last_event = $eventName
@@ -90,7 +157,6 @@ try {
     source = "claude-code-hook"
   }
 
-  $sessionPath = Join-Path $sessionsDir "$sessionId.json"
   $tmpPath = "$sessionPath.tmp"
   $snapshotJson = $snapshot | ConvertTo-Json -Depth 16 -Compress
   [System.IO.File]::WriteAllText($tmpPath, $snapshotJson, $Utf8NoBom)

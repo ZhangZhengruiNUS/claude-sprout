@@ -25,6 +25,8 @@ pub enum SessionStatus {
 pub struct SessionSnapshot {
     pub session_id: String,
     pub project_name: String,
+    #[serde(default)]
+    pub display_name: Option<String>,
     pub cwd: String,
     pub status: SessionStatus,
     pub last_event: String,
@@ -168,6 +170,7 @@ mod tests {
         SessionSnapshot {
             session_id: "test".into(),
             project_name: "project".into(),
+            display_name: None,
             cwd: "C:/project".into(),
             status: SessionStatus::Running,
             last_event: "UserPromptSubmit".into(),
@@ -243,6 +246,15 @@ mod tests {
 
         assert_eq!(session.session_id, "ps-session");
         assert_eq!(session.status, SessionStatus::WaitingInput);
+    }
+
+    #[test]
+    fn parses_optional_display_name_for_renamed_sessions() {
+        let raw = r#"{"session_id":"named-session","project_name":"ASUS","display_name":"Renamed release follow-up","cwd":"C:\\Users\\ASUS","status":"running","last_event":"UserPromptSubmit","notification_type":null,"last_tool":null,"context_used_percentage":4,"last_heartbeat_at":"2026-05-22T00:00:00Z","updated_at":"2026-05-22T00:00:00Z","ended_at":null,"end_reason":null,"source":"claude-code-statusline"}"#;
+
+        let session = parse_session_snapshot(raw).expect("renamed session snapshot should parse");
+
+        assert_eq!(session.display_name.as_deref(), Some("Renamed release follow-up"));
     }
 
     #[test]

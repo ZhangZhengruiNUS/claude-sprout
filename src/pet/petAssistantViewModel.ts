@@ -19,6 +19,7 @@ export type PetAssistantActivityCard = {
   sessionId: string
   title: string
   detail: string
+  meta: string
   status: SessionStatus
   tone: PetAssistantCardTone
   updatedAt: string
@@ -151,7 +152,7 @@ function messageForSession(
     key: petAssistantMessageKey(session),
     sessionId: session.session_id,
     title: messageTitle(session),
-    detail: sessionDetail(session),
+    detail: sessionMessageDetail(session),
     tone,
     persistent: isPersistentPetMessage(session.status, completionToastSeconds),
     updatedAt: session.updated_at,
@@ -162,8 +163,9 @@ function activityCardForSession(session: SessionSnapshot): PetAssistantActivityC
   return {
     key: `${session.session_id}:${session.status}:${session.updated_at}`,
     sessionId: session.session_id,
-    title: session.project_name || projectNameFromCwd(session.cwd),
-    detail: sessionDetail(session),
+    title: activityTitle(session),
+    detail: sessionActivityDetail(session),
+    meta: sessionActivityMeta(session),
     status: session.status,
     tone: cardTone(session.status),
     updatedAt: session.updated_at,
@@ -185,10 +187,51 @@ function messageTitle(session: SessionSnapshot) {
   }
 }
 
-function sessionDetail(session: SessionSnapshot) {
-  if (session.last_tool) return `${statusLabel(session.status)} · ${session.last_tool}`
-  if (session.last_event) return `${statusLabel(session.status)} · ${session.last_event}`
-  return `${statusLabel(session.status)} · ${projectNameFromCwd(session.cwd)}`
+function sessionMessageDetail(session: SessionSnapshot) {
+  if (session.last_tool) return `${statusLabel(session.status)} - ${session.last_tool}`
+  if (session.last_event) return `${statusLabel(session.status)} - ${session.last_event}`
+  return `${statusLabel(session.status)} - ${projectNameFromCwd(session.cwd)}`
+}
+
+function sessionActivityDetail(session: SessionSnapshot) {
+  const tool = safeInlineText(session.last_tool)
+  const event = safeInlineText(session.last_event)
+  switch (session.status) {
+    case 'waiting_permission':
+      return tool ? `Needs permission for ${tool}` : 'Needs permission'
+    case 'waiting_input':
+      return 'Waiting for your reply'
+    case 'tool_running':
+      return tool ? `Using ${tool}` : 'Using tool'
+    case 'running':
+      return tool ? `Continuing after ${tool}` : event ? `Running after ${event}` : 'Running'
+    case 'done':
+      return 'Completed'
+    case 'error':
+      return tool ? `Failed around ${tool}` : 'Failed'
+    case 'stale':
+      return 'No heartbeat recently'
+    case 'probably_closed':
+      return 'Probably closed'
+    case 'idle':
+      return 'Idle'
+    case 'closed':
+      return 'Closed'
+    default:
+      return statusLabel(session.status)
+  }
+}
+
+function sessionActivityMeta(session: SessionSnapshot) {
+  const context = contextLabel(session.context_used_percentage)
+  if (displayName(session)) {
+    return [displayProjectName(session), shortSessionId(session.session_id), context].filter(Boolean).join(' - ')
+  }
+  return [statusLabel(session.status), context].filter(Boolean).join(' - ')
+}
+
+function activityTitle(session: SessionSnapshot) {
+  return displayName(session) ?? `${displayProjectName(session)} - ${shortSessionId(session.session_id)}`
 }
 
 function messageTone(status: SessionStatus): PetAssistantMessageTone {
@@ -226,6 +269,27 @@ function messagePriority(tone: PetAssistantMessageTone) {
 
 function displayProjectName(session: SessionSnapshot) {
   return session.project_name || projectNameFromCwd(session.cwd)
+}
+
+function displayName(session: SessionSnapshot) {
+  return safeInlineText(session.display_name)
+}
+
+function safeInlineText(value: string | null | undefined) {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim().replace(/\s+/g, ' ')
+  if (!trimmed) return null
+  return trimmed
+}
+
+function shortSessionId(sessionId: string) {
+  const trimmed = sessionId.trim()
+  return trimmed ? trimmed.slice(0, 6) : 'local'
+}
+
+function contextLabel(value: number | null | undefined) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null
+  return `${Math.round(value)}% ctx`
 }
 
 function projectNameFromCwd(cwd: string) {

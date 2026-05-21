@@ -152,6 +152,7 @@ function ActivityCard({
       <div>
         <strong>{card.title}</strong>
         <small>{card.detail}</small>
+        <em>{card.meta}</em>
       </div>
       <span>{card.status.replaceAll('_', ' ')}</span>
     </article>
