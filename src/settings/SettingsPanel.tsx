@@ -294,7 +294,7 @@ export function SettingsPanel({
             : 'Current pet selection is applied.'}
         </span>
         <div className="setting-actions">
-          <button type="button" onClick={() => onPreviewPetAnimation('wave')}>
+          <button type="button" onClick={() => onPreviewPetAnimation('waving')}>
             Preview wave
           </button>
           <button

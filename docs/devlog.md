@@ -2,6 +2,14 @@
 
 ## 2026-05-22
 
+- Aligned imported Codex-compatible pet animation with the local Codex/Hatch Pet atlas contract:
+  - corrected `codex-8x9` geometry to 8 columns by 9 rows with 192x208 cells.
+  - added row-specific Codex animation metadata for idle, running-right, running-left, waving, jumping, failed, waiting, running, and review.
+  - remapped Claude Code session statuses to Codex row semantics: active work uses running, blocked input/permission uses waiting, done uses review, errors use failed, and quiet states use idle.
+  - fixed imported spritesheet background sizing so shorter rows do not squeeze the full atlas or step through unused transparent cells.
+  - fixed one-shot imported animations so they hold on the final used frame instead of a trailing transparent cell.
+  - scan/import validation now checks WebP dimensions and rejects non-1536x1872 spritesheets for the `codex-8x9` profile.
+  - added frontend and Rust regression tests for the corrected atlas contract and mapping.
 - Made Activity mode layout respond to the actual open-session count:
   - Activity HUD no longer renders when there are no non-closed sessions.
   - pet window height now uses `min(configured activity rows, current activity card count)`, so closing sessions pulls the remaining card stack closer to the pet.

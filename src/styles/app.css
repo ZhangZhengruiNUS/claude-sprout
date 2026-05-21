@@ -509,16 +509,25 @@ button:disabled {
   background: #10201a;
 }
 
-.sprout-pet.run {
+.sprout-pet.run,
+.sprout-pet.running,
+.sprout-pet.runningRight,
+.sprout-pet.runningLeft {
   animation: bob 0.7s steps(2) infinite;
 }
 
-.sprout-pet.wave {
+.sprout-pet.wave,
+.sprout-pet.waving {
   animation: wave 0.95s ease-in-out infinite;
 }
 
-.sprout-pet.jump {
+.sprout-pet.jump,
+.sprout-pet.jumping {
   animation: alert-hop 0.65s ease-out 4;
+}
+
+.sprout-pet.waiting {
+  animation: alert-hop 1.25s ease-in-out infinite;
 }
 
 .sprout-pet.failed {
@@ -550,7 +559,7 @@ button:disabled {
 }
 
 .sprite-pet.once {
-  animation: sprite-frames var(--sprite-duration) steps(var(--sprite-frames)) 1;
+  animation: sprite-frames-once var(--sprite-duration) steps(var(--sprite-once-steps)) 1;
   animation-fill-mode: forwards;
 }
 
@@ -1063,6 +1072,16 @@ h1 {
 
   to {
     background-position-x: var(--sprite-end-offset);
+  }
+}
+
+@keyframes sprite-frames-once {
+  from {
+    background-position-x: 0;
+  }
+
+  to {
+    background-position-x: var(--sprite-hold-offset);
   }
 }
 

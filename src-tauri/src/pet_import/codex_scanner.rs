@@ -85,7 +85,29 @@ mod tests {
     fn write_valid_pet(path: &Path) {
         fs::create_dir_all(path).expect("pet directory should be created");
         fs::write(path.join("pet.json"), "{}").expect("pet manifest should be writable");
-        fs::write(path.join("spritesheet.webp"), "fake").expect("spritesheet should be writable");
+        fs::write(path.join("spritesheet.webp"), vp8x_webp_header(1536, 1872))
+            .expect("spritesheet should be writable");
+    }
+
+    fn vp8x_webp_header(width: u32, height: u32) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(b"RIFF");
+        bytes.extend_from_slice(&22u32.to_le_bytes());
+        bytes.extend_from_slice(b"WEBP");
+        bytes.extend_from_slice(b"VP8X");
+        bytes.extend_from_slice(&10u32.to_le_bytes());
+        bytes.extend_from_slice(&[0, 0, 0, 0]);
+        bytes.extend_from_slice(&u24_le(width - 1));
+        bytes.extend_from_slice(&u24_le(height - 1));
+        bytes
+    }
+
+    fn u24_le(value: u32) -> [u8; 3] {
+        [
+            (value & 0xff) as u8,
+            ((value >> 8) & 0xff) as u8,
+            ((value >> 16) & 0xff) as u8,
+        ]
     }
 
     #[test]

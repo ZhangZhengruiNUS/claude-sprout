@@ -2,13 +2,14 @@ import type { SessionSnapshot, SessionStatus } from '../sessions/sessionTypes'
 
 export type PetAnimation =
   | 'idle'
-  | 'wave'
-  | 'run'
+  | 'runningRight'
+  | 'runningLeft'
+  | 'waving'
+  | 'jumping'
   | 'failed'
+  | 'waiting'
+  | 'running'
   | 'review'
-  | 'jump'
-  | 'extra1'
-  | 'extra2'
 
 const priority: SessionStatus[] = [
   'waiting_permission',
@@ -25,10 +26,10 @@ const priority: SessionStatus[] = [
 
 const mapping: Record<SessionStatus, PetAnimation> = {
   idle: 'idle',
-  running: 'run',
-  tool_running: 'run',
-  waiting_permission: 'jump',
-  waiting_input: 'wave',
+  running: 'running',
+  tool_running: 'running',
+  waiting_permission: 'waiting',
+  waiting_input: 'waiting',
   done: 'review',
   error: 'failed',
   stale: 'idle',

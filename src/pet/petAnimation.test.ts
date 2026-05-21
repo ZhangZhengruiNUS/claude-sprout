@@ -5,7 +5,7 @@ describe('pet animation render keys', () => {
   it('keeps loop animations stable', () => {
     expect(
       petAnimationRenderKey({
-        animation: 'run',
+        animation: 'running',
         mode: 'loop',
         actionActive: false,
         actionReplayKey: 1,
@@ -13,12 +13,12 @@ describe('pet animation render keys', () => {
         status: 'running',
         alertCount: 0,
       }),
-    ).toBe('run')
+    ).toBe('running')
   })
 
   it('restarts one-shot action animations when replay key changes', () => {
     const first = petAnimationRenderKey({
-      animation: 'wave',
+      animation: 'waving',
       mode: 'once',
       actionActive: true,
       actionReplayKey: 1,
@@ -27,7 +27,7 @@ describe('pet animation render keys', () => {
       alertCount: 0,
     })
     const second = petAnimationRenderKey({
-      animation: 'wave',
+      animation: 'waving',
       mode: 'once',
       actionActive: true,
       actionReplayKey: 2,
@@ -39,9 +39,9 @@ describe('pet animation render keys', () => {
     expect(second).not.toBe(first)
   })
 
-  it('restarts one-shot status animations when alert count changes', () => {
+  it('restarts explicit one-shot attention animations when alert count changes', () => {
     const first = petAnimationRenderKey({
-      animation: 'jump',
+      animation: 'jumping',
       mode: 'once',
       actionActive: false,
       actionReplayKey: 0,
@@ -50,7 +50,7 @@ describe('pet animation render keys', () => {
       alertCount: 1,
     })
     const second = petAnimationRenderKey({
-      animation: 'jump',
+      animation: 'jumping',
       mode: 'once',
       actionActive: false,
       actionReplayKey: 0,

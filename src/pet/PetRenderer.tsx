@@ -52,18 +52,19 @@ export function PetRenderer({
     alertCount,
   })
   const spriteDuration =
-    atlasAnimation && petAsset
-      ? 'durationMs' in atlasAnimation && typeof atlasAnimation.durationMs === 'number'
-        ? atlasAnimation.durationMs
-        : petAsset.atlasProfile.defaultFrameDurationMs * atlasAnimation.frameCount
-      : null
+    atlasAnimation && petAsset ? atlasAnimation.durationMs : null
   const spriteSheetWidth =
-    atlasAnimation && petAsset ? petAsset.atlasProfile.frameWidth * atlasAnimation.frameCount : null
+    atlasAnimation && petAsset ? petAsset.atlasProfile.frameWidth * petAsset.atlasProfile.cols : null
   const spriteSheetHeight = petAsset ? petAsset.atlasProfile.frameHeight * petAsset.atlasProfile.rows : null
   const spriteRowOffset =
     atlasAnimation && petAsset ? atlasAnimation.row * petAsset.atlasProfile.frameHeight * -1 : null
   const spriteEndOffset =
     atlasAnimation && petAsset ? petAsset.atlasProfile.frameWidth * atlasAnimation.frameCount * -1 : null
+  const spriteHoldOffset =
+    atlasAnimation && petAsset
+      ? petAsset.atlasProfile.frameWidth * Math.max(0, atlasAnimation.frameCount - 1) * -1
+      : null
+  const spriteOnceSteps = atlasAnimation ? Math.max(1, atlasAnimation.frameCount - 1) : null
   const pointerStart = useRef<{ x: number; y: number; screenX: number; screenY: number } | null>(null)
   const dragSession = useRef<PetDragSession | null>(null)
   const isDragging = useRef(false)
@@ -150,6 +151,8 @@ export function PetRenderer({
               '--sprite-sheet-height': `${spriteSheetHeight}px`,
               '--sprite-row-offset': `${spriteRowOffset}px`,
               '--sprite-end-offset': `${spriteEndOffset}px`,
+              '--sprite-hold-offset': `${spriteHoldOffset}px`,
+              '--sprite-once-steps': spriteOnceSteps,
               '--sprite-duration': `${spriteDuration}ms`,
             } as CSSProperties
           }
@@ -172,5 +175,5 @@ export function PetRenderer({
 }
 
 function builtInAnimationMode(animation: PetAnimation) {
-  return ['jump', 'failed'].includes(animation) ? 'once' : 'loop'
+  return ['jumping', 'waving', 'failed'].includes(animation) ? 'once' : 'loop'
 }

@@ -572,7 +572,7 @@ function App() {
             setPetMenuPosition(null)
             void showSessionPanel()
           }}
-          onDoubleClick={() => playPetAction('wave')}
+          onDoubleClick={() => playPetAction('waving')}
           onContextMenu={(position) => {
             setPetMenuPosition(position)
           }}
