@@ -11,6 +11,12 @@
 - Polished follow-up release-smoke feedback:
   - tray icon now uses a generated tighter 32px sprout icon for a larger visual footprint in the Windows notification area.
   - right-clicking the pet opens a compact context menu with Open, Hide, Larger, and Smaller actions.
+- Re-ran manual release desktop smoke after the launch/tray/pet-menu fixes:
+  - startup shows only the pet window; the main panel no longer appears on launch.
+  - tray icon is visible and the revised icon size is acceptable.
+  - pet click opens the main panel; main-panel minimize and close both hide to tray.
+  - pet right-click menu works for Open, Hide, Larger, and Smaller; tray Show / Hide Pet restores the hidden pet.
+  - tray Quit still exits cleanly.
 - Added the first tagged release checklist for `v0.1.0`:
   - official Windows artifacts are the standalone release exe and NSIS installer.
   - the checklist covers version alignment, tag conflict checks, preflight validation, release tool cache checks, builds, SHA256 capture, desktop and installer smoke, unsigned-release notes, GitHub release publication, and rollback handling.
