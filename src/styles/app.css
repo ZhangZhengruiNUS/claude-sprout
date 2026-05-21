@@ -148,6 +148,11 @@ button:disabled {
 
 .pet-surface.compact.waiting_permission {
   outline: 0;
+  background: transparent;
+}
+
+.pet-surface.compact.waiting_permission .sprout-pet,
+.pet-surface.compact.waiting_permission .sprite-pet {
   filter: drop-shadow(0 0 18px rgba(233, 177, 90, 0.86));
 }
 
