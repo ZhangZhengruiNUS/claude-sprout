@@ -2,6 +2,11 @@
 
 ## 2026-05-22
 
+- Added metadata-only pet event actions:
+  - pet animation now has a small event-action layer above the sustained status mapping.
+  - entering waiting states plays `waving` once, clean completion plays `jumping` once, and new error transitions play `failed` once before returning to the sustained status animation.
+  - repeated polling/statusline updates and waiting-state metadata changes do not replay the action.
+  - action decisions use session metadata only, not conversation previews or transcript content.
 - Fixed pet context menu dismissal:
   - clicking outside the right-click pet menu now closes it.
   - pet window blur also closes the menu so clicks on the desktop or another window do not leave the menu stuck open.

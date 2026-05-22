@@ -21,6 +21,11 @@ import {
 import { PetRenderer } from './pet/PetRenderer'
 import { FloatingPetAssistant } from './pet/FloatingPetAssistant'
 import {
+  nextPetEventActions,
+  rememberPetEventAction,
+  type PetEventAction,
+} from './pet/petEventActions'
+import {
   importCodexPet,
   listPetAssets,
   scanCodexPetCandidates,
@@ -123,6 +128,10 @@ function App() {
   const storageLoadSequenceRef = useRef(0)
   const petMessageFirstSeenAtRef = useRef(new Map<string, number>())
   const petContextMenuRef = useRef<HTMLDivElement | null>(null)
+  const playedPetEventActionKeysRef = useRef(new Set<string>())
+  const petEventActionQueueRef = useRef<PetEventAction[]>([])
+  const isPlayingQueuedPetEventActionRef = useRef(false)
+  const petActionClearTimerRef = useRef<number | null>(null)
 
   async function load(options: { showLoading?: boolean; notify?: boolean } = {}) {
     const sequence = loadSequenceRef.current + 1
@@ -156,6 +165,19 @@ function App() {
         pendingSessionNotificationsRef.current,
       )
     }
+    if (windowKind === 'pet') {
+      const eventActions = nextPetEventActions(
+        sessionsRef.current,
+        nextSessions,
+        playedPetEventActionKeysRef.current,
+      )
+      if (eventActions.length > 0) {
+        for (const eventAction of eventActions) {
+          rememberPetEventAction(playedPetEventActionKeysRef.current, eventAction.key)
+        }
+        enqueuePetEventActions(eventActions)
+      }
+    }
     sessionsRef.current = nextSessions
     setSessions(nextSessions)
     if (options.showLoading ?? true) {
@@ -182,6 +204,8 @@ function App() {
       void load({ showLoading: false, notify: windowKind === 'panel' })
     }, 30_000)
     return () => window.clearInterval(id)
+    // Session polling is keyed by window kind; `load` intentionally reads current refs/state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowKind])
 
   useEffect(() => {
@@ -243,6 +267,17 @@ function App() {
     const id = window.setInterval(() => setPetAssistantTick(Date.now()), 1000)
     return () => window.clearInterval(id)
   }, [windowKind])
+
+  useEffect(
+    () => () => {
+      if (petActionClearTimerRef.current !== null) {
+        window.clearTimeout(petActionClearTimerRef.current)
+      }
+      petEventActionQueueRef.current = []
+      isPlayingQueuedPetEventActionRef.current = false
+    },
+    [],
+  )
 
   useEffect(() => {
     const currentKeys = new Set<string>()
@@ -422,13 +457,60 @@ function App() {
       isMounted = false
       unlisten?.()
     }
+    // Session-change subscription is keyed by window kind; `load` intentionally reads current refs/state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowKind])
 
-  function playPetAction(action: PetAnimation) {
+  function enqueuePetEventActions(actions: PetEventAction[]) {
+    petEventActionQueueRef.current.push(...actions)
+    if (
+      !isPlayingQueuedPetEventActionRef.current &&
+      petActionClearTimerRef.current === null
+    ) {
+      playNextQueuedPetEventAction()
+    }
+  }
+
+  function playNextQueuedPetEventAction() {
+    const nextAction = petEventActionQueueRef.current.shift()
+    if (!nextAction) {
+      isPlayingQueuedPetEventActionRef.current = false
+      return
+    }
+
+    isPlayingQueuedPetEventActionRef.current = true
+    playPetAction(nextAction.animation, nextAction.durationMs, {
+      preserveEventQueue: true,
+      onComplete: playNextQueuedPetEventAction,
+    })
+  }
+
+  function playPetAction(
+    action: PetAnimation,
+    durationMs = 950,
+    options: { preserveEventQueue?: boolean; onComplete?: () => void } = {},
+  ) {
+    if (!options.preserveEventQueue) {
+      petEventActionQueueRef.current = []
+      isPlayingQueuedPetEventActionRef.current = false
+    }
     setPetMenuPosition(null)
     setPetActionReplayKey((current) => current + 1)
     setPetAction(action)
-    window.setTimeout(() => setPetAction(null), 950)
+    if (petActionClearTimerRef.current !== null) {
+      window.clearTimeout(petActionClearTimerRef.current)
+    }
+    petActionClearTimerRef.current = window.setTimeout(() => {
+      setPetAction(null)
+      petActionClearTimerRef.current = null
+      options.onComplete?.()
+      if (
+        !isPlayingQueuedPetEventActionRef.current &&
+        petEventActionQueueRef.current.length > 0
+      ) {
+        playNextQueuedPetEventAction()
+      }
+    }, durationMs)
   }
 
   async function resizePet(delta: number) {
