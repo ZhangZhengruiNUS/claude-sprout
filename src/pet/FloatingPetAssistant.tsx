@@ -1,4 +1,5 @@
 import { Check, ChevronDown, ChevronUp } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { PetAssistantActivityCard, PetAssistantMessage, PetAssistantView } from './petAssistantViewModel'
 
 type Props = {
@@ -67,20 +68,22 @@ function MinimalHud({
   finishedUnclosedCount: number
   actionableCount: number
 }) {
+  const { t } = useTranslation()
+
   return (
     <div className="pet-minimal-hud">
       <span className="pet-hud-pill running">
         <strong>{runningCount}</strong>
-        running
+        {t('petAssistant.running')}
       </span>
       <span className="pet-hud-pill complete">
         <strong>{finishedUnclosedCount}</strong>
-        finished
+        {t('petAssistant.finished')}
       </span>
       {actionableCount > 0 ? (
         <span className="pet-hud-pill intervention">
           <strong>{actionableCount}</strong>
-          action
+          {t('petAssistant.action')}
         </span>
       ) : null}
     </div>
@@ -102,15 +105,17 @@ function ActivityHud({
   onPageChange: (page: number) => void
   onOpenPanel: () => void
 }) {
+  const { t } = useTranslation()
+
   return (
-    <section className="pet-activity-hud" aria-label="Claude Code session activity">
+    <section className="pet-activity-hud" aria-label={t('petAssistant.activityLabel')}>
       <div className="pet-activity-header">
-        <span>Active sessions</span>
+        <span>{t('petAssistant.activeSessions')}</span>
         <small>{overflowCount > 0 ? `+${overflowCount}` : `${cards.length}`}</small>
       </div>
       <div className="pet-activity-list">
         {cards.length === 0 ? (
-          <div className="pet-activity-empty">No open sessions</div>
+          <div className="pet-activity-empty">{t('petAssistant.noOpenSessions')}</div>
         ) : (
           cards.map((card) => <ActivityCard key={card.key} card={card} onOpenPanel={onOpenPanel} />)
         )}
@@ -119,7 +124,7 @@ function ActivityHud({
         <div className="pet-activity-pager">
           <button
             type="button"
-            title="Previous sessions"
+            title={t('petAssistant.previousSessions')}
             onClick={() => onPageChange(Math.max(0, page - 1))}
             disabled={page === 0}
           >
@@ -130,7 +135,7 @@ function ActivityHud({
           </span>
           <button
             type="button"
-            title="More sessions"
+            title={t('petAssistant.moreSessions')}
             onClick={() => onPageChange(Math.min(pageCount - 1, page + 1))}
             disabled={page >= pageCount - 1}
           >
@@ -149,6 +154,8 @@ function ActivityCard({
   card: PetAssistantActivityCard
   onOpenPanel: () => void
 }) {
+  const { t } = useTranslation()
+
   return (
     <article className={`pet-activity-card ${card.tone}`} onClick={onOpenPanel}>
       <div>
@@ -156,7 +163,7 @@ function ActivityCard({
         <small>{card.detail}</small>
         <em>{card.meta}</em>
       </div>
-      <span>{card.status.replaceAll('_', ' ')}</span>
+      <span>{t(`status.${card.status}`)}</span>
     </article>
   )
 }
@@ -170,6 +177,8 @@ function PetMessageCard({
   onOpenPanel: () => void
   onAcknowledge: () => void
 }) {
+  const { t } = useTranslation()
+
   return (
     <article className={`pet-message-card ${message.tone}`} onClick={onOpenPanel}>
       <div>
@@ -178,7 +187,7 @@ function PetMessageCard({
       </div>
       <button
         type="button"
-        title="Acknowledge"
+        title={t('petAssistant.acknowledge')}
         onClick={(event) => {
           event.stopPropagation()
           onAcknowledge()

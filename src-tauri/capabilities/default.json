@@ -15,6 +15,7 @@
     "core:window:allow-set-size",
     "notification:default",
     "opener:default",
+    "os:allow-locale",
     "window-state:default"
   ]
 }

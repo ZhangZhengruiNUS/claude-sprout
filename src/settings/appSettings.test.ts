@@ -47,6 +47,7 @@ describe('app settings persistence', () => {
       'claude-sprout.settings.v1',
       JSON.stringify({
         doNotDisturb: true,
+        language: 'zh-CN',
         petAlwaysOnTop: false,
         petLockPosition: true,
         petScale: 99,
@@ -62,6 +63,7 @@ describe('app settings persistence', () => {
 
     expect(loadAppSettings(storage)).toEqual({
       doNotDisturb: true,
+      language: 'zh-CN',
       petAlwaysOnTop: false,
       petLockPosition: true,
       petScale: PET_SIZE_OPTIONS.large.scale,

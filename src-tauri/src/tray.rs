@@ -4,26 +4,82 @@ use tauri::{
     image::Image,
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    App, Emitter, Manager,
+    App, Emitter, Listener, Manager, Wry,
 };
 
 const SESSION_CHANGED_EVENT: &str = "claude-sprout://sessions-changed";
 const SETTINGS_CHANGED_EVENT: &str = "claude-sprout://settings-changed";
 const OPEN_SETTINGS_EVENT: &str = "claude-sprout://open-settings";
 
+#[derive(Clone)]
+struct TrayMenuItems {
+    show_panel: MenuItem<Wry>,
+    show_pet: MenuItem<Wry>,
+    dnd: MenuItem<Wry>,
+    refresh: MenuItem<Wry>,
+    open_data: MenuItem<Wry>,
+    settings: MenuItem<Wry>,
+    quit: MenuItem<Wry>,
+}
+
+#[derive(Clone, Copy)]
+enum TrayLanguage {
+    En,
+    ZhCn,
+}
+
+struct TrayLabels {
+    show_panel: &'static str,
+    show_pet: &'static str,
+    dnd: &'static str,
+    refresh: &'static str,
+    open_data: &'static str,
+    settings: &'static str,
+    quit: &'static str,
+}
+
+impl TrayMenuItems {
+    fn apply_language(&self, language: TrayLanguage) {
+        let labels = tray_labels(language);
+        let _ = self.show_panel.set_text(labels.show_panel);
+        let _ = self.show_pet.set_text(labels.show_pet);
+        let _ = self.dnd.set_text(labels.dnd);
+        let _ = self.refresh.set_text(labels.refresh);
+        let _ = self.open_data.set_text(labels.open_data);
+        let _ = self.settings.set_text(labels.settings);
+        let _ = self.quit.set_text(labels.quit);
+    }
+}
+
 pub fn create_tray(app: &mut App) -> tauri::Result<()> {
-    let show_panel = MenuItem::with_id(app, "open_panel", "Open Session Panel", true, None::<&str>)?;
-    let show_pet = MenuItem::with_id(app, "toggle_pet", "Show / Hide Pet", true, None::<&str>)?;
-    let dnd = MenuItem::with_id(app, "dnd", "Do Not Disturb", true, None::<&str>)?;
-    let refresh = MenuItem::with_id(app, "refresh", "Refresh Sessions", true, None::<&str>)?;
-    let open_data =
-        MenuItem::with_id(app, "open_data", "Open Data Folder", true, None::<&str>)?;
-    let settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let labels = tray_labels(current_tray_language());
+    let show_panel = MenuItem::with_id(app, "open_panel", labels.show_panel, true, None::<&str>)?;
+    let show_pet = MenuItem::with_id(app, "toggle_pet", labels.show_pet, true, None::<&str>)?;
+    let dnd = MenuItem::with_id(app, "dnd", labels.dnd, true, None::<&str>)?;
+    let refresh = MenuItem::with_id(app, "refresh", labels.refresh, true, None::<&str>)?;
+    let open_data = MenuItem::with_id(app, "open_data", labels.open_data, true, None::<&str>)?;
+    let settings = MenuItem::with_id(app, "settings", labels.settings, true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", labels.quit, true, None::<&str>)?;
     let menu = Menu::with_items(
         app,
         &[&show_pet, &show_panel, &dnd, &refresh, &open_data, &settings, &quit],
     )?;
+    let menu_items = TrayMenuItems {
+        show_panel,
+        show_pet,
+        dnd,
+        refresh,
+        open_data,
+        settings,
+        quit,
+    };
+    let language_menu_items = menu_items.clone();
+
+    app.listen(SETTINGS_CHANGED_EVENT, move |event| {
+        if let Ok(settings) = serde_json::from_str::<app_settings::AppSettings>(event.payload()) {
+            language_menu_items.apply_language(language_for_settings(&settings));
+        }
+    });
 
     let mut tray = TrayIconBuilder::with_id("claude-sprout-tray")
         .tooltip("Claude Sprout")
@@ -94,6 +150,52 @@ pub fn create_tray(app: &mut App) -> tauri::Result<()> {
     tray.build(app)?;
 
     Ok(())
+}
+
+fn current_tray_language() -> TrayLanguage {
+    app_settings::load()
+        .map(|settings| language_for_settings(&settings))
+        .unwrap_or_else(|_| system_tray_language())
+}
+
+fn language_for_settings(settings: &app_settings::AppSettings) -> TrayLanguage {
+    match settings.language {
+        app_settings::AppLanguage::ZhCn => TrayLanguage::ZhCn,
+        app_settings::AppLanguage::En => TrayLanguage::En,
+        app_settings::AppLanguage::System => system_tray_language(),
+    }
+}
+
+fn system_tray_language() -> TrayLanguage {
+    let locale = sys_locale::get_locale().unwrap_or_default().to_lowercase();
+    if locale.starts_with("zh") {
+        TrayLanguage::ZhCn
+    } else {
+        TrayLanguage::En
+    }
+}
+
+fn tray_labels(language: TrayLanguage) -> TrayLabels {
+    match language {
+        TrayLanguage::En => TrayLabels {
+            show_panel: "Open Session Panel",
+            show_pet: "Show / Hide Pet",
+            dnd: "Do Not Disturb",
+            refresh: "Refresh Sessions",
+            open_data: "Open Data Folder",
+            settings: "Settings",
+            quit: "Quit",
+        },
+        TrayLanguage::ZhCn => TrayLabels {
+            show_panel: "打开会话面板",
+            show_pet: "显示 / 隐藏宠物",
+            dnd: "勿扰",
+            refresh: "刷新会话",
+            open_data: "打开数据文件夹",
+            settings: "设置",
+            quit: "退出",
+        },
+    }
 }
 
 fn tray_icon_image() -> tauri::Result<Image<'static>> {

@@ -1,4 +1,5 @@
 import { Clock, FolderOpen, Hammer, RefreshCw, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { openProjectFolder } from './sessionApi'
 import type { SessionSnapshot, SessionStatus } from './sessionTypes'
 
@@ -22,9 +23,9 @@ type Props = {
   onRefresh: () => void | Promise<void>
 }
 
-function formatTime(value?: string | null) {
-  if (!value) return 'n/a'
-  return new Intl.DateTimeFormat(undefined, {
+function formatTime(value: string | null | undefined, language: string | undefined, fallback: string) {
+  if (!value) return fallback
+  return new Intl.DateTimeFormat(language, {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
@@ -32,6 +33,7 @@ function formatTime(value?: string | null) {
 }
 
 export function SessionPanel({ sessions, isLoading, loadError, onRefresh }: Props) {
+  const { t, i18n } = useTranslation()
   const sortedSessions = [...sessions].sort((a, b) => {
     const rankDelta = statusRank[a.status] - statusRank[b.status]
     if (rankDelta !== 0) return rankDelta
@@ -42,12 +44,12 @@ export function SessionPanel({ sessions, isLoading, loadError, onRefresh }: Prop
     <section className="session-panel">
       <div className="panel-heading">
         <div>
-          <h2>Claude Code sessions</h2>
-          <p>Snapshots are read from local hook/statusline files only.</p>
+          <h2>{t('sessions.title')}</h2>
+          <p>{t('sessions.description')}</p>
         </div>
         <button type="button" onClick={onRefresh} disabled={isLoading}>
           <RefreshCw size={16} />
-          {isLoading ? 'Refreshing' : 'Refresh'}
+          {isLoading ? t('sessions.refreshing') : t('common.refresh')}
         </button>
       </div>
 
@@ -55,7 +57,7 @@ export function SessionPanel({ sessions, isLoading, loadError, onRefresh }: Prop
 
       <div className="session-list">
         {!isLoading && sortedSessions.length === 0 && !loadError ? (
-          <p className="session-empty">No Claude Code session snapshots found yet.</p>
+          <p className="session-empty">{t('sessions.empty')}</p>
         ) : null}
 
         {sortedSessions.map((session) => (
@@ -64,54 +66,60 @@ export function SessionPanel({ sessions, isLoading, loadError, onRefresh }: Prop
               <div className="session-title">
                 <span className={`status-dot ${session.status}`} />
                 <div>
-                  <h3>{session.project_name || 'Unknown project'}</h3>
+                  <h3>{session.project_name || t('sessions.unknownProject')}</h3>
                   <p>{session.cwd}</p>
                 </div>
               </div>
-              <span className={`status-pill ${session.status}`}>{session.status}</span>
+              <span className={`status-pill ${session.status}`}>
+                {t(`status.${session.status}`)}
+              </span>
             </div>
 
             <dl className="session-meta">
               <div>
-                <dt>Session</dt>
+                <dt>{t('sessions.session')}</dt>
                 <dd>{session.session_id}</dd>
               </div>
               <div>
-                <dt>Last event</dt>
-                <dd>{session.last_event || 'n/a'}</dd>
+                <dt>{t('sessions.lastEvent')}</dt>
+                <dd>{session.last_event || t('common.na')}</dd>
               </div>
               <div>
-                <dt>Last tool</dt>
+                <dt>{t('sessions.lastTool')}</dt>
                 <dd>
                   <Hammer size={14} />
-                  {session.last_tool || 'n/a'}
+                  {session.last_tool || t('common.na')}
                 </dd>
               </div>
               <div>
-                <dt>Heartbeat</dt>
+                <dt>{t('sessions.heartbeat')}</dt>
                 <dd>
                   <Clock size={14} />
-                  {formatTime(session.last_heartbeat_at)}
+                  {formatTime(session.last_heartbeat_at, i18n.resolvedLanguage, t('common.na'))}
                 </dd>
               </div>
               <div>
-                <dt>Context</dt>
-                <dd>{session.context_used_percentage ?? 'n/a'}%</dd>
+                <dt>{t('sessions.context')}</dt>
+                <dd>
+                  {typeof session.context_used_percentage === 'number'
+                    ? `${session.context_used_percentage}%`
+                    : t('common.na')}
+                </dd>
               </div>
               <div>
-                <dt>Updated</dt>
-                <dd>{formatTime(session.updated_at)}</dd>
+                <dt>{t('sessions.updated')}</dt>
+                <dd>{formatTime(session.updated_at, i18n.resolvedLanguage, t('common.na'))}</dd>
               </div>
             </dl>
 
             <div className="card-actions">
               <button type="button" onClick={() => openProjectFolder(session.cwd)}>
                 <FolderOpen size={16} />
-                Open project
+                {t('sessions.openProject')}
               </button>
               <button type="button" disabled>
                 <Trash2 size={16} />
-                Clean
+                {t('sessions.clean')}
               </button>
             </div>
           </article>

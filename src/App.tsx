@@ -12,6 +12,7 @@ import {
   ZoomOut,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useTranslation } from 'react-i18next'
 import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import {
@@ -26,8 +27,6 @@ import type { PetDragAnimation } from './pet/petDragAnimation'
 import { resolvePetWindowAction } from './pet/petActionPriority'
 import {
   nextPetDisplayMode,
-  petDisplayModeMenuLabel,
-  petDisplayModeMenuTitle,
 } from './pet/petDisplayModeMenu'
 import {
   nextPetEventActions,
@@ -82,6 +81,7 @@ import {
 } from './storage/storageApi'
 import { cleanStorageConfirmationText, formatBytes } from './storage/storageFormatting'
 import { isTauriRuntime } from './tauriRuntime'
+import { applyAppLanguage } from './i18n/i18n'
 import './styles/app.css'
 
 type WindowKind = 'panel' | 'pet'
@@ -104,6 +104,7 @@ function resolveInitialWindowKind(): WindowKind {
 }
 
 function App() {
+  const { t } = useTranslation()
   const [sessions, setSessions] = useState<SessionSnapshot[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sessionLoadError, setSessionLoadError] = useState<string | null>(null)
@@ -159,7 +160,7 @@ function App() {
       if (sequence !== loadSequenceRef.current) {
         return
       }
-      setSessionLoadError(`Session load failed: ${errorMessage(error)}`)
+      setSessionLoadError(t('errors.sessionLoadFailed', { message: errorMessage(error) }))
       if (options.showLoading ?? true) {
         setIsLoading(false)
       }
@@ -202,7 +203,7 @@ function App() {
     try {
       await refreshSessions()
     } catch (error) {
-      setSessionLoadError(`Session refresh failed: ${errorMessage(error)}`)
+      setSessionLoadError(t('errors.sessionRefreshFailed', { message: errorMessage(error) }))
       return
     }
 
@@ -235,14 +236,14 @@ function App() {
       })
       .catch((error) => {
         if (isMounted) {
-          setSessionLoadError(`Data root lookup failed: ${errorMessage(error)}`)
+          setSessionLoadError(t('errors.dataRootFailed', { message: errorMessage(error) }))
         }
       })
 
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [t])
 
   const topStatus = useMemo(() => getHighestPriorityStatus(sessions), [sessions])
   const activeCount = sessions.filter((session) => !['closed'].includes(session.status)).length
@@ -258,6 +259,7 @@ function App() {
         completionToastSeconds: settings.petCompletionToastSeconds,
         messageFirstSeenAt: petMessageFirstSeenAtRef.current,
         conversationPreviewEnabled: settings.petConversationPreviewEnabled,
+        translate: (key, options) => t(key, options),
       }),
     [
       acknowledgedPetMessageKeys,
@@ -267,6 +269,7 @@ function App() {
       settings.petCompletionToastSeconds,
       settings.petConversationPreviewEnabled,
       settings.petDisplayMode,
+      t,
     ],
   )
   const activityCardCount = petAssistantView.activityCards.length
@@ -362,6 +365,10 @@ function App() {
   }, [settings])
 
   useEffect(() => {
+    void applyAppLanguage(settings.language)
+  }, [settings.language])
+
+  useEffect(() => {
     petAssetsRef.current = petAssets
   }, [petAssets])
 
@@ -424,6 +431,8 @@ function App() {
   useEffect(() => {
     if (windowKind !== 'panel' || activeTab !== 'settings') return
     void loadStorageSummary()
+    // Storage refresh is keyed by the visible Settings tab; the loader intentionally reads current translation state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, windowKind])
 
   useEffect(() => {
@@ -651,7 +660,7 @@ function App() {
       if (sequence !== storageLoadSequenceRef.current) {
         return false
       }
-      setStorageMessage(`Storage summary failed: ${errorMessage(error)}`)
+      setStorageMessage(t('errors.storageSummaryFailed', { message: errorMessage(error) }))
       return false
     } finally {
       if (sequence === storageLoadSequenceRef.current) {
@@ -680,13 +689,16 @@ function App() {
       const refreshed = await loadStorageSummary({ clearMessage: false })
       if (!refreshed) return
       setStorageMessage(
-        `Deleted ${result.deletedFileCount} files and freed ${formatBytes(result.deletedBytes)}.`,
+        t('storage.deleted', {
+          count: result.deletedFileCount,
+          bytes: formatBytes(result.deletedBytes),
+        }),
       )
       if (kind === 'safe_sessions') {
         await load({ showLoading: false })
       }
     } catch (error) {
-      setStorageMessage(`Storage cleanup failed: ${errorMessage(error)}`)
+      setStorageMessage(t('errors.storageCleanupFailed', { message: errorMessage(error) }))
     } finally {
       setIsStorageCleaning(false)
     }
@@ -770,54 +782,58 @@ function App() {
           >
             <button
               type="button"
-              title="Open session panel"
+              title={t('petMenu.openTitle')}
               onClick={() => {
                 setPetMenuPosition(null)
                 void showSessionPanel()
               }}
             >
               <PanelTopOpen size={14} />
-              Open
+              {t('petMenu.open')}
             </button>
             <button
               type="button"
-              title="Hide pet window"
+              title={t('petMenu.hideTitle')}
               onClick={() => {
                 void hidePet()
               }}
             >
               <EyeOff size={14} />
-              Hide
+              {t('petMenu.hide')}
             </button>
             <button
               type="button"
-              title={petDisplayModeMenuTitle(settings.petDisplayMode)}
+              title={t(
+                settings.petDisplayMode === 'activity'
+                  ? 'petMenu.switchToMinimal'
+                  : 'petMenu.switchToActivity',
+              )}
               onClick={() => {
                 void togglePetDisplayMode()
               }}
             >
               <LayoutList size={14} />
-              {petDisplayModeMenuLabel(settings.petDisplayMode)}
+              {t(settings.petDisplayMode === 'activity' ? 'petMenu.minimal' : 'petMenu.activity')}
             </button>
             <button
               type="button"
-              title="Make pet larger"
+              title={t('petMenu.largerTitle')}
               onClick={() => {
                 void resizePet(1)
               }}
             >
               <ZoomIn size={14} />
-              Larger
+              {t('petMenu.larger')}
             </button>
             <button
               type="button"
-              title="Make pet smaller"
+              title={t('petMenu.smallerTitle')}
               onClick={() => {
                 void resizePet(-1)
               }}
             >
               <ZoomOut size={14} />
-              Smaller
+              {t('petMenu.smaller')}
             </button>
           </div>
         ) : null}
@@ -827,7 +843,7 @@ function App() {
 
   return (
     <main className="app-shell">
-      <aside className="pet-rail" aria-label="Claude Sprout pet preview">
+      <aside className="pet-rail" aria-label={t('app.petPreviewLabel')}>
         <div className="brand-mark">
           <PawPrint size={18} />
           <span>Claude Sprout</span>
@@ -842,11 +858,11 @@ function App() {
         <div className="rail-actions">
           <button type="button" onClick={() => setActiveTab('sessions')}>
             <Bell size={16} />
-            Sessions
+            {t('app.sessionsTab')}
           </button>
           <button type="button" onClick={() => setActiveTab('settings')}>
             <Settings size={16} />
-            Settings
+            {t('app.settingsTab')}
           </button>
         </div>
       </aside>
@@ -854,8 +870,8 @@ function App() {
       <section className="content-panel">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Windows-first Claude Code companion</p>
-            <h1>Session status center</h1>
+            <p className="eyebrow">{t('app.eyebrow')}</p>
+            <h1>{t('app.title')}</h1>
           </div>
           <div className="topbar-actions">
             <button
@@ -867,7 +883,7 @@ function App() {
               aria-pressed={settings.doNotDisturb}
             >
               <Moon size={16} />
-              Do not disturb
+              {t('app.doNotDisturb')}
             </button>
             <button
               type="button"
@@ -876,7 +892,7 @@ function App() {
               }}
             >
               <RefreshCw size={16} />
-              Refresh
+              {t('app.refresh')}
             </button>
           </div>
         </header>
@@ -884,11 +900,11 @@ function App() {
         <div className="status-strip">
           <div>
             <span className="metric">{activeCount}</span>
-            <span>tracked sessions</span>
+            <span>{t('app.trackedSessions')}</span>
           </div>
           <div>
             <span className={`status-dot ${topStatus}`} />
-            <span>highest priority: {topStatus}</span>
+            <span>{t('app.highestPriority', { status: t(`status.${topStatus}`) })}</span>
           </div>
           <div>
             <FolderOpen size={16} />

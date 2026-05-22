@@ -1,4 +1,5 @@
 import type { StorageCleanKind } from './storageApi'
+import i18n from '../i18n/i18n'
 
 export function formatBytes(value: number) {
   const bytes = Math.max(0, value)
@@ -16,10 +17,18 @@ export function cleanStorageConfirmationText(
   bytes: number,
 ) {
   if (kind === 'safe_sessions') {
-    return `Clean ${fileCount} safe session ${pluralize(fileCount, 'file')} and free ${formatBytes(bytes)}? Running and waiting sessions will be kept.`
+    return i18n.t('storage.confirmSafeSessions', {
+      count: fileCount,
+      fileLabel: pluralize(fileCount, 'file'),
+      bytes: formatBytes(bytes),
+    })
   }
 
-  return `Clean ${fileCount} old event ${pluralize(fileCount, 'file')} and free ${formatBytes(bytes)}? Recent event files will be kept.`
+  return i18n.t('storage.confirmOldEvents', {
+    count: fileCount,
+    fileLabel: pluralize(fileCount, 'file'),
+    bytes: formatBytes(bytes),
+  })
 }
 
 function formatUnit(value: number) {

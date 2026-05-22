@@ -2,6 +2,14 @@
 
 ## 2026-05-22
 
+- Added local English/Simplified Chinese UI support:
+  - bundled i18next/react-i18next resources under `src/i18n`.
+  - added `language: system | en | zh-CN` to frontend and Rust app settings.
+  - Settings now includes a language selector and persists the choice under `%USERPROFILE%\.claude-sprout\settings.json`.
+  - React UI strings for the session panel, settings, storage cleanup, pet menu, pet assistant cards, and notification titles now localize from local resources.
+  - Tauri OS locale support is wired through `@tauri-apps/plugin-os` / `tauri-plugin-os` with `os:allow-locale`.
+  - Rust tray menu labels now use the same language setting and update when settings-change events carry a new language.
+  - verified with `npm test`, `npm run lint`, `npm run build`, `cargo test --manifest-path src-tauri\Cargo.toml`, and `npm run tauri -- build --no-bundle`.
 - Replaced the project-standard pet and app iconography with the new Claude Sprout mascot:
   - added the generated Codex/Hatch-compatible 8x9 WebP atlas as the built-in pet spritesheet, so the default pet now uses the same animation pipeline as imported pets.
   - updated Settings copy and panel/pet preview routing so "Claude Sprout" is the standard built-in pet while imported Codex pets remain optional alternatives.

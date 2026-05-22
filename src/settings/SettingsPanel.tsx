@@ -1,15 +1,15 @@
 import { Download, FileText, Lock, Pin, RefreshCw, Search, VolumeX } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { CodexPetCandidate, PetAsset } from '../pet/petAssetsApi'
 import type { PetAnimation } from '../pet/petStateMapper'
 import { StoragePanel } from '../storage/StoragePanel'
 import type { StorageCleanKind, StorageSummary } from '../storage/storageApi'
-import type { AppSettings, PetDisplayMode, PetSizePreset } from './appSettings'
+import type { AppLanguage, AppSettings, PetDisplayMode, PetSizePreset } from './appSettings'
 import {
   PET_ACTIVITY_WINDOW_WIDTH_MAX,
   PET_ACTIVITY_WINDOW_WIDTH_MIN,
   PET_MESSAGE_BOX_OPACITY_MAX,
   PET_MESSAGE_BOX_OPACITY_MIN,
-  PET_SIZE_OPTIONS,
 } from './appSettings'
 
 type Props = {
@@ -39,10 +39,20 @@ type Props = {
 }
 
 const PET_SIZE_PRESETS = ['small', 'medium', 'large'] as const
-const PET_DISPLAY_MODES: Array<{ value: PetDisplayMode; label: string }> = [
-  { value: 'minimal', label: 'Minimal' },
-  { value: 'activity', label: 'Activity' },
+const APP_LANGUAGE_OPTIONS: Array<{ value: AppLanguage; labelKey: string }> = [
+  { value: 'system', labelKey: 'language.system' },
+  { value: 'en', labelKey: 'language.english' },
+  { value: 'zh-CN', labelKey: 'language.chinese' },
 ]
+const PET_DISPLAY_MODES: Array<{ value: PetDisplayMode; labelKey: string }> = [
+  { value: 'minimal', labelKey: 'settings.minimal' },
+  { value: 'activity', labelKey: 'settings.activity' },
+]
+const PET_SIZE_LABEL_KEYS: Record<Exclude<PetSizePreset, 'custom'>, string> = {
+  small: 'settings.petSizeSmall',
+  medium: 'settings.petSizeMedium',
+  large: 'settings.petSizeLarge',
+}
 
 export function SettingsPanel({
   settings,
@@ -69,16 +79,35 @@ export function SettingsPanel({
   onCleanStorage,
   onOpenDataFolder,
 }: Props) {
+  const { t } = useTranslation()
   const installedPetIds = new Set(petAssets.map((petAsset) => petAsset.id))
   const hasPendingPetSelection = previewPetId !== settings.activePetId
 
   return (
     <section className="settings-panel">
-      <h2>Settings</h2>
+      <h2>{t('settings.title')}</h2>
+      <div className="setting-row">
+        <span>
+          <strong>{t('settings.languageTitle')}</strong>
+          <small>{t('settings.languageDescription')}</small>
+        </span>
+        <div className="size-segment" role="group" aria-label={t('settings.languageTitle')}>
+          {APP_LANGUAGE_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={settings.language === option.value ? 'active' : ''}
+              onClick={() => onSettingsChange({ ...settings, language: option.value })}
+            >
+              {t(option.labelKey)}
+            </button>
+          ))}
+        </div>
+      </div>
       <label className="setting-row">
         <span>
-          <strong>Do not disturb</strong>
-          <small>Suppress non-critical notifications while keeping session state visible.</small>
+          <strong>{t('app.doNotDisturb')}</strong>
+          <small>{t('settings.doNotDisturbDescription')}</small>
         </span>
         <span className="setting-control">
           <VolumeX size={16} />
@@ -91,10 +120,10 @@ export function SettingsPanel({
       </label>
       <div className="setting-row">
         <span>
-          <strong>Pet information mode</strong>
-          <small>Choose between quiet daily counts and a persistent session activity stack.</small>
+          <strong>{t('settings.petInformationMode')}</strong>
+          <small>{t('settings.petInformationModeDescription')}</small>
         </span>
-        <div className="size-segment" role="group" aria-label="Pet information mode">
+        <div className="size-segment" role="group" aria-label={t('settings.petInformationMode')}>
           {PET_DISPLAY_MODES.map((mode) => (
             <button
               key={mode.value}
@@ -102,15 +131,15 @@ export function SettingsPanel({
               className={settings.petDisplayMode === mode.value ? 'active' : ''}
               onClick={() => onSettingsChange({ ...settings, petDisplayMode: mode.value })}
             >
-              {mode.label}
+              {t(mode.labelKey)}
             </button>
           ))}
         </div>
       </div>
       <label className="setting-row">
         <span>
-          <strong>Completion message</strong>
-          <small>Seconds to show finished-task cards. Use 0 to keep them until acknowledged.</small>
+          <strong>{t('settings.completionMessage')}</strong>
+          <small>{t('settings.completionMessageDescription')}</small>
         </span>
         <input
           className="setting-number"
@@ -128,8 +157,8 @@ export function SettingsPanel({
       </label>
       <label className="setting-row">
         <span>
-          <strong>Activity rows</strong>
-          <small>Number of open sessions shown before pager controls appear.</small>
+          <strong>{t('settings.activityRows')}</strong>
+          <small>{t('settings.activityRowsDescription')}</small>
         </span>
         <input
           className="setting-number"
@@ -147,8 +176,8 @@ export function SettingsPanel({
       </label>
       <label className="setting-row">
         <span>
-          <strong>Activity width</strong>
-          <small>Wider Activity cards can show longer conversation previews.</small>
+          <strong>{t('settings.activityWidth')}</strong>
+          <small>{t('settings.activityWidthDescription')}</small>
         </span>
         <input
           className="setting-number"
@@ -167,8 +196,8 @@ export function SettingsPanel({
       </label>
       <label className="setting-row">
         <span>
-          <strong>Message opacity</strong>
-          <small>Adjust the glass background opacity for pet message and activity cards.</small>
+          <strong>{t('settings.messageOpacity')}</strong>
+          <small>{t('settings.messageOpacityDescription')}</small>
         </span>
         <span className="setting-slider">
           <input
@@ -189,8 +218,8 @@ export function SettingsPanel({
       </label>
       <label className="setting-row">
         <span>
-          <strong>Read conversation preview</strong>
-          <small>Allow Activity cards to show short transcript snippets. Leave off for metadata-only cards.</small>
+          <strong>{t('settings.readConversationPreview')}</strong>
+          <small>{t('settings.readConversationPreviewDescription')}</small>
         </span>
         <span className="setting-control">
           <FileText size={16} />
@@ -208,8 +237,8 @@ export function SettingsPanel({
       </label>
       <label className="setting-row">
         <span>
-          <strong>Always on top pet window</strong>
-          <small>Keep the pet visible above normal desktop windows.</small>
+          <strong>{t('settings.alwaysOnTop')}</strong>
+          <small>{t('settings.alwaysOnTopDescription')}</small>
         </span>
         <span className="setting-control">
           <Pin size={16} />
@@ -222,10 +251,10 @@ export function SettingsPanel({
       </label>
       <div className="setting-row">
         <span>
-          <strong>Pet size</strong>
-          <small>Apply a fixed window size without relying on wheel gestures.</small>
+          <strong>{t('settings.petSize')}</strong>
+          <small>{t('settings.petSizeDescription')}</small>
         </span>
-        <div className="size-segment" role="group" aria-label="Pet size">
+        <div className="size-segment" role="group" aria-label={t('settings.petSize')}>
           {PET_SIZE_PRESETS.map((preset) => (
             <button
               key={preset}
@@ -233,15 +262,15 @@ export function SettingsPanel({
               className={settings.petSizePreset === preset ? 'active' : ''}
               onClick={() => onPetSizePresetChange(preset)}
             >
-              {PET_SIZE_OPTIONS[preset].label}
+              {t(PET_SIZE_LABEL_KEYS[preset])}
             </button>
           ))}
         </div>
       </div>
       <label className="setting-row">
         <span>
-          <strong>Lock pet position</strong>
-          <small>Disable drag movement while keeping click and size controls active.</small>
+          <strong>{t('settings.lockPetPosition')}</strong>
+          <small>{t('settings.lockPetPositionDescription')}</small>
         </span>
         <span className="setting-control">
           <Lock size={16} />
@@ -254,17 +283,17 @@ export function SettingsPanel({
       </label>
       <div className="setting-row">
         <span>
-          <strong>Pet appearance</strong>
-          <small>Use the standard Claude Sprout pet, or switch to an imported Codex-compatible 8x9 spritesheet.</small>
+          <strong>{t('settings.petAppearance')}</strong>
+          <small>{t('settings.petAppearanceDescription')}</small>
         </span>
         <div className="setting-actions">
           <button type="button" onClick={onRefreshPetAssets}>
             <RefreshCw size={16} />
-            Refresh
+            {t('settings.refreshPets')}
           </button>
           <button type="button" onClick={onScanCodexPets} disabled={isScanningCodexPets}>
             <Search size={16} />
-            {isScanningCodexPets ? 'Scanning' : 'Scan Codex'}
+            {isScanningCodexPets ? t('settings.scanning') : t('settings.scanCodex')}
           </button>
         </div>
       </div>
@@ -290,22 +319,22 @@ export function SettingsPanel({
       <div className="pet-apply-row">
         <span>
           {hasPendingPetSelection
-            ? 'Previewing a different pet. Apply to use it in the floating window.'
-            : 'Current pet selection is applied.'}
+            ? t('settings.previewingPet')
+            : t('settings.currentPetApplied')}
         </span>
         <div className="setting-actions">
           <button type="button" onClick={() => onPreviewPetAnimation('waving')}>
-            Preview wave
+            {t('settings.previewWave')}
           </button>
           <button
             type="button"
             disabled={!hasPendingPetSelection}
             onClick={() => onPreviewPet(settings.activePetId)}
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button type="button" disabled={!hasPendingPetSelection} onClick={onApplyPetSelection}>
-            Apply
+            {t('common.apply')}
           </button>
         </div>
       </div>
@@ -313,7 +342,7 @@ export function SettingsPanel({
         <div className="pet-import-list" aria-live="polite">
           {petImportError && <p className="pet-import-error">{petImportError}</p>}
           {codexPetCandidates.length === 0 && hasScannedCodexPets && !isScanningCodexPets ? (
-            <p className="pet-import-empty">No Codex-compatible pet folders were found.</p>
+            <p className="pet-import-empty">{t('settings.noCodexPets')}</p>
           ) : (
             codexPetCandidates.map((candidate) => {
               const isImporting = importingPetSourcePath === candidate.sourcePath
@@ -334,7 +363,11 @@ export function SettingsPanel({
                     onClick={() => onImportCodexPet(candidate)}
                   >
                     <Download size={16} />
-                    {isImporting ? 'Importing' : isInstalled ? 'Installed' : 'Import'}
+                    {isImporting
+                      ? t('settings.importing')
+                      : isInstalled
+                        ? t('settings.installed')
+                        : t('settings.import')}
                   </button>
                 </div>
               )

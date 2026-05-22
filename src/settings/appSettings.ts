@@ -1,8 +1,10 @@
 export type PetSizePreset = 'small' | 'medium' | 'large' | 'custom'
 export type PetDisplayMode = 'minimal' | 'activity'
+export type AppLanguage = 'system' | 'en' | 'zh-CN'
 
 export type AppSettings = {
   doNotDisturb: boolean
+  language: AppLanguage
   petAlwaysOnTop: boolean
   petLockPosition: boolean
   petScale: number
@@ -38,6 +40,7 @@ export const PET_SIZE_OPTIONS = {
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   doNotDisturb: false,
+  language: 'system',
   petAlwaysOnTop: true,
   petLockPosition: false,
   petScale: PET_SIZE_OPTIONS.medium.scale,
@@ -53,6 +56,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
 
 const PET_SIZE_PRESETS = new Set<PetSizePreset>(['small', 'medium', 'large', 'custom'])
 const PET_DISPLAY_MODES = new Set<PetDisplayMode>(['minimal', 'activity'])
+const APP_LANGUAGES = new Set<AppLanguage>(['system', 'en', 'zh-CN'])
 
 export function clampPetScale(value: number) {
   if (!Number.isFinite(value)) return DEFAULT_APP_SETTINGS.petScale
@@ -112,6 +116,7 @@ function normalizeAppSettings(settings: StoredAppSettings): AppSettings {
 
   return {
     doNotDisturb: settings.doNotDisturb ?? DEFAULT_APP_SETTINGS.doNotDisturb,
+    language: isAppLanguage(settings.language) ? settings.language : DEFAULT_APP_SETTINGS.language,
     petAlwaysOnTop: settings.petAlwaysOnTop ?? DEFAULT_APP_SETTINGS.petAlwaysOnTop,
     petLockPosition: settings.petLockPosition ?? DEFAULT_APP_SETTINGS.petLockPosition,
     petScale: clampPetScale(presetScale ?? storedScale ?? DEFAULT_APP_SETTINGS.petScale),
@@ -175,6 +180,10 @@ function isPetSizePreset(value: unknown): value is PetSizePreset {
 
 function isPetDisplayMode(value: unknown): value is PetDisplayMode {
   return typeof value === 'string' && PET_DISPLAY_MODES.has(value as PetDisplayMode)
+}
+
+function isAppLanguage(value: unknown): value is AppLanguage {
+  return typeof value === 'string' && APP_LANGUAGES.has(value as AppLanguage)
 }
 
 function clampIntegerSetting(value: unknown, min: number, max: number, fallback: number) {

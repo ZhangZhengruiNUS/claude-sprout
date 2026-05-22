@@ -1,4 +1,5 @@
 import type { SessionSnapshot, SessionStatus } from './sessionTypes'
+import i18n from '../i18n/i18n'
 
 export type SessionNotification = {
   key: string
@@ -39,13 +40,13 @@ export function sessionNotificationKey(session: SessionSnapshot) {
 export function notificationTitleForStatus(status: SessionStatus) {
   switch (status) {
     case 'waiting_permission':
-      return 'Claude Code needs permission'
+      return i18n.t('notifications.waitingPermission')
     case 'done':
-      return 'Claude Code task finished'
+      return i18n.t('notifications.done')
     case 'error':
-      return 'Claude Code task failed'
+      return i18n.t('notifications.error')
     default:
-      return 'Claude Sprout'
+      return i18n.t('notifications.fallback')
   }
 }
 

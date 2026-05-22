@@ -1,4 +1,5 @@
 import { Database, FolderOpen, RefreshCw, Trash2 } from 'lucide-react'
+import i18n from '../i18n/i18n'
 import type { StorageCleanKind, StorageSummary } from './storageApi'
 import { formatBytes } from './storageFormatting'
 
@@ -35,21 +36,23 @@ export function StoragePanel({
   onClean,
   onOpenDataFolder,
 }: Props) {
+  const t = i18n.t.bind(i18n)
+
   return (
     <section className="storage-panel" aria-live="polite">
       <div className="setting-row storage-heading">
         <span>
-          <strong>Storage</strong>
+          <strong>{t('storage.title')}</strong>
           <small>{summary?.rootPath ?? '%USERPROFILE%\\.claude-sprout'}</small>
         </span>
         <div className="setting-actions">
           <button type="button" onClick={onRefresh} disabled={isLoading || isCleaning}>
             <RefreshCw size={16} />
-            {isLoading ? 'Refreshing' : 'Refresh storage'}
+            {isLoading ? t('storage.refreshing') : t('storage.refreshStorage')}
           </button>
           <button type="button" onClick={onOpenDataFolder}>
             <FolderOpen size={16} />
-            Open data folder
+            {t('storage.openDataFolder')}
           </button>
         </div>
       </div>
@@ -58,34 +61,34 @@ export function StoragePanel({
 
       <div className="storage-list">
         <StorageRow
-          label="Sessions"
-          detail="Safe cleanup keeps running and waiting sessions."
+          label={t('storage.sessions')}
+          detail={t('storage.sessionsDetail')}
           files={summary?.sessions.fileCount ?? 0}
           directories={summary?.sessions.directoryCount ?? 0}
           bytes={summary?.sessions.totalBytes ?? 0}
           cleanableFiles={summary?.sessions.cleanableFileCount ?? 0}
           cleanableBytes={summary?.sessions.cleanableBytes ?? 0}
-          cleanLabel="Clean safe sessions"
+          cleanLabel={t('storage.cleanSafeSessions')}
           cleanKind="safe_sessions"
           isCleaning={isCleaning}
           onClean={onClean}
         />
         <StorageRow
-          label="Events"
-          detail="Old events are files older than 14 days."
+          label={t('storage.events')}
+          detail={t('storage.eventsDetail')}
           files={summary?.events.fileCount ?? 0}
           directories={summary?.events.directoryCount ?? 0}
           bytes={summary?.events.totalBytes ?? 0}
           cleanableFiles={summary?.events.cleanableFileCount ?? 0}
           cleanableBytes={summary?.events.cleanableBytes ?? 0}
-          cleanLabel="Clean old events"
+          cleanLabel={t('storage.cleanOldEvents')}
           cleanKind="old_events"
           isCleaning={isCleaning}
           onClean={onClean}
         />
         <StorageRow
-          label="Imported pets"
-          detail="Pet assets are counted only in this version."
+          label={t('storage.importedPets')}
+          detail={t('storage.importedPetsDetail')}
           files={summary?.pets.fileCount ?? 0}
           directories={summary?.pets.directoryCount ?? 0}
           bytes={summary?.pets.totalBytes ?? 0}
@@ -110,6 +113,7 @@ function StorageRow({
   isCleaning,
   onClean,
 }: StorageRowProps) {
+  const t = i18n.t.bind(i18n)
   const canClean = Boolean(cleanKind && cleanableFiles > 0 && !isCleaning)
 
   return (
@@ -122,19 +126,22 @@ function StorageRow({
         </span>
       </div>
       <div className="storage-metrics">
-        <span>{files} files</span>
-        <span>{directories} folders</span>
+        <span>{t('storage.files', { count: files })}</span>
+        <span>{t('storage.folders', { count: directories })}</span>
         <span>{formatBytes(bytes)}</span>
         {cleanKind ? (
           <span>
-            {cleanableFiles} cleanable / {formatBytes(cleanableBytes)}
+            {t('storage.cleanable', {
+              count: cleanableFiles,
+              bytes: formatBytes(cleanableBytes),
+            })}
           </span>
         ) : null}
       </div>
       {cleanKind && cleanLabel ? (
         <button type="button" disabled={!canClean} onClick={() => onClean(cleanKind)}>
           <Trash2 size={16} />
-          {isCleaning ? 'Cleaning' : cleanLabel}
+          {isCleaning ? t('storage.cleaning') : cleanLabel}
         </button>
       ) : null}
     </div>

@@ -1,4 +1,5 @@
 import type { SessionSnapshot, SessionStatus } from '../sessions/sessionTypes'
+import i18n from '../i18n/i18n'
 
 export type PetAssistantDisplayMode = 'minimal' | 'activity'
 export type PetAssistantMessageTone = 'intervention' | 'complete' | 'failed'
@@ -45,7 +46,12 @@ type BuildPetAssistantViewOptions = {
   completionToastSeconds?: number
   messageFirstSeenAt?: ReadonlyMap<string, number>
   conversationPreviewEnabled?: boolean
+  translate?: Translate
 }
+
+type Translate = (key: string, options?: Record<string, unknown>) => string
+
+const defaultTranslate: Translate = (key, options) => i18n.getFixedT('en')(key, options)
 
 const STATUS_PRIORITY: Record<SessionStatus, number> = {
   waiting_permission: 0,
@@ -80,6 +86,7 @@ export function buildPetAssistantView({
   completionToastSeconds = 5,
   messageFirstSeenAt = new Map(),
   conversationPreviewEnabled = false,
+  translate = defaultTranslate,
 }: BuildPetAssistantViewOptions): PetAssistantView {
   const runningCount = sessions.filter((session) => RUNNING_STATUSES.has(session.status)).length
   const finishedUnclosedCount = sessions.filter((session) =>
@@ -88,7 +95,7 @@ export function buildPetAssistantView({
   const actionableCount = sessions.filter((session) => INTERVENTION_STATUSES.has(session.status)).length
   const activityCards = sessions
     .filter((session) => session.status !== 'closed')
-    .map((session) => activityCardForSession(session, conversationPreviewEnabled))
+    .map((session) => activityCardForSession(session, conversationPreviewEnabled, translate))
     .sort(compareCards)
   const safeVisibleCount = clampVisibleCount(visibleCount)
   const visibleActivityCards = activityCards.slice(0, safeVisibleCount)
@@ -103,7 +110,7 @@ export function buildPetAssistantView({
     overflowCount: Math.max(0, activityCards.length - visibleActivityCards.length),
     messages: sessions
       .filter((session) => MESSAGE_STATUSES.has(session.status))
-      .map((session) => messageForSession(session, completionToastSeconds))
+      .map((session) => messageForSession(session, completionToastSeconds, translate))
       .filter((message) =>
         shouldShowMessage({
           message,
@@ -147,14 +154,15 @@ function shouldShowMessage({
 function messageForSession(
   session: SessionSnapshot,
   completionToastSeconds: number,
+  translate: Translate,
 ): PetAssistantMessage {
   const tone = messageTone(session.status)
 
   return {
     key: petAssistantMessageKey(session),
     sessionId: session.session_id,
-    title: messageTitle(session),
-    detail: sessionMessageDetail(session),
+    title: messageTitle(session, translate),
+    detail: sessionMessageDetail(session, translate),
     tone,
     persistent: isPersistentPetMessage(session.status, completionToastSeconds),
     updatedAt: session.updated_at,
@@ -164,80 +172,108 @@ function messageForSession(
 function activityCardForSession(
   session: SessionSnapshot,
   conversationPreviewEnabled: boolean,
+  translate: Translate,
 ): PetAssistantActivityCard {
   return {
     key: `${session.session_id}:${session.status}:${session.updated_at}`,
     sessionId: session.session_id,
-    title: activityTitle(session),
-    detail: sessionActivityDetail(session, conversationPreviewEnabled),
-    meta: sessionActivityMeta(session),
+    title: activityTitle(session, translate),
+    detail: sessionActivityDetail(session, conversationPreviewEnabled, translate),
+    meta: sessionActivityMeta(session, translate),
     status: session.status,
     tone: cardTone(session.status),
     updatedAt: session.updated_at,
   }
 }
 
-function messageTitle(session: SessionSnapshot) {
+function messageTitle(session: SessionSnapshot, translate: Translate) {
+  const project = displayProjectName(session, translate)
   switch (session.status) {
     case 'waiting_permission':
-      return `${displayProjectName(session)} needs permission`
+      return translate('petAssistant.title.waiting_permission', { project })
     case 'waiting_input':
-      return `${displayProjectName(session)} needs a reply`
+      return translate('petAssistant.title.waiting_input', { project })
     case 'done':
-      return `${displayProjectName(session)} finished`
+      return translate('petAssistant.title.done', { project })
     case 'error':
-      return `${displayProjectName(session)} failed`
+      return translate('petAssistant.title.error', { project })
     default:
-      return displayProjectName(session)
+      return project
   }
 }
 
-function sessionMessageDetail(session: SessionSnapshot) {
-  if (session.last_tool) return `${statusLabel(session.status)} - ${session.last_tool}`
-  if (session.last_event) return `${statusLabel(session.status)} - ${session.last_event}`
-  return `${statusLabel(session.status)} - ${projectNameFromCwd(session.cwd)}`
+function sessionMessageDetail(session: SessionSnapshot, translate: Translate) {
+  if (session.last_tool) {
+    return translate('petAssistant.detailWithTool', {
+      status: statusLabel(session.status, translate),
+      tool: session.last_tool,
+    })
+  }
+  if (session.last_event) {
+    return translate('petAssistant.detailWithEvent', {
+      status: statusLabel(session.status, translate),
+      event: session.last_event,
+    })
+  }
+  return translate('petAssistant.detailWithProject', {
+    status: statusLabel(session.status, translate),
+    project: projectNameFromCwd(session.cwd, translate),
+  })
 }
 
-function sessionActivityDetail(session: SessionSnapshot, conversationPreviewEnabled: boolean) {
+function sessionActivityDetail(
+  session: SessionSnapshot,
+  conversationPreviewEnabled: boolean,
+  translate: Translate,
+) {
   const tool = safeInlineText(session.last_tool)
   const event = safeInlineText(session.last_event)
   const preview = conversationPreviewEnabled ? safeInlineText(session.conversation_preview) : null
   switch (session.status) {
     case 'waiting_permission':
-      return tool ? `Needs permission for ${tool}` : 'Needs permission'
+      return tool
+        ? translate('petAssistant.activity.waitingPermissionWithTool', { tool })
+        : translate('petAssistant.activity.waitingPermission')
     case 'waiting_input':
-      return 'Waiting for your reply'
+      return translate('petAssistant.activity.waitingInput')
     case 'tool_running':
-      return preview ?? (tool ? `Using ${tool}` : 'Using tool')
+      return preview ?? (tool ? translate('petAssistant.activity.usingToolWithTool', { tool }) : translate('petAssistant.activity.usingTool'))
     case 'running':
-      return preview ?? (tool ? `Continuing after ${tool}` : event ? `Running after ${event}` : 'Running')
+      return preview ?? (tool
+        ? translate('petAssistant.activity.runningAfterTool', { tool })
+        : event
+          ? translate('petAssistant.activity.runningAfterEvent', { event })
+          : translate('petAssistant.activity.running'))
     case 'done':
-      return preview ?? 'Completed'
+      return preview ?? translate('petAssistant.activity.completed')
     case 'error':
-      return preview ?? (tool ? `Failed around ${tool}` : 'Failed')
+      return preview ?? (tool ? translate('petAssistant.activity.failedAroundTool', { tool }) : translate('petAssistant.activity.failed'))
     case 'stale':
-      return 'No heartbeat recently'
+      return translate('petAssistant.activity.stale')
     case 'probably_closed':
-      return 'Probably closed'
+      return translate('petAssistant.activity.probablyClosed')
     case 'idle':
-      return 'Idle'
+      return translate('petAssistant.activity.idle')
     case 'closed':
-      return 'Closed'
+      return translate('petAssistant.activity.closed')
     default:
-      return statusLabel(session.status)
+      return statusLabel(session.status, translate)
   }
 }
 
-function sessionActivityMeta(session: SessionSnapshot) {
-  const context = contextLabel(session.context_used_percentage)
+function sessionActivityMeta(session: SessionSnapshot, translate: Translate) {
+  const context = contextLabel(session.context_used_percentage, translate)
   if (displayName(session)) {
-    return [displayProjectName(session), shortSessionId(session.session_id), context].filter(Boolean).join(' - ')
+    return [displayProjectName(session, translate), shortSessionId(session.session_id, translate), context].filter(Boolean).join(' - ')
   }
-  return [statusLabel(session.status), context].filter(Boolean).join(' - ')
+  return [statusLabel(session.status, translate), context].filter(Boolean).join(' - ')
 }
 
-function activityTitle(session: SessionSnapshot) {
-  return displayName(session) ?? `${displayProjectName(session)} - ${shortSessionId(session.session_id)}`
+function activityTitle(session: SessionSnapshot, translate: Translate) {
+  return displayName(session) ?? translate('petAssistant.activity.titleWithSession', {
+    project: displayProjectName(session, translate),
+    sessionId: shortSessionId(session.session_id, translate),
+  })
 }
 
 function messageTone(status: SessionStatus): PetAssistantMessageTone {
@@ -273,8 +309,8 @@ function messagePriority(tone: PetAssistantMessageTone) {
   return 2
 }
 
-function displayProjectName(session: SessionSnapshot) {
-  return session.project_name || projectNameFromCwd(session.cwd)
+function displayProjectName(session: SessionSnapshot, translate: Translate) {
+  return session.project_name || projectNameFromCwd(session.cwd, translate)
 }
 
 function displayName(session: SessionSnapshot) {
@@ -288,22 +324,22 @@ function safeInlineText(value: string | null | undefined) {
   return trimmed
 }
 
-function shortSessionId(sessionId: string) {
+function shortSessionId(sessionId: string, translate: Translate) {
   const trimmed = sessionId.trim()
-  return trimmed ? trimmed.slice(0, 6) : 'local'
+  return trimmed ? trimmed.slice(0, 6) : translate('petAssistant.localSession')
 }
 
-function contextLabel(value: number | null | undefined) {
+function contextLabel(value: number | null | undefined, translate: Translate) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return null
-  return `${Math.round(value)}% ctx`
+  return translate('petAssistant.context', { value: Math.round(value) })
 }
 
-function projectNameFromCwd(cwd: string) {
-  return cwd.split(/[\\/]/).filter(Boolean).at(-1) ?? 'Claude Code'
+function projectNameFromCwd(cwd: string, translate: Translate) {
+  return cwd.split(/[\\/]/).filter(Boolean).at(-1) ?? translate('petAssistant.fallbackProject')
 }
 
-function statusLabel(status: SessionStatus) {
-  return status.replaceAll('_', ' ')
+function statusLabel(status: SessionStatus, translate: Translate) {
+  return translate(`status.${status}`)
 }
 
 function clampVisibleCount(value: number) {
