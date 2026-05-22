@@ -43,20 +43,27 @@ describe('pet assistant view model', () => {
     expect(view.finishedUnclosedCount).toBe(2)
   })
 
-  it('keeps intervention messages persistent and completion messages configurable', () => {
+  it('keeps permission intervention messages persistent and idle prompt messages weak', () => {
     const waiting = session('waiting', 'waiting_input')
+    const permission = session('permission', 'waiting_permission')
     const done = session('done', 'done')
     const view = buildPetAssistantView({
-      sessions: [waiting, done],
+      sessions: [waiting, permission, done],
       displayMode: 'minimal',
       visibleCount: 3,
     })
 
+    expect(view.actionableCount).toBe(1)
     expect(view.messages).toEqual([
       expect.objectContaining({
-        key: petAssistantMessageKey(waiting),
+        key: petAssistantMessageKey(permission),
         tone: 'intervention',
         persistent: true,
+      }),
+      expect.objectContaining({
+        key: petAssistantMessageKey(waiting),
+        tone: 'complete',
+        persistent: false,
       }),
       expect.objectContaining({
         key: petAssistantMessageKey(done),
@@ -80,6 +87,28 @@ describe('pet assistant view model', () => {
 
     expect(view.visibleActivityCards.map((card) => card.sessionId)).toEqual(['waiting', 'running'])
     expect(view.overflowCount).toBe(1)
+  })
+
+  it('keeps idle prompt cards below active work in activity mode', () => {
+    const view = buildPetAssistantView({
+      sessions: [
+        session('waiting-input', 'waiting_input', '2026-05-22T00:04:00Z'),
+        session('running', 'running', '2026-05-22T00:03:00Z'),
+      ],
+      displayMode: 'activity',
+      visibleCount: 2,
+    })
+
+    expect(view.visibleActivityCards.map((card) => card.sessionId)).toEqual([
+      'running',
+      'waiting-input',
+    ])
+    expect(view.visibleActivityCards[1]).toEqual(
+      expect.objectContaining({
+        tone: 'quiet',
+        detail: 'Waiting for your reply',
+      }),
+    )
   })
 
   it('uses a renamed display name and short session id to distinguish activity cards', () => {

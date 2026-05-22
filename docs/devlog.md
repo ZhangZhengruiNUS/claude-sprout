@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Downgraded `waiting_input` from strong intervention to weak reminder:
+  - `Notification: idle_prompt` still records the session as `waiting_input`, but it no longer triggers native notifications, waiting animations, or one-shot waiting actions.
+  - pet priority now keeps active running/tool sessions above ordinary input-wait sessions.
+  - Minimal/Activity still show the session metadata as a low-priority, non-persistent reminder; `waiting_permission` remains the strong actionable state.
 - Refined Codex imported pet action behavior after desktop testing:
   - stable `done` sessions now return to `idle` after the one-shot completion `jumping` action, so completed sessions no longer look like they are still working in the `review` loop.
   - imported Codex pets now use `runningRight` / `runningLeft` rows while being dragged horizontally, then return to the session-driven animation on release; queued event actions keep priority over drag feedback.
@@ -15,7 +19,7 @@
   - imported pet windows now reserve the unscaled cell footprint, and Activity mode places the session HUD below the imported sprite instead of over the pet body.
 - Added metadata-only pet event actions:
   - pet animation now has a small event-action layer above the sustained status mapping.
-  - entering waiting states plays `waving` once, clean completion plays `jumping` once, and new error transitions play `failed` once before returning to the sustained status animation.
+  - entering permission-wait states plays `waving` once, clean completion plays `jumping` once, and new error transitions play `failed` once before returning to the sustained status animation.
   - repeated polling/statusline updates and waiting-state metadata changes do not replay the action.
   - action decisions use session metadata only, not conversation previews or transcript content.
 - Fixed pet context menu dismissal:
@@ -54,7 +58,7 @@
   - updated the generated handoff wording so live Git command output is the source of truth.
 - Implemented the next pet-assistant interaction slice:
   - added configurable pet information modes: Minimal shows compact running/finished/action counts plus transient or persistent glass message cards; Activity shows a larger always-on-top glass activity stack with pager controls.
-  - waiting-permission and waiting-input sessions stay persistent until acknowledged in Minimal mode; done/error cards use the configured completion timeout, with `0` meaning persist until acknowledged.
+  - waiting-permission sessions stay persistent until acknowledged in Minimal mode; done/error cards use the configured completion timeout, with `0` meaning persist until acknowledged; later desktop feedback changed waiting-input to a weak non-persistent reminder.
   - Activity mode highlights waiting, running, completed, and failed open sessions in the stack instead of adding a second message overlay.
   - pet cards open the session panel, and acknowledge buttons dismiss only the matching message.
   - activity mode expands the pet window size based on the configured visible row count while Minimal mode keeps the compact 180x210 footprint.
@@ -71,7 +75,7 @@
   - Settings now includes `Read conversation preview`, defaulting off so cards remain metadata-only unless the user explicitly enables transcript snippets.
   - PowerShell and Node hook/statusline writers read only a bounded transcript tail when enabled, skip tool_use/tool_result blocks, normalize whitespace, and write one truncated `User:` or `Claude:` preview into the session snapshot.
   - opt-out clears `conversation_preview` on the next hook/statusline write instead of preserving old snippets.
-  - Activity card details use the preview only when the current frontend setting is enabled; waiting-permission and waiting-input cards still prioritize intervention text.
+  - Activity card details use the preview only when the current frontend setting is enabled; waiting-permission cards prioritize intervention text, while waiting-input cards keep a weak reply reminder.
   - expanded Activity mode sizing to support the default three visible session cards; browser QA at 300x364 measured about 12px of gap between pet and panel.
 
 ## 2026-05-21
@@ -125,7 +129,7 @@
   - MSI remains an optional maintainer build behind `npm run release:msi`, useful when a specific distribution requirement needs it.
 - Completed manual desktop smoke validation for the release exe:
   - Windows native notifications appear for controlled session transitions.
-  - Do Not Disturb suppresses the later waiting-input notification.
+  - Do Not Disturb suppresses the later waiting-input notification; later desktop feedback changed waiting-input to a weak in-app reminder without native notification.
   - Tray menu opens and Settings / Open Data Folder respond.
   - Pet click initially failed to open the session panel.
 - Fixed pet click opening the session panel:
@@ -206,7 +210,7 @@
 - Wired the first real session refresh and notification path:
   - Rust polls the session snapshot directory and emits a frontend refresh event when JSON files change
   - the panel window owns native notifications to avoid duplicate toasts from the pet window
-  - notifications are emitted for `waiting_permission`, `waiting_input`, `done`, and `error` transitions
+  - notifications were originally emitted for `waiting_permission`, `waiting_input`, `done`, and `error` transitions; later desktop feedback downgraded `waiting_input` to an in-app weak reminder.
   - duplicate notification keys suppress overlapping refresh/event delivery
   - persisted do-not-disturb suppresses native notifications
   - tray menu actions now refresh sessions, open the data folder, open Settings, and toggle do-not-disturb

@@ -8,7 +8,6 @@ export type SessionNotification = {
 
 const NOTIFIABLE_STATUSES = new Set<SessionStatus>([
   'waiting_permission',
-  'waiting_input',
   'done',
   'error',
 ])
@@ -41,8 +40,6 @@ export function notificationTitleForStatus(status: SessionStatus) {
   switch (status) {
     case 'waiting_permission':
       return 'Claude Code needs permission'
-    case 'waiting_input':
-      return 'Claude Code is waiting for input'
     case 'done':
       return 'Claude Code task finished'
     case 'error':

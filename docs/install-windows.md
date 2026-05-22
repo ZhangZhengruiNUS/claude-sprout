@@ -116,7 +116,7 @@ Then verify:
 1. The pet window opens as the primary surface and clicking it opens the session panel.
 2. The tray menu opens the session panel, opens Settings, refreshes sessions, toggles Do Not Disturb, opens the data folder, and quits cleanly.
 3. Toggling Do Not Disturb changes `%USERPROFILE%\.claude-sprout\settings.json`.
-4. With Do Not Disturb off, a controlled session JSON transition to `waiting_permission`, `waiting_input`, `done`, or `error` shows one native notification.
+4. With Do Not Disturb off, a controlled session JSON transition to `waiting_permission`, `done`, or `error` shows one native notification. `waiting_input` remains visible in session UI as a weak reminder but does not show a native notification.
 5. With Do Not Disturb on, the same transition refreshes session state without showing a native notification.
 
 For reliable notification testing while the current polling implementation is in place, leave at least two seconds between controlled session JSON state changes.
@@ -127,7 +127,7 @@ For a repeatable controlled session-state smoke sequence, run:
 npm run smoke:sessions
 ```
 
-This launches the release exe with a temporary `CLAUDE_SPROUT_HOME`, writes `running -> waiting_permission -> done`, toggles do-not-disturb in settings, then writes `running -> waiting_input` for a second session. The script verifies the file flow and app process path; native notification visibility still needs desktop observation.
+This launches the release exe with a temporary `CLAUDE_SPROUT_HOME`, writes `running -> waiting_permission -> done`, toggles do-not-disturb in settings, then writes `running -> waiting_input` for a second session. The script verifies the file flow and app process path; native notification visibility still needs desktop observation for strong notification states.
 
 ## Data Folder
 

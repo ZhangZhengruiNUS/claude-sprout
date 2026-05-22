@@ -54,5 +54,7 @@ Refreshing the panel only reloads existing snapshot files, so it cannot discover
 - `StopFailure` -> `error`
 - `SessionEnd` -> `closed`
 
+`waiting_input` means Claude Code is back at the prompt and ready for the user's next message. Claude Sprout treats this as a weak reminder: it is visible in session UI, but does not trigger a native notification or strong pet intervention. `waiting_permission` remains the strong actionable waiting state.
+
 The writer exits quickly, avoids network access, and writes only lightweight metadata.
 Terminal hook events preserve `ended_at` across later statusline heartbeats so the app can distinguish active sessions from sessions that already stopped.

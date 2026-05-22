@@ -15,15 +15,20 @@ function session(session_id: string, status: SessionStatus): SessionSnapshot {
 }
 
 describe('session notifications', () => {
-  it('notifies when a tracked session enters a notifiable status', () => {
-    expect(notificationsForSessionChanges([session('a', 'running')], [session('a', 'waiting_input')]))
+  it('notifies when a tracked session enters a strong notifiable status', () => {
+    expect(notificationsForSessionChanges([session('a', 'running')], [session('a', 'waiting_permission')]))
       .toEqual([
         {
-          key: 'a:waiting_input:2026-05-20T00:00:00Z',
-          title: 'Claude Code is waiting for input',
+          key: 'a:waiting_permission:2026-05-20T00:00:00Z',
+          title: 'Claude Code needs permission',
           body: 'claude-sprout - E:\\Codex Project\\claude-sprout',
         },
       ])
+  })
+
+  it('does not notify for idle prompt waiting because it is a weak reminder', () => {
+    expect(notificationsForSessionChanges([session('a', 'running')], [session('a', 'waiting_input')]))
+      .toEqual([])
   })
 
   it('does not notify when status is unchanged', () => {

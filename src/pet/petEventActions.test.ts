@@ -82,7 +82,24 @@ describe('pet event actions', () => {
     expect(nextPetEventAction([previous], [next], new Set())).toBeNull()
   })
 
-  it('does not replay a waiting action while the session remains waiting', () => {
+  it('does not play a strong waiting action for idle prompt input waiting', () => {
+    const action = nextPetEventAction(
+      [session({ id: 's1', status: 'running', lastEvent: 'UserPromptSubmit' })],
+      [
+        session({
+          id: 's1',
+          status: 'waiting_input',
+          lastEvent: 'Notification',
+          notificationType: 'idle_prompt',
+        }),
+      ],
+      new Set(),
+    )
+
+    expect(action).toBeNull()
+  })
+
+  it('plays a waiting action when a weak input wait becomes a permission wait', () => {
     const previous = session({
       id: 's1',
       status: 'waiting_input',
@@ -98,7 +115,7 @@ describe('pet event actions', () => {
       updatedAt: '2026-05-22T00:00:04.000Z',
     })
 
-    expect(nextPetEventAction([previous], [next], new Set())).toBeNull()
+    expect(nextPetEventAction([previous], [next], new Set())?.animation).toBe('waving')
   })
 
   it('does not replay a remembered event action key', () => {

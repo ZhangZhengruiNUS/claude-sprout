@@ -69,7 +69,7 @@ function eventForStatus(status) {
   return (
     {
       waiting_permission: 'PreToolUse',
-      waiting_input: 'UserPromptSubmit',
+      waiting_input: 'Notification',
       done: 'Stop',
       error: 'Error',
     }[status] ?? 'StatusLine'
@@ -80,7 +80,7 @@ function notificationTypeForStatus(status) {
   return (
     {
       waiting_permission: 'permission_prompt',
-      waiting_input: 'waiting_input',
+      waiting_input: 'idle_prompt',
       done: 'done',
       error: 'error',
     }[status] ?? null

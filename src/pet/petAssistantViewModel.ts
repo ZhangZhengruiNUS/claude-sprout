@@ -49,11 +49,11 @@ type BuildPetAssistantViewOptions = {
 
 const STATUS_PRIORITY: Record<SessionStatus, number> = {
   waiting_permission: 0,
-  waiting_input: 1,
-  error: 2,
-  tool_running: 3,
-  running: 4,
-  done: 5,
+  error: 1,
+  tool_running: 2,
+  running: 3,
+  done: 4,
+  waiting_input: 5,
   stale: 6,
   probably_closed: 7,
   idle: 8,
@@ -62,7 +62,7 @@ const STATUS_PRIORITY: Record<SessionStatus, number> = {
 
 const FINISHED_UNCLOSED_STATUSES = new Set<SessionStatus>(['done', 'error'])
 const RUNNING_STATUSES = new Set<SessionStatus>(['running', 'tool_running'])
-const INTERVENTION_STATUSES = new Set<SessionStatus>(['waiting_permission', 'waiting_input'])
+const INTERVENTION_STATUSES = new Set<SessionStatus>(['waiting_permission'])
 const MESSAGE_STATUSES = new Set<SessionStatus>([
   'waiting_permission',
   'waiting_input',

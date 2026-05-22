@@ -32,7 +32,7 @@
 - Modify: `src/App.tsx`
 - Modify: `src/settings/SettingsPanel.tsx` if action names require updates
 
-- [ ] Add tests that map `running/tool_running` to `running`, `waiting_permission/waiting_input` to `waiting`, stable `done` to `idle` after the one-shot completion action, `error` to `failed`, and quiet/closed statuses to `idle`.
+- [ ] Add tests that map `running/tool_running` to `running`, `waiting_permission` to `waiting`, weak `waiting_input` to `idle`, stable `done` to `idle` after the one-shot completion action, `error` to `failed`, and quiet/closed statuses to `idle`.
 - [ ] Run `npm test -- src/pet/petStateMapper.test.ts` and confirm it fails against the current `run/wave/jump` mapping.
 - [ ] Rename `PetAnimation` values to Codex row names while preserving explicit action support for `waving` and `jumping`.
 - [ ] Update call sites and existing animation key tests.

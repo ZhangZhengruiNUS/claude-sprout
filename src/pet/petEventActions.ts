@@ -19,7 +19,7 @@ const ACTION_PRIORITY: Record<PetEventAction['animation'], number> = {
   jumping: 2,
 }
 
-const WAITING_STATUSES = new Set(['waiting_permission', 'waiting_input'])
+const WAITING_STATUSES = new Set(['waiting_permission'])
 
 export function nextPetEventAction(
   previousSessions: SessionSnapshot[],

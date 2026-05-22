@@ -8,7 +8,7 @@ describe('pet state mapper', () => {
     ['running', 'running'],
     ['tool_running', 'running'],
     ['waiting_permission', 'waiting'],
-    ['waiting_input', 'waiting'],
+    ['waiting_input', 'idle'],
     ['done', 'idle'],
     ['error', 'failed'],
     ['stale', 'idle'],
@@ -21,14 +21,24 @@ describe('pet state mapper', () => {
     },
   )
 
-  it('keeps actionable waiting statuses above running work', () => {
+  it('keeps permission waiting above running work', () => {
+    expect(
+      getHighestPriorityStatus([
+        session('running'),
+        session('tool_running'),
+        session('waiting_permission'),
+      ]),
+    ).toBe('waiting_permission')
+  })
+
+  it('keeps idle prompt waiting below active work as a weak reminder', () => {
     expect(
       getHighestPriorityStatus([
         session('running'),
         session('tool_running'),
         session('waiting_input'),
       ]),
-    ).toBe('waiting_input')
+    ).toBe('tool_running')
   })
 })
 

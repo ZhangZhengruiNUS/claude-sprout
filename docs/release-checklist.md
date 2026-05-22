@@ -125,7 +125,7 @@ Verify:
 3. The tray menu can open the session panel, open Settings, refresh sessions, toggle Do Not Disturb, open the data folder, and quit cleanly.
 4. Settings changes persist under `%USERPROFILE%\.claude-sprout\settings.json`.
 5. Do Not Disturb suppresses native notifications.
-6. With Do Not Disturb off, a controlled `waiting_permission`, `waiting_input`, `done`, or `error` transition shows one native notification.
+6. With Do Not Disturb off, a controlled `waiting_permission`, `done`, or `error` transition shows one native notification; `waiting_input` stays visible as a weak in-app reminder without a native toast.
 
 Run the NSIS installer and verify:
 

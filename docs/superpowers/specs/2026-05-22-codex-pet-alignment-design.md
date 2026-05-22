@@ -33,7 +33,7 @@ Each animation may have a row-specific duration derived from the Codex timing ta
 Claude Code session state maps to Codex row semantics:
 
 - `running` and `tool_running` use `running`.
-- `waiting_permission` and `waiting_input` use `waiting`.
+- `waiting_permission` uses `waiting`; `waiting_input` is a weak reminder and uses `idle`.
 - New `done` transitions play `jumping` once through the event-action layer, then the sustained `done` state uses `idle`.
 - `error` uses `failed`.
 - `idle`, `stale`, `probably_closed`, and `closed` use `idle`.
