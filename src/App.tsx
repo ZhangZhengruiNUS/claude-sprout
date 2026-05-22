@@ -684,7 +684,10 @@ function App() {
     return (
       <main
         className={`floating-pet-shell ${settings.petDisplayMode}${activePetAsset ? ' imported-pet-active' : ''}${isPetDragging ? ' dragging' : ''}`}
-        style={petMessageBoxOpacityStyle(settings.petMessageBoxOpacity)}
+        style={{
+          ...petMessageBoxOpacityStyle(settings.petMessageBoxOpacity),
+          ...importedPetFrameStyle(activePetAsset),
+        }}
       >
         <PetRenderer
           status={topStatus}
@@ -993,6 +996,15 @@ function petMessageBoxOpacityStyle(opacityPercent: number): CSSProperties {
     '--pet-tone-intervention-alpha': Math.max(0.07, opacity * 0.26).toFixed(2),
     '--pet-tone-failed-alpha': Math.max(0.06, opacity * 0.21).toFixed(2),
     '--pet-tone-active-alpha': Math.max(0.05, opacity * 0.19).toFixed(2),
+  } as CSSProperties
+}
+
+function importedPetFrameStyle(activePetAsset: PetAsset | null): CSSProperties {
+  if (!activePetAsset) return {}
+
+  return {
+    '--pet-imported-frame-width': `${activePetAsset.atlasProfile.frameWidth}px`,
+    '--pet-imported-frame-height': `${activePetAsset.atlasProfile.frameHeight}px`,
   } as CSSProperties
 }
 

@@ -9,7 +9,7 @@ describe('pet window layout', () => {
     })
   })
 
-  it('keeps imported sprite pets inside the minimal pet window', () => {
+  it('keeps imported sprite pets inside the minimal pet window despite transform scaling', () => {
     expect(
       petWindowSizeForDisplay({
         scale: 0.75,
@@ -18,8 +18,23 @@ describe('pet window layout', () => {
         petFrameSize: { width: 192, height: 208 },
       }),
     ).toEqual({
-      width: 162,
-      height: 174,
+      width: 216,
+      height: 232,
+    })
+  })
+
+  it('reserves unscaled imported sprite height above Activity cards', () => {
+    expect(
+      petWindowSizeForDisplay({
+        scale: 0.75,
+        displayMode: 'activity',
+        visibleCount: 1,
+        activityWidth: 420,
+        petFrameSize: { width: 192, height: 208 },
+      }),
+    ).toEqual({
+      width: 315,
+      height: 328,
     })
   })
 

@@ -27,6 +27,19 @@ export function petWindowSizeForDisplay({
   petFrameSize,
 }: PetWindowSizeOptions) {
   const normalizedScale = clampPetScale(scale)
+  if (petFrameSize) {
+    const footprint = importedPetFootprint(petFrameSize, normalizedScale)
+    if (displayMode === 'activity') {
+      const activityHudHeight = importedActivityHudHeight(visibleCount, normalizedScale)
+      return {
+        width: Math.max(Math.round(clampActivityWidth(activityWidth) * normalizedScale), footprint.width),
+        height: footprint.height + activityHudHeight,
+      }
+    }
+
+    return footprint
+  }
+
   const baseSize =
     displayMode === 'activity'
       ? {
@@ -42,6 +55,22 @@ export function petWindowSizeForDisplay({
     width: Math.round(baseSize.width * normalizedScale),
     height: Math.round(baseSize.height * normalizedScale),
   }
+}
+
+function importedPetFootprint(
+  petFrameSize: NonNullable<PetWindowSizeOptions['petFrameSize']>,
+  scale: number,
+) {
+  return {
+    width: Math.round(Math.max(petFrameSize.width, petFrameSize.width * scale) + IMPORTED_PET_PADDING),
+    height: Math.round(Math.max(petFrameSize.height, petFrameSize.height * scale) + IMPORTED_PET_PADDING),
+  }
+}
+
+function importedActivityHudHeight(visibleCount: number, scale: number) {
+  const count = clampVisibleCount(visibleCount)
+  if (count === 0) return 0
+  return Math.round((ACTIVITY_ROW_HEIGHT + count * ACTIVITY_ROW_HEIGHT) * scale)
 }
 
 function minimalWidthForPet(petFrameSize: PetWindowSizeOptions['petFrameSize']) {

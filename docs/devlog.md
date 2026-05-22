@@ -6,6 +6,9 @@
   - imported Codex sprites now size the pet-only window from the 192x208 atlas cell instead of the smaller built-in Sprout footprint.
   - imported pet rendering gets its own CSS class so drag styling can collapse the active surface around the sprite and hide Activity overlays while dragging.
   - this keeps large imported sprites from showing the full interaction rectangle or clipping at the bottom during desktop dragging.
+- Fixed the follow-up imported sprite bottom clipping:
+  - root cause was CSS transform scaling: the sprite looked smaller, but its layout box still used the original 192x208 cell and the Tauri pet window was being sized to the scaled visual height.
+  - imported pet windows now reserve the unscaled cell footprint, and Activity mode places the session HUD below the imported sprite instead of over the pet body.
 - Added metadata-only pet event actions:
   - pet animation now has a small event-action layer above the sustained status mapping.
   - entering waiting states plays `waving` once, clean completion plays `jumping` once, and new error transitions play `failed` once before returning to the sustained status animation.

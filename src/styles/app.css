@@ -155,6 +155,11 @@ button:disabled {
   display: none;
 }
 
+.floating-pet-shell.imported-pet-active.activity .pet-activity-hud {
+  top: calc(var(--pet-imported-frame-height, 208px) + 1.5rem);
+  bottom: auto;
+}
+
 .pet-surface.compact .sprout-pet {
   transform: scale(var(--pet-scale, 1));
   transform-origin: center bottom;
