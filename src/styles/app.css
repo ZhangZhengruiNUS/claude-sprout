@@ -314,7 +314,7 @@ button:disabled {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.45rem;
-  min-height: 2.95rem;
+  min-height: 3.35rem;
   padding: 0.48rem 0.5rem;
   border-radius: 8px;
   cursor: pointer;
@@ -370,6 +370,7 @@ button:disabled {
   white-space: normal;
 }
 
+.pet-message-card em,
 .pet-activity-card em {
   display: block;
   overflow: hidden;

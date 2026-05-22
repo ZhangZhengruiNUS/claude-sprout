@@ -12,12 +12,12 @@ describe('pet display mode menu helpers', () => {
   })
 
   it('labels the menu with the mode it will switch to', () => {
-    expect(petDisplayModeMenuLabel('minimal')).toBe('Activity')
-    expect(petDisplayModeMenuLabel('activity')).toBe('Minimal')
+    expect(petDisplayModeMenuLabel('minimal')).toBe('Board')
+    expect(petDisplayModeMenuLabel('activity')).toBe('Message')
   })
 
   it('describes the mode switch in the button title', () => {
-    expect(petDisplayModeMenuTitle('minimal')).toBe('Switch to Activity mode')
-    expect(petDisplayModeMenuTitle('activity')).toBe('Switch to Minimal mode')
+    expect(petDisplayModeMenuTitle('minimal')).toBe('Switch to Board mode')
+    expect(petDisplayModeMenuTitle('activity')).toBe('Switch to Message mode')
   })
 })

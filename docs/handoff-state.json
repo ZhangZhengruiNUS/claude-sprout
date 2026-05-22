@@ -72,6 +72,7 @@
     "Pet window hit testing is tightened: the transparent shell and full compact surface no longer receive pointer events, while a smaller pet-hit-target around the visible pet handles click, drag, wheel, and context-menu interactions; activity/message cards remain individually clickable",
     "Pet dragging now releases cleanly on window-level pointer cancellation, blur, and lost pointer capture, and imported/Activity drag-window shrink anchors to the visible pet-hit-target so the cursor stays on the pet when movement starts",
     "Activity mode now anchors the session stack close below the rendered built-in/imported pet, reserves enough height for three visible cards plus pager, and shows the total active/open session count instead of ambiguous overflow text",
+    "Pet assistant user-facing modes are now Message and Board while persisted minimal/activity settings remain compatible: Message mode interrupts only for permission/completion/failure with richer session identity, detail, metadata, and optional conversation preview, while waiting_input remains a weak Board/Session Panel state",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -94,7 +95,6 @@
     "The release exe build works with npm run release:exe or npm run tauri -- build --no-bundle, and the NSIS installer build works while the verified local NSIS cache is present."
   ],
   "nextTasks": [
-    "Implement the approved pet assistant mode redesign from docs/superpowers/specs/2026-05-23-pet-message-board-modes-design.md: rename user-facing Minimal/Activity to Message/Board, remove waiting_input from message interruptions, enrich Message cards with Board-style context, and verify with TDD plus browser/desktop checks.",
     "Ask the user to acceptance-test the new language selector in Settings on the release exe: system language resolution, English/Simplified Chinese switching, localized session panel/settings/storage/pet activity text, native notification titles, and tray menu labels after switching language.",
     "Ask the user to run final acceptance testing for the pet assistant modes, event-triggered pet actions, and Codex-aligned imported pet animations in real desktop use, especially waiting/completion/error transitions, imported pet drag/cropping/directional-running behavior, drag cancellation after shortcut/focus changes, Minimal persistent intervention cards, Activity mode paging, pet resize/context-menu behavior, and real Claude Code session transitions.",
     "After user acceptance, continue with release closure: run NSIS installer smoke, regenerate final official artifact hashes for the standalone exe and NSIS setup, then proceed through the v0.1.0 release checklist and GitHub release publication."

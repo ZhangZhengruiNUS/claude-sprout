@@ -110,4 +110,35 @@ describe('FloatingPetAssistant', () => {
     expect(html).toContain('<small>4</small>')
     expect(html).not.toContain('+1')
   })
+
+  it('renders rich context on Message mode cards', () => {
+    const html = renderToStaticMarkup(
+      <FloatingPetAssistant
+        view={{
+          ...baseView,
+          displayMode: 'minimal',
+          messages: [
+            {
+              key: 'release:done:2026-05-23T00:00:00Z',
+              sessionId: 'release',
+              title: 'Release publish finished',
+              detail: 'Claude: Built the release checklist',
+              meta: 'claude-sprout - releas - 42% ctx',
+              tone: 'complete',
+              persistent: false,
+              updatedAt: '2026-05-23T00:00:00Z',
+            },
+          ],
+        }}
+        activityPage={0}
+        onActivityPageChange={vi.fn()}
+        onAcknowledgeMessage={vi.fn()}
+        onOpenPanel={vi.fn()}
+      />,
+    )
+
+    expect(html).toContain('Release publish finished')
+    expect(html).toContain('Claude: Built the release checklist')
+    expect(html).toContain('claude-sprout - releas - 42% ctx')
+  })
 })

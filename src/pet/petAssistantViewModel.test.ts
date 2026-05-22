@@ -43,34 +43,66 @@ describe('pet assistant view model', () => {
     expect(view.finishedUnclosedCount).toBe(2)
   })
 
-  it('keeps permission intervention messages persistent and idle prompt messages weak', () => {
+  it('only creates message cards for permission, completion, and failure states', () => {
     const waiting = session('waiting', 'waiting_input')
-    const permission = session('permission', 'waiting_permission')
-    const done = session('done', 'done')
+    const permission = session('permission', 'waiting_permission', undefined, {
+      display_name: 'Release publish',
+      last_tool: 'Bash',
+      context_used_percentage: 18,
+    })
+    const done = session('done', 'done', undefined, {
+      display_name: 'Docs cleanup',
+      conversation_preview: 'Claude: Updated the release checklist',
+      context_used_percentage: 42,
+    })
+    const error = session('error', 'error', undefined, {
+      project_name: 'claude-sprout',
+      last_tool: 'Edit',
+      context_used_percentage: 64,
+    })
     const view = buildPetAssistantView({
-      sessions: [waiting, permission, done],
+      sessions: [waiting, permission, done, error],
       displayMode: 'minimal',
       visibleCount: 3,
+      conversationPreviewEnabled: true,
     })
 
     expect(view.actionableCount).toBe(1)
-    expect(view.messages).toEqual([
+    expect(view.messages.map((message) => message.sessionId)).toEqual([
+      'permission',
+      'error',
+      'done',
+    ])
+    expect(view.messages).toContainEqual(
       expect.objectContaining({
         key: petAssistantMessageKey(permission),
+        title: 'Release publish needs permission',
+        detail: 'Needs permission for Bash',
+        meta: 'project-permission - permis - 18% ctx',
         tone: 'intervention',
         persistent: true,
       }),
+    )
+    expect(view.messages).toContainEqual(
       expect.objectContaining({
-        key: petAssistantMessageKey(waiting),
-        tone: 'complete',
-        persistent: false,
+        key: petAssistantMessageKey(error),
+        title: 'claude-sprout - error failed',
+        detail: 'Failed around Edit',
+        meta: 'error - 64% ctx',
+        tone: 'failed',
+        persistent: true,
       }),
+    )
+    expect(view.messages).toContainEqual(
       expect.objectContaining({
         key: petAssistantMessageKey(done),
+        title: 'Docs cleanup finished',
+        detail: 'Claude: Updated the release checklist',
+        meta: 'project-done - done - 42% ctx',
         tone: 'complete',
         persistent: false,
       }),
-    ])
+    )
   })
 
   it('sorts activity cards by action priority and reports overflow', () => {
@@ -106,7 +138,7 @@ describe('pet assistant view model', () => {
     expect(view.visibleActivityCards[1]).toEqual(
       expect.objectContaining({
         tone: 'quiet',
-        detail: 'Waiting for your reply',
+        detail: 'May be waiting for a reply',
       }),
     )
   })
@@ -179,5 +211,29 @@ describe('pet assistant view model', () => {
     expect(enabled.visibleActivityCards[0].detail).toBe(
       'Claude: Implemented the release checklist and is running tests',
     )
+  })
+
+  it('keeps message cards metadata-only when conversation preview is disabled', () => {
+    const done = session('done', 'done', undefined, {
+      display_name: 'Feature branch',
+      conversation_preview: 'Claude: Secret-looking transcript text should stay hidden',
+      last_tool: 'Write',
+    })
+
+    const view = buildPetAssistantView({
+      sessions: [done],
+      displayMode: 'minimal',
+      visibleCount: 3,
+      conversationPreviewEnabled: false,
+    })
+
+    expect(view.messages[0]).toEqual(
+      expect.objectContaining({
+        title: 'Feature branch finished',
+        detail: 'Completed',
+        meta: 'project-done - done',
+      }),
+    )
+    expect(view.messages[0].detail).not.toContain('Secret-looking')
   })
 })

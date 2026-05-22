@@ -184,6 +184,7 @@ function PetMessageCard({
       <div>
         <strong>{message.title}</strong>
         <small>{message.detail}</small>
+        <em>{message.meta}</em>
       </div>
       <button
         type="button"

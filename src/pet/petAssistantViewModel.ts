@@ -10,6 +10,7 @@ export type PetAssistantMessage = {
   sessionId: string
   title: string
   detail: string
+  meta: string
   tone: PetAssistantMessageTone
   persistent: boolean
   updatedAt: string
@@ -71,7 +72,6 @@ const RUNNING_STATUSES = new Set<SessionStatus>(['running', 'tool_running'])
 const INTERVENTION_STATUSES = new Set<SessionStatus>(['waiting_permission'])
 const MESSAGE_STATUSES = new Set<SessionStatus>([
   'waiting_permission',
-  'waiting_input',
   'done',
   'error',
 ])
@@ -110,7 +110,9 @@ export function buildPetAssistantView({
     overflowCount: Math.max(0, activityCards.length - visibleActivityCards.length),
     messages: sessions
       .filter((session) => MESSAGE_STATUSES.has(session.status))
-      .map((session) => messageForSession(session, completionToastSeconds, translate))
+      .map((session) =>
+        messageForSession(session, completionToastSeconds, conversationPreviewEnabled, translate),
+      )
       .filter((message) =>
         shouldShowMessage({
           message,
@@ -129,7 +131,7 @@ export function petAssistantMessageKey(session: SessionSnapshot) {
 }
 
 export function isPersistentPetMessage(status: SessionStatus, completionToastSeconds = 5) {
-  return INTERVENTION_STATUSES.has(status) || completionToastSeconds <= 0
+  return INTERVENTION_STATUSES.has(status) || status === 'error' || completionToastSeconds <= 0
 }
 
 function shouldShowMessage({
@@ -154,6 +156,7 @@ function shouldShowMessage({
 function messageForSession(
   session: SessionSnapshot,
   completionToastSeconds: number,
+  conversationPreviewEnabled: boolean,
   translate: Translate,
 ): PetAssistantMessage {
   const tone = messageTone(session.status)
@@ -162,7 +165,8 @@ function messageForSession(
     key: petAssistantMessageKey(session),
     sessionId: session.session_id,
     title: messageTitle(session, translate),
-    detail: sessionMessageDetail(session, translate),
+    detail: sessionActivityDetail(session, conversationPreviewEnabled, translate),
+    meta: sessionActivityMeta(session, translate),
     tone,
     persistent: isPersistentPetMessage(session.status, completionToastSeconds),
     updatedAt: session.updated_at,
@@ -187,38 +191,17 @@ function activityCardForSession(
 }
 
 function messageTitle(session: SessionSnapshot, translate: Translate) {
-  const project = displayProjectName(session, translate)
+  const subject = activityTitle(session, translate)
   switch (session.status) {
     case 'waiting_permission':
-      return translate('petAssistant.title.waiting_permission', { project })
-    case 'waiting_input':
-      return translate('petAssistant.title.waiting_input', { project })
+      return translate('petAssistant.title.waiting_permission', { project: subject })
     case 'done':
-      return translate('petAssistant.title.done', { project })
+      return translate('petAssistant.title.done', { project: subject })
     case 'error':
-      return translate('petAssistant.title.error', { project })
+      return translate('petAssistant.title.error', { project: subject })
     default:
-      return project
+      return subject
   }
-}
-
-function sessionMessageDetail(session: SessionSnapshot, translate: Translate) {
-  if (session.last_tool) {
-    return translate('petAssistant.detailWithTool', {
-      status: statusLabel(session.status, translate),
-      tool: session.last_tool,
-    })
-  }
-  if (session.last_event) {
-    return translate('petAssistant.detailWithEvent', {
-      status: statusLabel(session.status, translate),
-      event: session.last_event,
-    })
-  }
-  return translate('petAssistant.detailWithProject', {
-    status: statusLabel(session.status, translate),
-    project: projectNameFromCwd(session.cwd, translate),
-  })
 }
 
 function sessionActivityDetail(

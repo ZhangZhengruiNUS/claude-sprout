@@ -2,6 +2,12 @@
 
 ## 2026-05-23
 
+- Implemented the pet Message/Board mode redesign:
+  - user-facing Minimal/Activity labels now read Message/Board while persisted `minimal` / `activity` settings remain compatible.
+  - Message mode now interrupts only for permission, completion, and failure, with richer session identity, status detail, and metadata.
+  - `waiting_input` no longer creates Message cards and remains a weak Board/Session Panel state.
+  - Message cards can show the existing opt-in conversation preview when enabled; otherwise they stay metadata-only.
+  - verified with `npm test -- --run`, `npm run lint`, `npm run build`, Playwright pet/settings QA, `npm run tauri -- build --no-bundle`, and `npm run smoke:sessions`.
 - Specified the pet assistant mode redesign:
   - user-facing `Minimal` / `Activity` concepts will become `Message` / `Board`.
   - Message mode is defined as low-frequency but rich-context intervention cards for permission, completion, and failure.
