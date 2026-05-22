@@ -2,6 +2,11 @@
 
 ## 2026-05-22
 
+- Fixed the Settings pet preview ergonomics:
+  - the panel shell now keeps the left pet preview rail fixed on desktop while the right content panel scrolls independently.
+  - selecting a pet under Settings > Pet appearance immediately updates the visible preview without needing to scroll back to the top.
+  - narrow screens continue to use the existing single-column natural page scroll.
+  - added a CSS layout regression test and verified the Settings flow in Playwright at desktop and mobile-sized viewports.
 - Added local English/Simplified Chinese UI support:
   - bundled i18next/react-i18next resources under `src/i18n`.
   - added `language: system | en | zh-CN` to frontend and Rust app settings.
