@@ -255,7 +255,7 @@ export function SettingsPanel({
       <div className="setting-row">
         <span>
           <strong>Pet appearance</strong>
-          <small>Use an imported Codex-compatible 8x9 spritesheet, or keep the built-in sprout.</small>
+          <small>Use the standard Claude Sprout pet, or switch to an imported Codex-compatible 8x9 spritesheet.</small>
         </span>
         <div className="setting-actions">
           <button type="button" onClick={onRefreshPetAssets}>
@@ -274,7 +274,7 @@ export function SettingsPanel({
           className={previewPetId === null ? 'active' : ''}
           onClick={() => onPreviewPet(null)}
         >
-          Built-in sprout
+          Claude Sprout
         </button>
         {petAssets.map((petAsset) => (
           <button

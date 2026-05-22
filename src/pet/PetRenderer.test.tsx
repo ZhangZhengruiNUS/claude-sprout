@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import { builtInPetAsset } from './builtInPetAsset'
 import { codexAtlasProfile } from './atlasProfiles/codex8x9'
 import type { PetAsset } from './petAssetsApi'
 import { PetRenderer } from './PetRenderer'
@@ -15,6 +16,18 @@ const codexPetAsset: PetAsset = {
 }
 
 describe('PetRenderer', () => {
+  it('renders the standard built-in Claude Sprout as a Codex atlas sprite', () => {
+    const html = renderToStaticMarkup(
+      <PetRenderer status="idle" alertCount={0} petAsset={builtInPetAsset} />,
+    )
+
+    expect(html).toContain('sprite-pet loop')
+    expect(html).toContain('pet-surface idle imported-pet')
+    expect(html).toContain('claude-sprout-spritesheet.webp')
+    expect(html).toContain('--sprite-frame-width:192px')
+    expect(html).toContain('--sprite-frame-height:208px')
+  })
+
   it('renders imported Codex rows with full atlas sizing and used-frame stepping', () => {
     const html = renderToStaticMarkup(
       <PetRenderer status="tool_running" alertCount={0} petAsset={codexPetAsset} />,

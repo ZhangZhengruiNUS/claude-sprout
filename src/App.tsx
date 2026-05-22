@@ -21,6 +21,7 @@ import {
 } from '@tauri-apps/plugin-notification'
 import { PetRenderer } from './pet/PetRenderer'
 import { FloatingPetAssistant } from './pet/FloatingPetAssistant'
+import { builtInPetAsset } from './pet/builtInPetAsset'
 import type { PetDragAnimation } from './pet/petDragAnimation'
 import { resolvePetWindowAction } from './pet/petActionPriority'
 import {
@@ -269,7 +270,7 @@ function App() {
     ],
   )
   const activityCardCount = petAssistantView.activityCards.length
-  const activePetAsset = petAssets.find((petAsset) => petAsset.id === settings.activePetId) ?? null
+  const activePetAsset = petAssetForId(settings.activePetId, petAssets)
 
   useEffect(() => {
     document.documentElement.dataset.window = windowKind
@@ -382,8 +383,7 @@ function App() {
         currentPreviewPetId === previousAppliedPetId ? event.payload.activePetId : currentPreviewPetId,
       )
       void refreshPetAssets()
-      const nextActivePetAsset =
-        petAssetsRef.current.find((petAsset) => petAsset.id === event.payload.activePetId) ?? null
+      const nextActivePetAsset = petAssetForId(event.payload.activePetId, petAssetsRef.current)
       void applySettingsToPet(
         event.payload,
         windowKind,
@@ -560,8 +560,7 @@ function App() {
     const savedSettings = await savePersistedAppSettings(nextSettings)
     settingsRef.current = savedSettings
     setSettings(savedSettings)
-    const nextActivePetAsset =
-      petAssetsRef.current.find((petAsset) => petAsset.id === savedSettings.activePetId) ?? null
+    const nextActivePetAsset = petAssetForId(savedSettings.activePetId, petAssetsRef.current)
     await applySettingsToPet(
       savedSettings,
       windowKind,
@@ -695,7 +694,7 @@ function App() {
 
   const previewPetAsset =
     windowKind === 'panel'
-      ? petAssets.find((petAsset) => petAsset.id === previewPetId) ?? null
+      ? petAssetForId(previewPetId, petAssets)
       : activePetAsset
 
   if (windowKind === 'pet') {
@@ -1054,6 +1053,11 @@ function importedPetDragWindowResize(
 
 function countOpenSessions(sessions: SessionSnapshot[]) {
   return sessions.filter((session) => session.status !== 'closed').length
+}
+
+function petAssetForId(petId: string | null, petAssets: PetAsset[]) {
+  if (!petId) return builtInPetAsset
+  return petAssets.find((petAsset) => petAsset.id === petId) ?? builtInPetAsset
 }
 
 function petMessageBoxOpacityStyle(opacityPercent: number): CSSProperties {

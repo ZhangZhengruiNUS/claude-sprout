@@ -2,6 +2,12 @@
 
 ## 2026-05-22
 
+- Replaced the project-standard pet and app iconography with the new Claude Sprout mascot:
+  - added the generated Codex/Hatch-compatible 8x9 WebP atlas as the built-in pet spritesheet, so the default pet now uses the same animation pipeline as imported pets.
+  - updated Settings copy and panel/pet preview routing so "Claude Sprout" is the standard built-in pet while imported Codex pets remain optional alternatives.
+  - regenerated the Vite favicon PNG, Tauri bundle `.ico`, and native tray PNG from the same transparent mascot frame.
+  - changed the Tauri tray to load the mascot PNG asset instead of drawing a placeholder icon in Rust.
+  - verified with `npm test -- --run`, `npm run lint`, `npm run build`, `cargo test --manifest-path src-tauri\Cargo.toml`, `npm run tauri -- build --no-bundle`, and Playwright browser QA at desktop plus 300x364 pet preview sizes.
 - Fixed imported pet drag square regression:
   - imported Codex pets now temporarily resize the native Tauri pet window to the sprite footprint while dragging, then restore the Activity/Minimal layout on release.
   - the drag session initialization no longer races with the first pointer move; if the Tauri session resolves after dragging starts, it still applies the temporary shrink.

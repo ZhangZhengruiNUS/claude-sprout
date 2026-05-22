@@ -89,49 +89,15 @@ pub fn create_tray(app: &mut App) -> tauri::Result<()> {
             }
         });
 
-    tray = tray.icon(tray_icon_image());
+    tray = tray.icon(tray_icon_image()?);
 
     tray.build(app)?;
 
     Ok(())
 }
 
-fn tray_icon_image() -> Image<'static> {
-    const SIZE: u32 = 32;
-    let mut rgba = vec![0; (SIZE * SIZE * 4) as usize];
-
-    for y in 0..SIZE {
-        for x in 0..SIZE {
-            let dx = x as f64 - 16.0;
-            let dy = y as f64 - 19.0;
-            if (dx * dx) / 13.5_f64.powi(2) + (dy * dy) / 11.0_f64.powi(2) <= 1.0 {
-                set_pixel(&mut rgba, x, y, [66, 136, 98, 255]);
-            }
-
-            let leaf_dx = x as f64 - 19.0;
-            let leaf_dy = y as f64 - 8.5;
-            if (leaf_dx * leaf_dx) / 8.5_f64.powi(2) + (leaf_dy * leaf_dy) / 5.0_f64.powi(2)
-                <= 1.0
-            {
-                set_pixel(&mut rgba, x, y, [178, 216, 111, 255]);
-            }
-        }
-    }
-
-    for (x, y) in [(12, 18), (21, 18)] {
-        for py in y..(y + 3) {
-            for px in x..(x + 3) {
-                set_pixel(&mut rgba, px, py, [16, 32, 26, 255]);
-            }
-        }
-    }
-
-    Image::new_owned(rgba, SIZE, SIZE)
-}
-
-fn set_pixel(rgba: &mut [u8], x: u32, y: u32, color: [u8; 4]) {
-    let index = ((y * 32 + x) * 4) as usize;
-    rgba[index..index + 4].copy_from_slice(&color);
+fn tray_icon_image() -> tauri::Result<Image<'static>> {
+    Image::from_bytes(include_bytes!("../icons/tray-icon.png"))
 }
 
 fn open_path(path: &Path) -> Result<(), String> {
