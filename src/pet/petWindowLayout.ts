@@ -19,6 +19,11 @@ type PetWindowSizeOptions = {
   petFrameSize?: { width: number; height: number } | null
 }
 
+export type PetWindowSize = {
+  width: number
+  height: number
+}
+
 export function petWindowSizeForDisplay({
   scale,
   displayMode,

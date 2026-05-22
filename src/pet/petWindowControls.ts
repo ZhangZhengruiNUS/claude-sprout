@@ -2,7 +2,7 @@ import { LogicalSize, PhysicalPosition } from '@tauri-apps/api/dpi'
 import { getCurrentWindow, Window } from '@tauri-apps/api/window'
 import { loadAppSettings, type AppSettings } from '../settings/appSettings'
 import { isTauriRuntime } from '../tauriRuntime'
-import { petWindowSizeForDisplay } from './petWindowLayout'
+import { petWindowSizeForDisplay, type PetWindowSize } from './petWindowLayout'
 
 export type PetDragOrigin = {
   screenX: number
@@ -10,7 +10,14 @@ export type PetDragOrigin = {
 }
 
 export type PetDragSession = {
+  start?: () => Promise<void>
   move: (screenX: number, screenY: number) => Promise<void>
+  end?: () => Promise<void>
+}
+
+export type PetDragWindowResize = {
+  dragSize: PetWindowSize
+  restoreSize: PetWindowSize
 }
 
 export function loadPetScale() {
@@ -41,16 +48,38 @@ export async function applyPetScale(
   return value
 }
 
-export async function beginPetDrag(origin: PetDragOrigin): Promise<PetDragSession | null> {
+export async function beginPetDrag(
+  origin: PetDragOrigin,
+  resize?: PetDragWindowResize | null,
+): Promise<PetDragSession | null> {
   if (!isTauriRuntime()) return null
 
   const appWindow = getCurrentWindow()
-  const [startPosition, scaleFactor] = await Promise.all([
+  const [initialPosition, scaleFactor] = await Promise.all([
     appWindow.outerPosition(),
     appWindow.scaleFactor(),
   ])
+  let startPosition = initialPosition
+  let dragResizeStarted = false
 
   return {
+    async start() {
+      if (!resize || dragResizeStarted) return
+      dragResizeStarted = true
+
+      const offsetX = origin.screenX - initialPosition.x / scaleFactor
+      const offsetY = origin.screenY - initialPosition.y / scaleFactor
+      const nextX =
+        (origin.screenX - Math.min(Math.max(offsetX, 0), resize.dragSize.width)) * scaleFactor
+      const nextY =
+        (origin.screenY - Math.min(Math.max(offsetY, 0), resize.dragSize.height)) * scaleFactor
+      startPosition = new PhysicalPosition(Math.round(nextX), Math.round(nextY))
+
+      await Promise.all([
+        appWindow.setSize(new LogicalSize(resize.dragSize.width, resize.dragSize.height)),
+        appWindow.setPosition(startPosition),
+      ])
+    },
     async move(screenX: number, screenY: number) {
       const deltaX = Math.round((screenX - origin.screenX) * scaleFactor)
       const deltaY = Math.round((screenY - origin.screenY) * scaleFactor)
@@ -58,6 +87,10 @@ export async function beginPetDrag(origin: PetDragOrigin): Promise<PetDragSessio
       await appWindow.setPosition(
         new PhysicalPosition(startPosition.x + deltaX, startPosition.y + deltaY),
       )
+    },
+    async end() {
+      if (!resize || !dragResizeStarted) return
+      await appWindow.setSize(new LogicalSize(resize.restoreSize.width, resize.restoreSize.height))
     },
   }
 }

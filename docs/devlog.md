@@ -2,6 +2,11 @@
 
 ## 2026-05-22
 
+- Fixed imported pet drag square regression:
+  - imported Codex pets now temporarily resize the native Tauri pet window to the sprite footprint while dragging, then restore the Activity/Minimal layout on release.
+  - the drag session initialization no longer races with the first pointer move; if the Tauri session resolves after dragging starts, it still applies the temporary shrink.
+  - drag start also closes the pet right-click menu and CSS-hides it as a fallback, so menu glass cannot leave a dark rectangle during movement.
+  - desktop release validation confirmed the imported Activity pet window shrinks during drag and restores after release; the release exe was rebuilt.
 - Added pet display mode switching to the pet right-click menu:
   - the pet context menu now includes an Activity/Minimal toggle alongside Open, Hide, Larger, and Smaller.
   - the toggle uses the existing settings persistence and live pet-window resize path, so switching modes from the pet updates the saved display mode immediately.

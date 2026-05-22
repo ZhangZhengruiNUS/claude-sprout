@@ -77,7 +77,7 @@ export function PetRenderer({
   const currentDragAnimation = useRef<PetDragAnimation | null>(null)
   const suppressNextClick = useRef(false)
 
-  async function handlePointerDown(event: PointerEvent<HTMLButtonElement>) {
+  function handlePointerDown(event: PointerEvent<HTMLButtonElement>) {
     if (!compact || !draggable || event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
     pointerStart.current = {
@@ -87,8 +87,14 @@ export function PetRenderer({
       screenY: event.screenY,
     }
     previousDragScreenX.current = event.screenX
-    dragSession.current =
-      (await onDragStart?.({ screenX: event.screenX, screenY: event.screenY })) ?? null
+    const dragSessionPromise = onDragStart?.({ screenX: event.screenX, screenY: event.screenY })
+    void dragSessionPromise?.then((session) => {
+      if (!pointerStart.current) return
+      dragSession.current = session
+      if (isDragging.current) {
+        void dragSession.current?.start?.()
+      }
+    })
   }
 
   function handlePointerMove(event: PointerEvent<HTMLButtonElement>) {
@@ -100,6 +106,7 @@ export function PetRenderer({
     if (moved < 6 && !isDragging.current) return
     if (!isDragging.current) {
       isDragging.current = true
+      void dragSession.current?.start?.()
       onDragStateChange?.(true)
     }
     const dragAnimation = dragDeltaToPetAnimation(
@@ -120,6 +127,7 @@ export function PetRenderer({
     if (isDragging.current) {
       suppressNextClick.current = true
       onDragStateChange?.(false)
+      void dragSession.current?.end?.()
     }
     currentDragAnimation.current = null
     onDragDirectionChange?.(null)

@@ -37,6 +37,7 @@
     "Imported Codex sprite bottom clipping is fixed by reserving the unscaled 192x208 cell footprint despite CSS transform scaling, and Activity mode now positions its HUD below imported sprites",
     "Imported Codex Activity mode now reserves unscaled HUD/card height for imported pets, preventing two visible session cards from being clipped below the sprite when pet scale is below 1",
     "Imported Codex pet drag direction now uses runningRight/runningLeft atlas rows while the pet is being dragged horizontally, then returns to the session-driven animation on release",
+    "Imported Codex pet dragging now temporarily shrinks the native pet window to the sprite footprint and restores the Activity/Minimal layout on release, preventing the full transparent Activity window from appearing as a square while moving",
     "Idle-prompt input waiting is now a weak reminder: the session remains visible as waiting_input, but it does not trigger native notifications, waiting pet animation, one-shot waving, or actionable counts",
     "Manual release desktop smoke passed after the launch/tray/pet-menu fixes: pet-only startup, visible tray icon, pet menu Open/Hide/Larger/Smaller, minimize/close-to-tray, tray Show/Hide Pet, and tray Quit all behaved as expected",
     "Claude Code hook docs include an empty-session troubleshooting flow for missing hooks/statusLine config, missing sessions/*.json snapshots, and CLAUDE_SPROUT_HOME mismatches",

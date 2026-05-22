@@ -47,6 +47,7 @@ import {
   getPetWindow,
   hideCurrentPetWindow,
 } from './pet/petWindowControls'
+import { petWindowSizeForDisplay } from './pet/petWindowLayout'
 import { shouldDismissPetContextMenu } from './pet/petContextMenu'
 import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
@@ -727,9 +728,17 @@ function App() {
           onWheel={(delta) => {
             void resizePet(delta)
           }}
-          onDragStart={beginPetDrag}
+          onDragStart={(origin) =>
+            beginPetDrag(
+              origin,
+              importedPetDragWindowResize(settings, activityCardCount, activePetAsset),
+            )
+          }
           onDragStateChange={(dragging) => {
             setIsPetDragging(dragging)
+            if (dragging) {
+              setPetMenuPosition(null)
+            }
             if (!dragging) {
               setPetDragAnimation(null)
             }
@@ -1012,6 +1021,35 @@ async function applySettingsToPet(
 function effectiveActivityVisibleCount(settings: AppSettings, activityCardCount: number) {
   if (settings.petDisplayMode !== 'activity') return settings.petActivityVisibleCount
   return Math.min(settings.petActivityVisibleCount, Math.max(0, activityCardCount))
+}
+
+function importedPetDragWindowResize(
+  settings: AppSettings,
+  activityCardCount: number,
+  activePetAsset: PetAsset | null,
+) {
+  if (!activePetAsset) return null
+
+  const petFrameSize = {
+    width: activePetAsset.atlasProfile.frameWidth,
+    height: activePetAsset.atlasProfile.frameHeight,
+  }
+
+  return {
+    dragSize: petWindowSizeForDisplay({
+      scale: settings.petScale,
+      displayMode: 'minimal',
+      visibleCount: 0,
+      petFrameSize,
+    }),
+    restoreSize: petWindowSizeForDisplay({
+      scale: settings.petScale,
+      displayMode: settings.petDisplayMode,
+      visibleCount: effectiveActivityVisibleCount(settings, activityCardCount),
+      activityWidth: settings.petActivityWindowWidth,
+      petFrameSize,
+    }),
+  }
 }
 
 function countOpenSessions(sessions: SessionSnapshot[]) {
