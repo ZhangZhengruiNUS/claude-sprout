@@ -2,6 +2,7 @@ import {
   Bell,
   EyeOff,
   FolderOpen,
+  LayoutList,
   Moon,
   PanelTopOpen,
   PawPrint,
@@ -22,6 +23,11 @@ import { PetRenderer } from './pet/PetRenderer'
 import { FloatingPetAssistant } from './pet/FloatingPetAssistant'
 import type { PetDragAnimation } from './pet/petDragAnimation'
 import { resolvePetWindowAction } from './pet/petActionPriority'
+import {
+  nextPetDisplayMode,
+  petDisplayModeMenuLabel,
+  petDisplayModeMenuTitle,
+} from './pet/petDisplayModeMenu'
 import {
   nextPetEventActions,
   rememberPetEventAction,
@@ -535,6 +541,14 @@ function App() {
     await updateSettings(settingsWithPetScale(settings, settings.petScale + delta * 0.1))
   }
 
+  async function togglePetDisplayMode() {
+    setPetMenuPosition(null)
+    await updateSettingsFromLatest((currentSettings) => ({
+      ...currentSettings,
+      petDisplayMode: nextPetDisplayMode(currentSettings.petDisplayMode),
+    }))
+  }
+
   async function hidePet() {
     setPetMenuPosition(null)
     await hideCurrentPetWindow()
@@ -766,6 +780,16 @@ function App() {
             >
               <EyeOff size={14} />
               Hide
+            </button>
+            <button
+              type="button"
+              title={petDisplayModeMenuTitle(settings.petDisplayMode)}
+              onClick={() => {
+                void togglePetDisplayMode()
+              }}
+            >
+              <LayoutList size={14} />
+              {petDisplayModeMenuLabel(settings.petDisplayMode)}
             </button>
             <button
               type="button"

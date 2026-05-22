@@ -2,6 +2,9 @@
 
 ## 2026-05-22
 
+- Added pet display mode switching to the pet right-click menu:
+  - the pet context menu now includes an Activity/Minimal toggle alongside Open, Hide, Larger, and Smaller.
+  - the toggle uses the existing settings persistence and live pet-window resize path, so switching modes from the pet updates the saved display mode immediately.
 - Fixed imported pet Activity card clipping with two visible sessions:
   - root cause was imported Activity window height scaling the HUD/card area by pet scale while the CSS card layout remains unscaled.
   - imported Activity mode now reserves at least the unscaled HUD/card height, so two session cards fit below the 192x208 Codex sprite instead of being clipped at the window bottom.

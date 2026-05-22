@@ -460,7 +460,7 @@ button:disabled {
 .pet-context-menu {
   position: absolute;
   left: min(var(--pet-menu-x), calc(100% - 7.25rem));
-  top: min(var(--pet-menu-y), calc(100% - 9.8rem));
+  top: min(var(--pet-menu-y), calc(100% - 12rem));
   width: 7rem;
   display: grid;
   gap: 0.2rem;
