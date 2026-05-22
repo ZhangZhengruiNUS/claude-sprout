@@ -9,6 +9,20 @@ describe('pet window layout', () => {
     })
   })
 
+  it('keeps imported sprite pets inside the minimal pet window', () => {
+    expect(
+      petWindowSizeForDisplay({
+        scale: 0.75,
+        displayMode: 'minimal',
+        visibleCount: 3,
+        petFrameSize: { width: 192, height: 208 },
+      }),
+    ).toEqual({
+      width: 162,
+      height: 174,
+    })
+  })
+
   it('expands activity mode for the configured visible session rows', () => {
     expect(petWindowSizeForDisplay({ scale: 1, displayMode: 'activity', visibleCount: 3 })).toEqual({
       width: 360,

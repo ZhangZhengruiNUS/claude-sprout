@@ -7,6 +7,7 @@ import {
 
 const MINIMAL_WIDTH = 180
 const MINIMAL_HEIGHT = 210
+const IMPORTED_PET_PADDING = 24
 const ACTIVITY_BASE_HEIGHT = 232
 const ACTIVITY_ROW_HEIGHT = 64
 
@@ -15,6 +16,7 @@ type PetWindowSizeOptions = {
   displayMode: PetDisplayMode
   visibleCount: number
   activityWidth?: number
+  petFrameSize?: { width: number; height: number } | null
 }
 
 export function petWindowSizeForDisplay({
@@ -22,6 +24,7 @@ export function petWindowSizeForDisplay({
   displayMode,
   visibleCount,
   activityWidth,
+  petFrameSize,
 }: PetWindowSizeOptions) {
   const normalizedScale = clampPetScale(scale)
   const baseSize =
@@ -31,14 +34,22 @@ export function petWindowSizeForDisplay({
           height: ACTIVITY_BASE_HEIGHT + clampVisibleCount(visibleCount) * ACTIVITY_ROW_HEIGHT,
         }
       : {
-          width: MINIMAL_WIDTH,
-          height: MINIMAL_HEIGHT,
+          width: minimalWidthForPet(petFrameSize),
+          height: minimalHeightForPet(petFrameSize),
         }
 
   return {
     width: Math.round(baseSize.width * normalizedScale),
     height: Math.round(baseSize.height * normalizedScale),
   }
+}
+
+function minimalWidthForPet(petFrameSize: PetWindowSizeOptions['petFrameSize']) {
+  return Math.max(MINIMAL_WIDTH, Math.round((petFrameSize?.width ?? 0) + IMPORTED_PET_PADDING))
+}
+
+function minimalHeightForPet(petFrameSize: PetWindowSizeOptions['petFrameSize']) {
+  return Math.max(MINIMAL_HEIGHT, Math.round((petFrameSize?.height ?? 0) + IMPORTED_PET_PADDING))
 }
 
 function clampVisibleCount(value: number) {

@@ -21,6 +21,7 @@ describe('PetRenderer', () => {
     )
 
     expect(html).toContain('sprite-pet loop')
+    expect(html).toContain('pet-surface tool_running imported-pet')
     expect(html).toContain('--sprite-frames:6')
     expect(html).toContain('--sprite-sheet-width:1536px')
     expect(html).toContain('--sprite-sheet-height:1872px')

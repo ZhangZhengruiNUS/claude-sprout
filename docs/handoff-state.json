@@ -32,6 +32,7 @@
     "Pet release-smoke polish: tray icon uses a generated tighter 32px sprout icon for better notification-area visibility, and pet right-click opens a context menu with Open, Hide, Larger, and Smaller actions",
     "Pet right-click context menu now closes when the user clicks outside the menu or the pet window loses focus",
     "Pet event actions are now metadata-driven: entering waiting states waves once, clean completion jumps once, new errors play failed once, and polling/statusline refreshes do not replay actions",
+    "Imported Codex pet drag/cropping polish: pet-only window sizing now accounts for 192x208 sprite cells, and imported pet dragging collapses the active surface around the sprite while hiding Activity overlays",
     "Manual release desktop smoke passed after the launch/tray/pet-menu fixes: pet-only startup, visible tray icon, pet menu Open/Hide/Larger/Smaller, minimize/close-to-tray, tray Show/Hide Pet, and tray Quit all behaved as expected",
     "Claude Code hook docs include an empty-session troubleshooting flow for missing hooks/statusLine config, missing sessions/*.json snapshots, and CLAUDE_SPROUT_HOME mismatches",
     "Claude Code hook command examples quote the .ps1 script paths so checkout paths with spaces work; docs call out CLAUDE_CONFIG_DIR as the active settings directory override",
@@ -80,7 +81,7 @@
     "The release exe build works with npm run release:exe or npm run tauri -- build --no-bundle, and the NSIS installer build works while the verified local NSIS cache is present."
   ],
   "nextTasks": [
-    "Ask the user to run final acceptance testing for the pet assistant modes, event-triggered pet actions, and Codex-aligned imported pet animations in real desktop use, especially waiting/completion/error transitions, Minimal persistent intervention cards, Activity mode paging, pet drag/resize/context-menu behavior, and real Claude Code session transitions.",
+    "Ask the user to run final acceptance testing for the pet assistant modes, event-triggered pet actions, and Codex-aligned imported pet animations in real desktop use, especially waiting/completion/error transitions, imported pet drag/cropping behavior, Minimal persistent intervention cards, Activity mode paging, pet resize/context-menu behavior, and real Claude Code session transitions.",
     "Consider a follow-up that uses Codex runningRight/runningLeft rows during drag or horizontal movement once the basic atlas alignment is accepted.",
     "After user acceptance, continue with release closure: run NSIS installer smoke, regenerate final official artifact hashes for the standalone exe and NSIS setup, then proceed through the v0.1.0 release checklist and GitHub release publication."
   ],

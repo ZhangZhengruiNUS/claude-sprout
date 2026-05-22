@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Fixed imported pet drag/cropping polish:
+  - imported Codex sprites now size the pet-only window from the 192x208 atlas cell instead of the smaller built-in Sprout footprint.
+  - imported pet rendering gets its own CSS class so drag styling can collapse the active surface around the sprite and hide Activity overlays while dragging.
+  - this keeps large imported sprites from showing the full interaction rectangle or clipping at the bottom during desktop dragging.
 - Added metadata-only pet event actions:
   - pet animation now has a small event-action layer above the sustained status mapping.
   - entering waiting states plays `waving` once, clean completion plays `jumping` once, and new error transitions play `failed` once before returning to the sustained status animation.

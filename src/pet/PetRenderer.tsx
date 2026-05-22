@@ -21,6 +21,7 @@ type Props = {
   onContextMenu?: (position: { x: number; y: number }) => void
   onWheel?: (delta: number) => void
   onDragStart?: (origin: PetDragOrigin) => Promise<PetDragSession | null>
+  onDragStateChange?: (isDragging: boolean) => void
 }
 
 export function PetRenderer({
@@ -38,6 +39,7 @@ export function PetRenderer({
   onContextMenu,
   onWheel,
   onDragStart,
+  onDragStateChange,
 }: Props) {
   const animation = action ?? statusToPetAnimation(status)
   const atlasAnimation = petAsset?.atlasProfile.animations[animation]
@@ -90,7 +92,10 @@ export function PetRenderer({
       event.clientY - pointerStart.current.y,
     )
     if (moved < 6 && !isDragging.current) return
-    isDragging.current = true
+    if (!isDragging.current) {
+      isDragging.current = true
+      onDragStateChange?.(true)
+    }
     void dragSession.current?.move(event.screenX, event.screenY)
   }
 
@@ -100,6 +105,7 @@ export function PetRenderer({
     }
     if (isDragging.current) {
       suppressNextClick.current = true
+      onDragStateChange?.(false)
     }
     pointerStart.current = null
     dragSession.current = null
@@ -118,7 +124,7 @@ export function PetRenderer({
   return (
     <button
       type="button"
-      className={`pet-surface ${status}${compact ? ' compact' : ''}${!draggable ? ' locked' : ''}`}
+      className={`pet-surface ${status}${petAsset ? ' imported-pet' : ''}${compact ? ' compact' : ''}${!draggable ? ' locked' : ''}`}
       aria-label="Open session panel"
       onClick={handleClick}
       onDoubleClick={onDoubleClick}

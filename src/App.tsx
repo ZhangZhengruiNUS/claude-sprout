@@ -115,12 +115,14 @@ function App() {
   const [isStorageCleaning, setIsStorageCleaning] = useState(false)
   const [storageMessage, setStorageMessage] = useState<string | null>(null)
   const [petMenuPosition, setPetMenuPosition] = useState<{ x: number; y: number } | null>(null)
+  const [isPetDragging, setIsPetDragging] = useState(false)
   const [acknowledgedPetMessageKeys, setAcknowledgedPetMessageKeys] = useState<Set<string>>(
     () => new Set(),
   )
   const [petActivityPage, setPetActivityPage] = useState(0)
   const [petAssistantTick, setPetAssistantTick] = useState(() => Date.now())
   const settingsRef = useRef(settings)
+  const petAssetsRef = useRef<PetAsset[]>([])
   const sessionsRef = useRef<SessionSnapshot[]>([])
   const notifiedSessionKeysRef = useRef(new Set<string>())
   const pendingSessionNotificationsRef = useRef(new Map<string, SessionNotification>())
@@ -257,6 +259,7 @@ function App() {
     ],
   )
   const activityCardCount = petAssistantView.activityCards.length
+  const activePetAsset = petAssets.find((petAsset) => petAsset.id === settings.activePetId) ?? null
 
   useEffect(() => {
     document.documentElement.dataset.window = windowKind
@@ -348,8 +351,12 @@ function App() {
   }, [settings])
 
   useEffect(() => {
-    void applySettingsToPet(settings, windowKind, activityCardCount)
-  }, [activityCardCount, settings, windowKind])
+    petAssetsRef.current = petAssets
+  }, [petAssets])
+
+  useEffect(() => {
+    void applySettingsToPet(settings, windowKind, activityCardCount, activePetAsset)
+  }, [activityCardCount, activePetAsset, settings, windowKind])
 
   useEffect(() => {
     if (!isTauriRuntime()) return
@@ -365,7 +372,14 @@ function App() {
         currentPreviewPetId === previousAppliedPetId ? event.payload.activePetId : currentPreviewPetId,
       )
       void refreshPetAssets()
-      void applySettingsToPet(event.payload, windowKind, countOpenSessions(sessionsRef.current))
+      const nextActivePetAsset =
+        petAssetsRef.current.find((petAsset) => petAsset.id === event.payload.activePetId) ?? null
+      void applySettingsToPet(
+        event.payload,
+        windowKind,
+        countOpenSessions(sessionsRef.current),
+        nextActivePetAsset,
+      )
     }).then((handler) => {
       unlisten = handler
     })
@@ -528,7 +542,14 @@ function App() {
     const savedSettings = await savePersistedAppSettings(nextSettings)
     settingsRef.current = savedSettings
     setSettings(savedSettings)
-    await applySettingsToPet(savedSettings, windowKind, countOpenSessions(sessionsRef.current))
+    const nextActivePetAsset =
+      petAssetsRef.current.find((petAsset) => petAsset.id === savedSettings.activePetId) ?? null
+    await applySettingsToPet(
+      savedSettings,
+      windowKind,
+      countOpenSessions(sessionsRef.current),
+      nextActivePetAsset,
+    )
 
     if (isTauriRuntime()) {
       await emit(SETTINGS_CHANGED_EVENT, savedSettings)
@@ -553,7 +574,10 @@ function App() {
   }
 
   async function refreshPetAssets() {
-    setPetAssets(await listPetAssets())
+    const nextPetAssets = await listPetAssets()
+    petAssetsRef.current = nextPetAssets
+    setPetAssets(nextPetAssets)
+    return nextPetAssets
   }
 
   async function scanCodexPets() {
@@ -651,7 +675,6 @@ function App() {
     }
   }
 
-  const activePetAsset = petAssets.find((petAsset) => petAsset.id === settings.activePetId) ?? null
   const previewPetAsset =
     windowKind === 'panel'
       ? petAssets.find((petAsset) => petAsset.id === previewPetId) ?? null
@@ -660,7 +683,7 @@ function App() {
   if (windowKind === 'pet') {
     return (
       <main
-        className={`floating-pet-shell ${settings.petDisplayMode}`}
+        className={`floating-pet-shell ${settings.petDisplayMode}${activePetAsset ? ' imported-pet-active' : ''}${isPetDragging ? ' dragging' : ''}`}
         style={petMessageBoxOpacityStyle(settings.petMessageBoxOpacity)}
       >
         <PetRenderer
@@ -685,6 +708,7 @@ function App() {
             void resizePet(delta)
           }}
           onDragStart={beginPetDrag}
+          onDragStateChange={setIsPetDragging}
         />
         <FloatingPetAssistant
           view={petAssistantView}
@@ -919,10 +943,17 @@ async function applySettingsToPet(
   settings: AppSettings,
   windowKind: WindowKind,
   activityCardCount = settings.petActivityVisibleCount,
+  activePetAsset: PetAsset | null = null,
 ) {
   const layoutSettings = {
     ...settings,
     petActivityVisibleCount: effectiveActivityVisibleCount(settings, activityCardCount),
+    petFrameSize: activePetAsset
+      ? {
+          width: activePetAsset.atlasProfile.frameWidth,
+          height: activePetAsset.atlasProfile.frameHeight,
+        }
+      : null,
   }
 
   if (windowKind === 'pet') {
