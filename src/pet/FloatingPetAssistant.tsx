@@ -34,9 +34,9 @@ export function FloatingPetAssistant({
         view.activityCards.length > 0 ? (
           <ActivityHud
             cards={activityCards}
+            totalCount={view.activityCards.length}
             page={safePage}
             pageCount={pageCount}
-            overflowCount={view.overflowCount}
             onPageChange={onActivityPageChange}
             onOpenPanel={onOpenPanel}
           />
@@ -92,16 +92,16 @@ function MinimalHud({
 
 function ActivityHud({
   cards,
+  totalCount,
   page,
   pageCount,
-  overflowCount,
   onPageChange,
   onOpenPanel,
 }: {
   cards: PetAssistantActivityCard[]
+  totalCount: number
   page: number
   pageCount: number
-  overflowCount: number
   onPageChange: (page: number) => void
   onOpenPanel: () => void
 }) {
@@ -111,7 +111,7 @@ function ActivityHud({
     <section className="pet-activity-hud" aria-label={t('petAssistant.activityLabel')}>
       <div className="pet-activity-header">
         <span>{t('petAssistant.activeSessions')}</span>
-        <small>{overflowCount > 0 ? `+${overflowCount}` : `${cards.length}`}</small>
+        <small>{totalCount}</small>
       </div>
       <div className="pet-activity-list">
         {cards.length === 0 ? (

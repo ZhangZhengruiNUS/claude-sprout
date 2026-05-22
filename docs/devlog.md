@@ -2,6 +2,11 @@
 
 ## 2026-05-23
 
+- Fixed Activity mode card stack layout:
+  - imported/built-in sprite Activity HUD now anchors below the rendered pet height instead of the unscaled 208px atlas frame, reducing the medium-size pet-to-HUD gap from about 70px to 14px in browser QA.
+  - imported/built-in Activity window height now reserves enough space for three visible cards plus the pager; the 4-session / 3-visible-row QA fixture no longer clips the bottom controls.
+  - Activity header now shows the total active/open session count instead of ambiguous overflow text like `+1`; pagination still shows `1/2`, `2/2`, etc.
+  - verified with `npm test`, `npm run lint`, `npm run build`, and Playwright visual QA at 520px and 300px Activity widths.
 - Fixed pet drag release and pointer anchoring regressions:
   - dragging now listens for window-level `pointerup`, `pointercancel`, `blur`, and `lostpointercapture`, so shortcut/desktop focus changes release the drag state instead of leaving the pet in the running drag animation.
   - drag-window shrink now anchors to the visible `.pet-hit-target` instead of the wider Activity window, preventing the pointer from jumping off the pet when dragging starts.

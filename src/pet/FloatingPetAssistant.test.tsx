@@ -70,4 +70,44 @@ describe('FloatingPetAssistant', () => {
     expect(html).toContain('pet-activity-hud')
     expect(html).toContain('Using Edit')
   })
+
+  it('shows total activity count in the header instead of overflow count', () => {
+    const card = {
+      key: 'session:running:now',
+      sessionId: 'session',
+      title: 'claude-sprout - session',
+      detail: 'Using Edit',
+      meta: 'running - 12% ctx',
+      status: 'tool_running' as const,
+      tone: 'running' as const,
+      updatedAt: '2026-05-22T00:00:00.000Z',
+    }
+
+    const html = renderToStaticMarkup(
+      <FloatingPetAssistant
+        view={{
+          ...baseView,
+          activityCards: [
+            card,
+            { ...card, key: 'session-2', sessionId: 'session-2' },
+            { ...card, key: 'session-3', sessionId: 'session-3' },
+            { ...card, key: 'session-4', sessionId: 'session-4' },
+          ],
+          visibleActivityCards: [
+            card,
+            { ...card, key: 'session-2', sessionId: 'session-2' },
+            { ...card, key: 'session-3', sessionId: 'session-3' },
+          ],
+          overflowCount: 1,
+        }}
+        activityPage={0}
+        onActivityPageChange={vi.fn()}
+        onAcknowledgeMessage={vi.fn()}
+        onOpenPanel={vi.fn()}
+      />,
+    )
+
+    expect(html).toContain('<small>4</small>')
+    expect(html).not.toContain('+1')
+  })
 })

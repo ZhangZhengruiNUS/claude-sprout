@@ -51,7 +51,7 @@ import {
   getPetWindow,
   hideCurrentPetWindow,
 } from './pet/petWindowControls'
-import { petWindowSizeForDisplay } from './pet/petWindowLayout'
+import { importedActivityHudTop, petWindowSizeForDisplay } from './pet/petWindowLayout'
 import { shouldDismissPetContextMenu } from './pet/petContextMenu'
 import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
@@ -722,12 +722,14 @@ function App() {
       : activePetAsset
 
   if (windowKind === 'pet') {
+    const petRenderScale = settings.petDisplayMode === 'activity' ? settings.petScale * 0.78 : settings.petScale
+
     return (
       <main
         className={`floating-pet-shell ${settings.petDisplayMode}${activePetAsset ? ' imported-pet-active' : ''}${isPetDragging ? ' dragging' : ''}`}
         style={{
           ...petMessageBoxOpacityStyle(settings.petMessageBoxOpacity),
-          ...importedPetFrameStyle(activePetAsset),
+          ...importedPetFrameStyle(activePetAsset, settings),
         }}
       >
         <PetRenderer
@@ -735,7 +737,7 @@ function App() {
           alertCount={waitingCount}
           compact
           draggable={!settings.petLockPosition}
-          scale={settings.petDisplayMode === 'activity' ? settings.petScale * 0.78 : settings.petScale}
+          scale={petRenderScale}
           action={resolvePetWindowAction(activePetAsset !== null, petAction, petDragAnimation)}
           actionReplayKey={petActionReplayKey}
           petAsset={activePetAsset}
@@ -1102,12 +1104,16 @@ function petMessageBoxOpacityStyle(opacityPercent: number): CSSProperties {
   } as CSSProperties
 }
 
-function importedPetFrameStyle(activePetAsset: PetAsset | null): CSSProperties {
+function importedPetFrameStyle(activePetAsset: PetAsset | null, settings: AppSettings): CSSProperties {
   if (!activePetAsset) return {}
 
   return {
     '--pet-imported-frame-width': `${activePetAsset.atlasProfile.frameWidth}px`,
     '--pet-imported-frame-height': `${activePetAsset.atlasProfile.frameHeight}px`,
+    '--pet-activity-hud-top': `${importedActivityHudTop(
+      activePetAsset.atlasProfile.frameHeight,
+      settings.petScale,
+    )}px`,
   } as CSSProperties
 }
 

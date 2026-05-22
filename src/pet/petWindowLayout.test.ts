@@ -23,7 +23,7 @@ describe('pet window layout', () => {
     })
   })
 
-  it('reserves unscaled imported sprite and activity card height in Activity mode', () => {
+  it('places one imported Activity row near the rendered pet without clipping', () => {
     expect(
       petWindowSizeForDisplay({
         scale: 0.75,
@@ -34,11 +34,11 @@ describe('pet window layout', () => {
       }),
     ).toEqual({
       width: 315,
-      height: 360,
+      height: 282,
     })
   })
 
-  it('does not shrink imported Activity card space below the unscaled card content', () => {
+  it('fits two imported Activity rows below the rendered pet', () => {
     expect(
       petWindowSizeForDisplay({
         scale: 0.75,
@@ -49,7 +49,22 @@ describe('pet window layout', () => {
       }),
     ).toEqual({
       width: 315,
-      height: 424,
+      height: 352,
+    })
+  })
+
+  it('fits three imported Activity rows plus pager close below the rendered pet', () => {
+    expect(
+      petWindowSizeForDisplay({
+        scale: 1,
+        displayMode: 'activity',
+        visibleCount: 3,
+        activityWidth: 520,
+        petFrameSize: { width: 192, height: 208 },
+      }),
+    ).toEqual({
+      width: 520,
+      height: 462,
     })
   })
 

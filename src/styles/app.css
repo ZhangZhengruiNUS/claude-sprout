@@ -188,7 +188,7 @@ button:disabled {
 }
 
 .floating-pet-shell.imported-pet-active.activity .pet-activity-hud {
-  top: calc(var(--pet-imported-frame-height, 208px) + 1.5rem);
+  top: var(--pet-activity-hud-top, calc(var(--pet-imported-frame-height, 208px) + 1.5rem));
   bottom: auto;
 }
 

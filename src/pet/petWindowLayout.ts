@@ -10,6 +10,11 @@ const MINIMAL_HEIGHT = 210
 const IMPORTED_PET_PADDING = 24
 const ACTIVITY_BASE_HEIGHT = 232
 const ACTIVITY_ROW_HEIGHT = 64
+const IMPORTED_ACTIVITY_PET_SCALE = 0.78
+const IMPORTED_ACTIVITY_HUD_GAP = 14
+const IMPORTED_ACTIVITY_HUD_BOTTOM_MARGIN = 8
+const IMPORTED_ACTIVITY_HUD_CHROME_HEIGHT = 68
+const IMPORTED_ACTIVITY_CARD_ROW_HEIGHT = 70
 
 type PetWindowSizeOptions = {
   scale: number
@@ -35,10 +40,14 @@ export function petWindowSizeForDisplay({
   if (petFrameSize) {
     const footprint = importedPetFootprint(petFrameSize, normalizedScale)
     if (displayMode === 'activity') {
-      const activityHudHeight = importedActivityHudHeight(visibleCount, normalizedScale)
+      const activityHudTop = importedActivityHudTop(petFrameSize.height, normalizedScale)
+      const activityHudHeight = importedActivityHudHeight(visibleCount)
       return {
         width: Math.max(Math.round(clampActivityWidth(activityWidth) * normalizedScale), footprint.width),
-        height: footprint.height + activityHudHeight,
+        height: Math.max(
+          footprint.height,
+          activityHudTop + activityHudHeight + IMPORTED_ACTIVITY_HUD_BOTTOM_MARGIN,
+        ),
       }
     }
 
@@ -72,10 +81,14 @@ function importedPetFootprint(
   }
 }
 
-function importedActivityHudHeight(visibleCount: number, scale: number) {
+export function importedActivityHudTop(frameHeight: number, scale: number) {
+  return Math.round(frameHeight * scale * IMPORTED_ACTIVITY_PET_SCALE + IMPORTED_ACTIVITY_HUD_GAP)
+}
+
+function importedActivityHudHeight(visibleCount: number) {
   const count = clampVisibleCount(visibleCount)
   if (count === 0) return 0
-  return Math.round((ACTIVITY_ROW_HEIGHT + count * ACTIVITY_ROW_HEIGHT) * Math.max(1, scale))
+  return IMPORTED_ACTIVITY_HUD_CHROME_HEIGHT + count * IMPORTED_ACTIVITY_CARD_ROW_HEIGHT
 }
 
 function minimalWidthForPet(petFrameSize: PetWindowSizeOptions['petFrameSize']) {

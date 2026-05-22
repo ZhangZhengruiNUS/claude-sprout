@@ -71,6 +71,7 @@
     "Settings pet appearance now hides the retired imported claude-sprout duplicate after Claude Sprout became the built-in standard pet, and legacy activePetId values for that old import are treated as the built-in selection",
     "Pet window hit testing is tightened: the transparent shell and full compact surface no longer receive pointer events, while a smaller pet-hit-target around the visible pet handles click, drag, wheel, and context-menu interactions; activity/message cards remain individually clickable",
     "Pet dragging now releases cleanly on window-level pointer cancellation, blur, and lost pointer capture, and imported/Activity drag-window shrink anchors to the visible pet-hit-target so the cursor stays on the pet when movement starts",
+    "Activity mode now anchors the session stack close below the rendered built-in/imported pet, reserves enough height for three visible cards plus pager, and shows the total active/open session count instead of ambiguous overflow text",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
