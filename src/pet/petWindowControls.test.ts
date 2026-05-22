@@ -59,4 +59,33 @@ describe('pet window controls', () => {
       expect.objectContaining({ width: 315, height: 424 }),
     )
   })
+
+  it('anchors a resized drag window to the visible pet target instead of the wider activity window', async () => {
+    const dragSession = await beginPetDrag(
+      {
+        screenX: 350,
+        screenY: 260,
+        targetOffsetX: 78,
+        targetOffsetY: 92,
+        targetWidth: 157,
+        targetHeight: 187,
+      },
+      {
+        dragSize: { width: 216, height: 232 },
+        restoreSize: { width: 360, height: 424 },
+      },
+    )
+
+    await dragSession?.start?.()
+    await dragSession?.move(370, 280)
+
+    expect(setPositionMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ x: 485, y: 291 }),
+    )
+    expect(setPositionMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ x: 525, y: 331 }),
+    )
+  })
 })

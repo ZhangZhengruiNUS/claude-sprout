@@ -1,11 +1,12 @@
 import type { CSSProperties, MouseEvent, PointerEvent } from 'react'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import type { SessionStatus } from '../sessions/sessionTypes'
 import { type PetAnimation, statusToPetAnimation } from './petStateMapper'
 import type { PetDragOrigin, PetDragSession } from './petWindowControls'
 import type { PetAsset } from './petAssetsApi'
 import { petAnimationRenderKey } from './petAnimation'
 import { dragDeltaToPetAnimation, type PetDragAnimation } from './petDragAnimation'
+import { PET_DRAG_CANCEL_EVENTS } from './petDragLifecycle'
 
 type Props = {
   status: SessionStatus
@@ -82,10 +83,69 @@ export function PetRenderer({
   const isDragging = useRef(false)
   const currentDragAnimation = useRef<PetDragAnimation | null>(null)
   const suppressNextClick = useRef(false)
+  const dragCaptureTarget = useRef<HTMLButtonElement | null>(null)
+  const dragPointerId = useRef<number | null>(null)
+  const detachWindowDragListeners = useRef<(() => void) | null>(null)
+
+  useEffect(() => {
+    return () => {
+      detachWindowDragListeners.current?.()
+    }
+  }, [])
+
+  function attachWindowDragListeners() {
+    if (typeof window === 'undefined') return
+
+    detachWindowDragListeners.current?.()
+    const finish = () => finishPointerDrag()
+    PET_DRAG_CANCEL_EVENTS.forEach((eventName) => {
+      window.addEventListener(eventName, finish, true)
+    })
+    detachWindowDragListeners.current = () => {
+      PET_DRAG_CANCEL_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, finish, true)
+      })
+    }
+  }
+
+  function finishPointerDrag(target?: HTMLButtonElement, pointerId?: number) {
+    detachWindowDragListeners.current?.()
+    detachWindowDragListeners.current = null
+
+    const captureTarget = target ?? dragCaptureTarget.current
+    const capturedPointerId = pointerId ?? dragPointerId.current
+    if (
+      captureTarget &&
+      capturedPointerId !== null &&
+      captureTarget.hasPointerCapture(capturedPointerId)
+    ) {
+      captureTarget.releasePointerCapture(capturedPointerId)
+    }
+
+    if (isDragging.current) {
+      suppressNextClick.current = true
+      onDragStateChange?.(false)
+      void dragSession.current?.end?.()
+    }
+    currentDragAnimation.current = null
+    onDragDirectionChange?.(null)
+    pointerStart.current = null
+    previousDragScreenX.current = null
+    dragSession.current = null
+    dragCaptureTarget.current = null
+    dragPointerId.current = null
+    isDragging.current = false
+  }
 
   function handlePointerDown(event: PointerEvent<HTMLButtonElement>) {
     if (!compact || !draggable || event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
+    dragCaptureTarget.current = event.currentTarget
+    dragPointerId.current = event.pointerId
+    attachWindowDragListeners()
+    const hitTargetRect = event.currentTarget
+      .querySelector<HTMLElement>('.pet-hit-target')
+      ?.getBoundingClientRect()
     pointerStart.current = {
       x: event.clientX,
       y: event.clientY,
@@ -93,7 +153,14 @@ export function PetRenderer({
       screenY: event.screenY,
     }
     previousDragScreenX.current = event.screenX
-    const dragSessionPromise = onDragStart?.({ screenX: event.screenX, screenY: event.screenY })
+    const dragSessionPromise = onDragStart?.({
+      screenX: event.screenX,
+      screenY: event.screenY,
+      targetOffsetX: hitTargetRect ? event.clientX - hitTargetRect.left : undefined,
+      targetOffsetY: hitTargetRect ? event.clientY - hitTargetRect.top : undefined,
+      targetWidth: hitTargetRect?.width,
+      targetHeight: hitTargetRect?.height,
+    })
     void dragSessionPromise?.then((session) => {
       if (!pointerStart.current) return
       dragSession.current = session
@@ -127,20 +194,7 @@ export function PetRenderer({
   }
 
   function handlePointerEnd(event: PointerEvent<HTMLButtonElement>) {
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
-    if (isDragging.current) {
-      suppressNextClick.current = true
-      onDragStateChange?.(false)
-      void dragSession.current?.end?.()
-    }
-    currentDragAnimation.current = null
-    onDragDirectionChange?.(null)
-    pointerStart.current = null
-    previousDragScreenX.current = null
-    dragSession.current = null
-    isDragging.current = false
+    finishPointerDrag(event.currentTarget, event.pointerId)
   }
 
   function handleClick(event: MouseEvent<HTMLButtonElement>) {
@@ -172,6 +226,7 @@ export function PetRenderer({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerEnd}
       onPointerCancel={handlePointerEnd}
+      onLostPointerCapture={handlePointerEnd}
       style={{ '--pet-scale': scale } as CSSProperties}
     >
       <div

@@ -1,5 +1,13 @@
 # Development Log
 
+## 2026-05-23
+
+- Fixed pet drag release and pointer anchoring regressions:
+  - dragging now listens for window-level `pointerup`, `pointercancel`, `blur`, and `lostpointercapture`, so shortcut/desktop focus changes release the drag state instead of leaving the pet in the running drag animation.
+  - drag-window shrink now anchors to the visible `.pet-hit-target` instead of the wider Activity window, preventing the pointer from jumping off the pet when dragging starts.
+  - added regression coverage for target-anchored drag window positioning and the drag cancel event contract.
+  - verified with `npm test`, `npm run lint`, and `npm run build`.
+
 ## 2026-05-22
 
 - Tightened the pet window click/drag hit target:

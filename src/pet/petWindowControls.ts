@@ -7,6 +7,10 @@ import { petWindowSizeForDisplay, type PetWindowSize } from './petWindowLayout'
 export type PetDragOrigin = {
   screenX: number
   screenY: number
+  targetOffsetX?: number
+  targetOffsetY?: number
+  targetWidth?: number
+  targetHeight?: number
 }
 
 export type PetDragSession = {
@@ -67,8 +71,10 @@ export async function beginPetDrag(
       if (!resize || dragResizeStarted) return
       dragResizeStarted = true
 
-      const offsetX = origin.screenX - initialPosition.x / scaleFactor
-      const offsetY = origin.screenY - initialPosition.y / scaleFactor
+      const offsetX = dragAnchorOffset(origin, resize.dragSize, 'x')
+        ?? origin.screenX - initialPosition.x / scaleFactor
+      const offsetY = dragAnchorOffset(origin, resize.dragSize, 'y')
+        ?? origin.screenY - initialPosition.y / scaleFactor
       const nextX =
         (origin.screenX - Math.min(Math.max(offsetX, 0), resize.dragSize.width)) * scaleFactor
       const nextY =
@@ -93,6 +99,26 @@ export async function beginPetDrag(
       await appWindow.setSize(new LogicalSize(resize.restoreSize.width, resize.restoreSize.height))
     },
   }
+}
+
+function dragAnchorOffset(
+  origin: PetDragOrigin,
+  dragSize: PetWindowSize,
+  axis: 'x' | 'y',
+) {
+  const offset = axis === 'x' ? origin.targetOffsetX : origin.targetOffsetY
+  const targetSize = axis === 'x' ? origin.targetWidth : origin.targetHeight
+  const windowSize = axis === 'x' ? dragSize.width : dragSize.height
+
+  if (!isFiniteNumber(offset) || !isFiniteNumber(targetSize) || targetSize <= 0) {
+    return null
+  }
+
+  return offset + (windowSize - targetSize) / 2
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value)
 }
 
 export async function applyPetAlwaysOnTop(alwaysOnTop: boolean, targetWindow?: Window) {
