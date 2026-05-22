@@ -9,7 +9,7 @@ describe('pet state mapper', () => {
     ['tool_running', 'running'],
     ['waiting_permission', 'waiting'],
     ['waiting_input', 'waiting'],
-    ['done', 'review'],
+    ['done', 'idle'],
     ['error', 'failed'],
     ['stale', 'idle'],
     ['probably_closed', 'idle'],

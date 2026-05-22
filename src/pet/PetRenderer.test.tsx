@@ -42,4 +42,16 @@ describe('PetRenderer', () => {
     expect(html).toContain('--sprite-end-offset:-768px')
     expect(html).not.toContain('--sprite-hold-offset:-768px')
   })
+
+  it('renders imported Codex directional drag rows when an action overrides status', () => {
+    const rightHtml = renderToStaticMarkup(
+      <PetRenderer status="idle" alertCount={0} action="runningRight" petAsset={codexPetAsset} />,
+    )
+    const leftHtml = renderToStaticMarkup(
+      <PetRenderer status="idle" alertCount={0} action="runningLeft" petAsset={codexPetAsset} />,
+    )
+
+    expect(rightHtml).toContain('--sprite-row-offset:-208px')
+    expect(leftHtml).toContain('--sprite-row-offset:-416px')
+  })
 })

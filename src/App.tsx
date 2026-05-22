@@ -20,6 +20,8 @@ import {
 } from '@tauri-apps/plugin-notification'
 import { PetRenderer } from './pet/PetRenderer'
 import { FloatingPetAssistant } from './pet/FloatingPetAssistant'
+import type { PetDragAnimation } from './pet/petDragAnimation'
+import { resolvePetWindowAction } from './pet/petActionPriority'
 import {
   nextPetEventActions,
   rememberPetEventAction,
@@ -102,6 +104,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'sessions' | 'settings'>('sessions')
   const [windowKind] = useState<WindowKind>(resolveInitialWindowKind)
   const [petAction, setPetAction] = useState<PetAnimation | null>(null)
+  const [petDragAnimation, setPetDragAnimation] = useState<PetDragAnimation | null>(null)
   const [petActionReplayKey, setPetActionReplayKey] = useState(0)
   const [petAssets, setPetAssets] = useState<PetAsset[]>([])
   const [previewPetId, setPreviewPetId] = useState<string | null>(settings.activePetId)
@@ -695,7 +698,7 @@ function App() {
           compact
           draggable={!settings.petLockPosition}
           scale={settings.petDisplayMode === 'activity' ? settings.petScale * 0.78 : settings.petScale}
-          action={petAction}
+          action={resolvePetWindowAction(activePetAsset !== null, petAction, petDragAnimation)}
           actionReplayKey={petActionReplayKey}
           petAsset={activePetAsset}
           showAlertBubble={false}
@@ -711,7 +714,13 @@ function App() {
             void resizePet(delta)
           }}
           onDragStart={beginPetDrag}
-          onDragStateChange={setIsPetDragging}
+          onDragStateChange={(dragging) => {
+            setIsPetDragging(dragging)
+            if (!dragging) {
+              setPetDragAnimation(null)
+            }
+          }}
+          onDragDirectionChange={setPetDragAnimation}
         />
         <FloatingPetAssistant
           view={petAssistantView}

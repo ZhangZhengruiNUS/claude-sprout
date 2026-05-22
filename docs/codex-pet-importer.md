@@ -42,7 +42,9 @@ Claude Sprout supports a compatibility layer for custom Codex-compatible pets. T
 | 7 | `running` | 6 | loop |
 | 8 | `review` | 6 | loop |
 
-Claude Sprout maps Claude Code session status to these Codex row semantics: active work uses `running`, blocked input or permission states use `waiting`, completed sessions use `review`, errors use `failed`, and quiet or closed sessions use `idle`.
+Claude Sprout maps Claude Code session status to these Codex row semantics: active work uses `running`, blocked input or permission states use `waiting`, new clean completions play `jumping` once and then settle back to `idle`, errors use `failed`, and quiet or closed sessions use `idle`. The `review` row remains available for explicit review-style actions instead of being held forever after completion.
+
+While dragging an imported pet, horizontal movement temporarily overrides the sustained status animation with `runningRight` or `runningLeft`. Releasing the drag clears that override and returns to the current session-driven animation.
 
 ## Import Behavior
 

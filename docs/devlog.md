@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Refined Codex imported pet action behavior after desktop testing:
+  - stable `done` sessions now return to `idle` after the one-shot completion `jumping` action, so completed sessions no longer look like they are still working in the `review` loop.
+  - imported Codex pets now use `runningRight` / `runningLeft` rows while being dragged horizontally, then return to the session-driven animation on release; queued event actions keep priority over drag feedback.
+  - added regression coverage for completion mapping, drag direction dead-zone behavior, and directional atlas row rendering.
 - Fixed imported pet drag/cropping polish:
   - imported Codex sprites now size the pet-only window from the 192x208 atlas cell instead of the smaller built-in Sprout footprint.
   - imported pet rendering gets its own CSS class so drag styling can collapse the active surface around the sprite and hide Activity overlays while dragging.
@@ -21,7 +25,7 @@
 - Aligned imported Codex-compatible pet animation with the local Codex/Hatch Pet atlas contract:
   - corrected `codex-8x9` geometry to 8 columns by 9 rows with 192x208 cells.
   - added row-specific Codex animation metadata for idle, running-right, running-left, waving, jumping, failed, waiting, running, and review.
-  - remapped Claude Code session statuses to Codex row semantics: active work uses running, blocked input/permission uses waiting, done uses review, errors use failed, and quiet states use idle.
+  - remapped Claude Code session statuses to Codex row semantics: active work uses running, blocked input/permission uses waiting, errors use failed, and quiet states use idle; later desktop testing changed stable done sessions to idle after the one-shot completion action.
   - fixed imported spritesheet background sizing so shorter rows do not squeeze the full atlas or step through unused transparent cells.
   - fixed one-shot imported animations so they hold on the final used frame instead of a trailing transparent cell.
   - scan/import validation now checks WebP dimensions and rejects non-1536x1872 spritesheets for the `codex-8x9` profile.

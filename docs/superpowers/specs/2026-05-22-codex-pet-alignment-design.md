@@ -34,13 +34,13 @@ Claude Code session state maps to Codex row semantics:
 
 - `running` and `tool_running` use `running`.
 - `waiting_permission` and `waiting_input` use `waiting`.
-- `done` uses `review`.
+- New `done` transitions play `jumping` once through the event-action layer, then the sustained `done` state uses `idle`.
 - `error` uses `failed`.
 - `idle`, `stale`, `probably_closed`, and `closed` use `idle`.
 - User-triggered preview/double-click actions use `waving`.
-- The existing jump action remains available for future explicit attention events.
+- The existing `review` row remains available for future explicit review-style actions.
 
-Directional drag animation can use `runningLeft` and `runningRight` later, but this slice keeps drag behavior unchanged to avoid coupling window movement and atlas alignment.
+Directional drag animation uses `runningLeft` and `runningRight` while the imported pet window is actively dragged, then clears the override on pointer release.
 
 ## Tests
 
@@ -48,6 +48,7 @@ Frontend tests cover:
 
 - Codex atlas geometry, row semantics, frame counts, modes, and row-specific durations.
 - Session status to Codex animation mapping.
+- Drag direction mapping and directional row rendering for imported pets.
 - One-shot render key compatibility after animation key renames.
 - Pet asset mapping still attaches the corrected atlas profile.
 
@@ -58,5 +59,5 @@ Rust tests cover:
 ## Non-Goals
 
 - No new pet art generation.
-- No desktop behavior change beyond richer imported sprite animation.
+- No desktop behavior change beyond richer imported sprite animation and directional drag feedback.
 - No automatic permission approval or prompt/output capture.

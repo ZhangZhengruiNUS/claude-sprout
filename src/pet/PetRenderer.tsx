@@ -5,6 +5,7 @@ import { type PetAnimation, statusToPetAnimation } from './petStateMapper'
 import type { PetDragOrigin, PetDragSession } from './petWindowControls'
 import type { PetAsset } from './petAssetsApi'
 import { petAnimationRenderKey } from './petAnimation'
+import { dragDeltaToPetAnimation, type PetDragAnimation } from './petDragAnimation'
 
 type Props = {
   status: SessionStatus
@@ -22,6 +23,7 @@ type Props = {
   onWheel?: (delta: number) => void
   onDragStart?: (origin: PetDragOrigin) => Promise<PetDragSession | null>
   onDragStateChange?: (isDragging: boolean) => void
+  onDragDirectionChange?: (animation: PetDragAnimation | null) => void
 }
 
 export function PetRenderer({
@@ -40,6 +42,7 @@ export function PetRenderer({
   onWheel,
   onDragStart,
   onDragStateChange,
+  onDragDirectionChange,
 }: Props) {
   const animation = action ?? statusToPetAnimation(status)
   const atlasAnimation = petAsset?.atlasProfile.animations[animation]
@@ -68,8 +71,10 @@ export function PetRenderer({
       : null
   const spriteOnceSteps = atlasAnimation ? Math.max(1, atlasAnimation.frameCount - 1) : null
   const pointerStart = useRef<{ x: number; y: number; screenX: number; screenY: number } | null>(null)
+  const previousDragScreenX = useRef<number | null>(null)
   const dragSession = useRef<PetDragSession | null>(null)
   const isDragging = useRef(false)
+  const currentDragAnimation = useRef<PetDragAnimation | null>(null)
   const suppressNextClick = useRef(false)
 
   async function handlePointerDown(event: PointerEvent<HTMLButtonElement>) {
@@ -81,6 +86,7 @@ export function PetRenderer({
       screenX: event.screenX,
       screenY: event.screenY,
     }
+    previousDragScreenX.current = event.screenX
     dragSession.current =
       (await onDragStart?.({ screenX: event.screenX, screenY: event.screenY })) ?? null
   }
@@ -96,6 +102,14 @@ export function PetRenderer({
       isDragging.current = true
       onDragStateChange?.(true)
     }
+    const dragAnimation = dragDeltaToPetAnimation(
+      event.screenX - (previousDragScreenX.current ?? pointerStart.current.screenX),
+    )
+    previousDragScreenX.current = event.screenX
+    if (dragAnimation && dragAnimation !== currentDragAnimation.current) {
+      currentDragAnimation.current = dragAnimation
+      onDragDirectionChange?.(dragAnimation)
+    }
     void dragSession.current?.move(event.screenX, event.screenY)
   }
 
@@ -107,7 +121,10 @@ export function PetRenderer({
       suppressNextClick.current = true
       onDragStateChange?.(false)
     }
+    currentDragAnimation.current = null
+    onDragDirectionChange?.(null)
     pointerStart.current = null
+    previousDragScreenX.current = null
     dragSession.current = null
     isDragging.current = false
   }

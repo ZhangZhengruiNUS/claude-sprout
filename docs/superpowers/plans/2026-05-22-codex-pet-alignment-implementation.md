@@ -32,7 +32,7 @@
 - Modify: `src/App.tsx`
 - Modify: `src/settings/SettingsPanel.tsx` if action names require updates
 
-- [ ] Add tests that map `running/tool_running` to `running`, `waiting_permission/waiting_input` to `waiting`, `done` to `review`, `error` to `failed`, and quiet/closed statuses to `idle`.
+- [ ] Add tests that map `running/tool_running` to `running`, `waiting_permission/waiting_input` to `waiting`, stable `done` to `idle` after the one-shot completion action, `error` to `failed`, and quiet/closed statuses to `idle`.
 - [ ] Run `npm test -- src/pet/petStateMapper.test.ts` and confirm it fails against the current `run/wave/jump` mapping.
 - [ ] Rename `PetAnimation` values to Codex row names while preserving explicit action support for `waving` and `jumping`.
 - [ ] Update call sites and existing animation key tests.
@@ -47,7 +47,7 @@
 - Modify: `docs/devlog.md`
 
 - [ ] Document the true 8x9 Codex atlas contract and row semantics.
-- [ ] Update handoff state with the completed alignment and remaining drag-direction follow-up.
+- [ ] Update handoff state with the completed alignment and directional drag follow-up.
 - [ ] Run `npm run handoff:update`.
 - [ ] Run `npm run lint`, `npm run build`, and `cargo test --manifest-path src-tauri\Cargo.toml`.
 - [ ] Commit and push the branch.
