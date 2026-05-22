@@ -109,4 +109,27 @@ describe('pet asset api', () => {
       imageSrc: 'asset://C:/pets/sprout/spritesheet.webp',
     })
   })
+
+  it('hides the retired imported Claude Sprout duplicate now that it is built in', async () => {
+    invokeMock.mockResolvedValueOnce([
+      {
+        id: 'claude-sprout',
+        name: 'Claude Sprout',
+        description: null,
+        spritesheetPath: 'C:/pets/claude-sprout/spritesheet.webp',
+        atlas: 'codex-8x9',
+      },
+      {
+        id: 'handoff',
+        name: 'handoff',
+        description: null,
+        spritesheetPath: 'C:/pets/handoff/spritesheet.webp',
+        atlas: 'codex-8x9',
+      },
+    ] satisfies InstalledPet[])
+
+    const assets = await listPetAssets()
+
+    expect(assets.map((asset) => asset.id)).toEqual(['handoff'])
+  })
 })

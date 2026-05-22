@@ -2,6 +2,11 @@
 
 ## 2026-05-22
 
+- Removed the duplicate Claude Sprout appearance option:
+  - root cause was a previously imported `%USERPROFILE%\.claude-sprout\pets\claude-sprout` copy that had the same name as the new built-in standard pet.
+  - the pet asset API now hides that retired imported copy while leaving other imported pets visible.
+  - legacy `activePetId: "claude-sprout"` values are treated as the built-in pet selection and normalized on the next settings save.
+  - browser QA confirmed Settings > Pet appearance shows one active Claude Sprout option after the fix.
 - Fixed the Settings pet preview ergonomics:
   - the panel shell now keeps the left pet preview rail fixed on desktop while the right content panel scrolls independently.
   - selecting a pet under Settings > Pet appearance immediately updates the visible preview without needing to scroll back to the top.

@@ -23,6 +23,10 @@ import {
 import { PetRenderer } from './pet/PetRenderer'
 import { FloatingPetAssistant } from './pet/FloatingPetAssistant'
 import { builtInPetAsset } from './pet/builtInPetAsset'
+import {
+  isBuiltInPetSelectionId,
+  normalizePetSelectionId,
+} from './pet/builtInPetIdentity'
 import type { PetDragAnimation } from './pet/petDragAnimation'
 import { resolvePetWindowAction } from './pet/petActionPriority'
 import {
@@ -116,7 +120,9 @@ function App() {
   const [petDragAnimation, setPetDragAnimation] = useState<PetDragAnimation | null>(null)
   const [petActionReplayKey, setPetActionReplayKey] = useState(0)
   const [petAssets, setPetAssets] = useState<PetAsset[]>([])
-  const [previewPetId, setPreviewPetId] = useState<string | null>(settings.activePetId)
+  const [previewPetId, setPreviewPetId] = useState<string | null>(
+    normalizePetSelectionId(settings.activePetId),
+  )
   const [codexPetCandidates, setCodexPetCandidates] = useState<CodexPetCandidate[]>([])
   const [hasScannedCodexPets, setHasScannedCodexPets] = useState(false)
   const [isScanningCodexPets, setIsScanningCodexPets] = useState(false)
@@ -352,7 +358,7 @@ function App() {
       if (!isMounted) return
       // Settings are owned by the app-data store; the sync load only seeds first paint.
       setSettings(persistedSettings)
-      setPreviewPetId(persistedSettings.activePetId)
+      setPreviewPetId(normalizePetSelectionId(persistedSettings.activePetId))
     })
 
     return () => {
@@ -387,7 +393,9 @@ function App() {
       const previousAppliedPetId = settingsRef.current.activePetId
       setSettings(event.payload)
       setPreviewPetId((currentPreviewPetId) =>
-        currentPreviewPetId === previousAppliedPetId ? event.payload.activePetId : currentPreviewPetId,
+        normalizePetSelectionId(currentPreviewPetId) === normalizePetSelectionId(previousAppliedPetId)
+          ? normalizePetSelectionId(event.payload.activePetId)
+          : currentPreviewPetId,
       )
       void refreshPetAssets()
       const nextActivePetAsset = petAssetForId(event.payload.activePetId, petAssetsRef.current)
@@ -565,8 +573,12 @@ function App() {
   }
 
   async function updateSettings(nextSettings: AppSettings) {
-    settingsRef.current = nextSettings
-    const savedSettings = await savePersistedAppSettings(nextSettings)
+    const normalizedNextSettings = {
+      ...nextSettings,
+      activePetId: normalizePetSelectionId(nextSettings.activePetId),
+    }
+    settingsRef.current = normalizedNextSettings
+    const savedSettings = await savePersistedAppSettings(normalizedNextSettings)
     settingsRef.current = savedSettings
     setSettings(savedSettings)
     const nextActivePetAsset = petAssetForId(savedSettings.activePetId, petAssetsRef.current)
@@ -595,7 +607,7 @@ function App() {
   async function applyPreviewPet() {
     await updateSettingsFromLatest((currentSettings) => ({
       ...currentSettings,
-      activePetId: previewPetId,
+      activePetId: normalizePetSelectionId(previewPetId),
     }))
   }
 
@@ -1072,7 +1084,7 @@ function countOpenSessions(sessions: SessionSnapshot[]) {
 }
 
 function petAssetForId(petId: string | null, petAssets: PetAsset[]) {
-  if (!petId) return builtInPetAsset
+  if (isBuiltInPetSelectionId(petId)) return builtInPetAsset
   return petAssets.find((petAsset) => petAsset.id === petId) ?? builtInPetAsset
 }
 

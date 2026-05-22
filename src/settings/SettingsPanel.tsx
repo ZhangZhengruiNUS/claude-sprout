@@ -1,5 +1,9 @@
 import { Download, FileText, Lock, Pin, RefreshCw, Search, VolumeX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import {
+  isBuiltInPetSelectionId,
+  normalizePetSelectionId,
+} from '../pet/builtInPetIdentity'
 import type { CodexPetCandidate, PetAsset } from '../pet/petAssetsApi'
 import type { PetAnimation } from '../pet/petStateMapper'
 import { StoragePanel } from '../storage/StoragePanel'
@@ -81,7 +85,9 @@ export function SettingsPanel({
 }: Props) {
   const { t } = useTranslation()
   const installedPetIds = new Set(petAssets.map((petAsset) => petAsset.id))
-  const hasPendingPetSelection = previewPetId !== settings.activePetId
+  const normalizedPreviewPetId = normalizePetSelectionId(previewPetId)
+  const normalizedActivePetId = normalizePetSelectionId(settings.activePetId)
+  const hasPendingPetSelection = normalizedPreviewPetId !== normalizedActivePetId
 
   return (
     <section className="settings-panel">
@@ -300,7 +306,7 @@ export function SettingsPanel({
       <div className="pet-picker">
         <button
           type="button"
-          className={previewPetId === null ? 'active' : ''}
+          className={normalizedPreviewPetId === null ? 'active' : ''}
           onClick={() => onPreviewPet(null)}
         >
           Claude Sprout
@@ -309,7 +315,7 @@ export function SettingsPanel({
           <button
             key={petAsset.id}
             type="button"
-            className={previewPetId === petAsset.id ? 'active' : ''}
+            className={normalizedPreviewPetId === petAsset.id ? 'active' : ''}
             onClick={() => onPreviewPet(petAsset.id)}
           >
             {petAsset.name}
@@ -329,7 +335,7 @@ export function SettingsPanel({
           <button
             type="button"
             disabled={!hasPendingPetSelection}
-            onClick={() => onPreviewPet(settings.activePetId)}
+            onClick={() => onPreviewPet(normalizedActivePetId)}
           >
             {t('common.cancel')}
           </button>
@@ -346,7 +352,7 @@ export function SettingsPanel({
           ) : (
             codexPetCandidates.map((candidate) => {
               const isImporting = importingPetSourcePath === candidate.sourcePath
-              const isInstalled = installedPetIds.has(candidate.id)
+              const isInstalled = installedPetIds.has(candidate.id) || isBuiltInPetSelectionId(candidate.id)
 
               return (
                 <div key={candidate.sourcePath} className="pet-import-row">

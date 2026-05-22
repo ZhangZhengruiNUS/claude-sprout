@@ -1,5 +1,6 @@
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { codexAtlasProfile } from './atlasProfiles/codex8x9'
+import { isRetiredBuiltInPetAsset } from './builtInPetIdentity'
 import { isTauriRuntime } from '../tauriRuntime'
 
 export type InstalledPet = {
@@ -48,7 +49,7 @@ export async function listPetAssets(): Promise<PetAsset[]> {
 
   const pets = await invoke<InstalledPet[]>('list_installed_pets')
   return pets
-    .filter((pet) => pet.atlas === 'codex-8x9')
+    .filter((pet) => pet.atlas === 'codex-8x9' && !isRetiredBuiltInPetAsset(pet))
     .map((pet) => ({
       ...pet,
       imageSrc: convertFileSrc(pet.spritesheetPath),
