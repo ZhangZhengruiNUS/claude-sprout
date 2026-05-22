@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Fixed imported pet Activity card clipping with two visible sessions:
+  - root cause was imported Activity window height scaling the HUD/card area by pet scale while the CSS card layout remains unscaled.
+  - imported Activity mode now reserves at least the unscaled HUD/card height, so two session cards fit below the 192x208 Codex sprite instead of being clipped at the window bottom.
+  - added a layout regression test for the two-card imported-pet case and verified the CSS fixture in Playwright at the 315x424 viewport.
 - Downgraded `waiting_input` from strong intervention to weak reminder:
   - `Notification: idle_prompt` still records the session as `waiting_input`, but it no longer triggers native notifications, waiting animations, or one-shot waiting actions.
   - pet priority now keeps active running/tool sessions above ordinary input-wait sessions.

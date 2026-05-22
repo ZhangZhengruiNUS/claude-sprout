@@ -70,7 +70,7 @@ function importedPetFootprint(
 function importedActivityHudHeight(visibleCount: number, scale: number) {
   const count = clampVisibleCount(visibleCount)
   if (count === 0) return 0
-  return Math.round((ACTIVITY_ROW_HEIGHT + count * ACTIVITY_ROW_HEIGHT) * scale)
+  return Math.round((ACTIVITY_ROW_HEIGHT + count * ACTIVITY_ROW_HEIGHT) * Math.max(1, scale))
 }
 
 function minimalWidthForPet(petFrameSize: PetWindowSizeOptions['petFrameSize']) {

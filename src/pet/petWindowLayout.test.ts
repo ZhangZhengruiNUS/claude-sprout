@@ -23,7 +23,7 @@ describe('pet window layout', () => {
     })
   })
 
-  it('reserves unscaled imported sprite height above Activity cards', () => {
+  it('reserves unscaled imported sprite and activity card height in Activity mode', () => {
     expect(
       petWindowSizeForDisplay({
         scale: 0.75,
@@ -34,7 +34,22 @@ describe('pet window layout', () => {
       }),
     ).toEqual({
       width: 315,
-      height: 328,
+      height: 360,
+    })
+  })
+
+  it('does not shrink imported Activity card space below the unscaled card content', () => {
+    expect(
+      petWindowSizeForDisplay({
+        scale: 0.75,
+        displayMode: 'activity',
+        visibleCount: 2,
+        activityWidth: 420,
+        petFrameSize: { width: 192, height: 208 },
+      }),
+    ).toEqual({
+      width: 315,
+      height: 424,
     })
   })
 
