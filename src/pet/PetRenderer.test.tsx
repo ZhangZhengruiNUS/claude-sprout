@@ -21,6 +21,7 @@ describe('PetRenderer', () => {
       <PetRenderer status="idle" alertCount={0} petAsset={builtInPetAsset} />,
     )
 
+    expect(html).toContain('pet-hit-target')
     expect(html).toContain('sprite-pet loop')
     expect(html).toContain('pet-surface idle imported-pet')
     expect(html).toContain('claude-sprout-spritesheet.webp')
@@ -41,6 +42,15 @@ describe('PetRenderer', () => {
     expect(html).toContain('--sprite-row-offset:-1456px')
     expect(html).toContain('--sprite-end-offset:-1152px')
     expect(html).toContain('--sprite-duration:820ms')
+  })
+
+  it('keeps compact interaction handlers on a tighter pet hit target', () => {
+    const html = renderToStaticMarkup(
+      <PetRenderer status="idle" alertCount={0} compact petAsset={builtInPetAsset} />,
+    )
+
+    expect(html).toContain('pet-hit-target')
+    expect(html.indexOf('pet-hit-target')).toBeLessThan(html.indexOf('sprite-pet loop'))
   })
 
   it('holds one-shot imported animations on the last used frame', () => {

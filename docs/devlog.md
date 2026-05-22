@@ -2,6 +2,11 @@
 
 ## 2026-05-22
 
+- Tightened the pet window click/drag hit target:
+  - the transparent floating pet shell and full compact pet surface no longer receive pointer events.
+  - `PetRenderer` now wraps the visible pet in a smaller `.pet-hit-target` that handles click, drag, wheel resize, and context menu gestures.
+  - alert bubbles, Minimal cards, Activity cards, and the pet context menu keep explicit pointer handling so existing assistant interactions still work.
+  - browser hit-testing at the 216x232 pet window size confirmed side transparent regions do not hit the pet target while the pet body still does.
 - Removed the duplicate Claude Sprout appearance option:
   - root cause was a previously imported `%USERPROFILE%\.claude-sprout\pets\claude-sprout` copy that had the same name as the new built-in standard pet.
   - the pet asset API now hides that retired imported copy while leaving other imported pets visible.

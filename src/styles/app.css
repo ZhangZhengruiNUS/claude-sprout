@@ -116,6 +116,7 @@ button:disabled {
   place-items: center;
   background: transparent;
   position: relative;
+  pointer-events: none;
 }
 
 .floating-pet-shell .pet-surface,
@@ -127,15 +128,36 @@ button:disabled {
   border: 0;
   padding: 0;
   overflow: visible;
+  pointer-events: none;
+}
+
+.pet-hit-target {
+  display: grid;
+  place-items: end center;
+  pointer-events: auto;
+}
+
+.pet-surface.compact .pet-hit-target {
+  position: relative;
+  width: var(--pet-hit-target-width);
+  height: var(--pet-hit-target-height);
+  border-radius: 999px;
   cursor: grab;
 }
 
-.pet-surface.compact:active {
+.pet-surface.compact:active .pet-hit-target {
   cursor: grabbing;
 }
 
-.pet-surface.compact.locked,
-.pet-surface.compact.locked:active {
+.pet-surface.compact .pet-hit-target:active {
+  cursor: grabbing;
+}
+
+.pet-surface.compact.locked .pet-hit-target {
+  cursor: pointer;
+}
+
+.pet-surface.compact.locked .pet-hit-target:active {
   cursor: pointer;
 }
 
@@ -175,6 +197,18 @@ button:disabled {
   transform-origin: center bottom;
 }
 
+.pet-surface.compact .pet-hit-target .sprout-pet,
+.pet-surface.compact .pet-hit-target .sprite-pet {
+  pointer-events: none;
+}
+
+.pet-surface.compact .pet-hit-target .sprite-pet {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) scale(var(--pet-scale, 1));
+}
+
 .pet-surface.compact.waiting_permission {
   outline: 0;
   background: transparent;
@@ -193,6 +227,8 @@ button:disabled {
   border-radius: 8px;
   font-size: 0.78rem;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .pet-assistant-shell {
@@ -478,6 +514,7 @@ button:disabled {
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
   background: rgba(22, 27, 31, 0.96);
+  pointer-events: auto;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
   backdrop-filter: blur(10px);
   z-index: 3;

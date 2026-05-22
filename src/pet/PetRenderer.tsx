@@ -70,6 +70,12 @@ export function PetRenderer({
       ? petAsset.atlasProfile.frameWidth * Math.max(0, atlasAnimation.frameCount - 1) * -1
       : null
   const spriteOnceSteps = atlasAnimation ? Math.max(1, atlasAnimation.frameCount - 1) : null
+  const hitTargetWidth = petAsset
+    ? Math.round(petAsset.atlasProfile.frameWidth * scale * 0.82)
+    : Math.round(118 * scale)
+  const hitTargetHeight = petAsset
+    ? Math.round(petAsset.atlasProfile.frameHeight * scale * 0.9)
+    : Math.round(132 * scale)
   const pointerStart = useRef<{ x: number; y: number; screenX: number; screenY: number } | null>(null)
   const previousDragScreenX = useRef<number | null>(null)
   const dragSession = useRef<PetDragSession | null>(null)
@@ -168,35 +174,45 @@ export function PetRenderer({
       onPointerCancel={handlePointerEnd}
       style={{ '--pet-scale': scale } as CSSProperties}
     >
-      {petAsset && atlasAnimation ? (
-        <div
-          key={animationKey}
-          className={`sprite-pet ${atlasAnimation.mode}`}
-          style={
-            {
-              '--sprite-url': `url("${petAsset.imageSrc}")`,
-              '--sprite-frames': atlasAnimation.frameCount,
-              '--sprite-frame-width': `${petAsset.atlasProfile.frameWidth}px`,
-              '--sprite-frame-height': `${petAsset.atlasProfile.frameHeight}px`,
-              '--sprite-sheet-width': `${spriteSheetWidth}px`,
-              '--sprite-sheet-height': `${spriteSheetHeight}px`,
-              '--sprite-row-offset': `${spriteRowOffset}px`,
-              '--sprite-end-offset': `${spriteEndOffset}px`,
-              '--sprite-hold-offset': `${spriteHoldOffset}px`,
-              '--sprite-once-steps': spriteOnceSteps,
-              '--sprite-duration': `${spriteDuration}ms`,
-            } as CSSProperties
-          }
-        />
-      ) : (
-        <div key={animationKey} className={`sprout-pet ${animation}`}>
-          <div className="sprout-leaf" />
-          <div className="sprout-face">
-            <span />
-            <span />
+      <div
+        className="pet-hit-target"
+        style={
+          {
+            '--pet-hit-target-width': `${hitTargetWidth}px`,
+            '--pet-hit-target-height': `${hitTargetHeight}px`,
+          } as CSSProperties
+        }
+      >
+        {petAsset && atlasAnimation ? (
+          <div
+            key={animationKey}
+            className={`sprite-pet ${atlasAnimation.mode}`}
+            style={
+              {
+                '--sprite-url': `url("${petAsset.imageSrc}")`,
+                '--sprite-frames': atlasAnimation.frameCount,
+                '--sprite-frame-width': `${petAsset.atlasProfile.frameWidth}px`,
+                '--sprite-frame-height': `${petAsset.atlasProfile.frameHeight}px`,
+                '--sprite-sheet-width': `${spriteSheetWidth}px`,
+                '--sprite-sheet-height': `${spriteSheetHeight}px`,
+                '--sprite-row-offset': `${spriteRowOffset}px`,
+                '--sprite-end-offset': `${spriteEndOffset}px`,
+                '--sprite-hold-offset': `${spriteHoldOffset}px`,
+                '--sprite-once-steps': spriteOnceSteps,
+                '--sprite-duration': `${spriteDuration}ms`,
+              } as CSSProperties
+            }
+          />
+        ) : (
+          <div key={animationKey} className={`sprout-pet ${animation}`}>
+            <div className="sprout-leaf" />
+            <div className="sprout-face">
+              <span />
+              <span />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
       {showAlertBubble && status === 'waiting_permission' ? (
         <div className="alert-bubble">Permission needed{alertCount > 1 ? ` x${alertCount}` : ''}</div>
       ) : null}
