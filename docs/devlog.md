@@ -2,6 +2,12 @@
 
 ## 2026-05-23
 
+- Specified the pet assistant mode redesign:
+  - user-facing `Minimal` / `Activity` concepts will become `Message` / `Board`.
+  - Message mode is defined as low-frequency but rich-context intervention cards for permission, completion, and failure.
+  - Board mode remains the persistent multi-session stack for configured visible sessions.
+  - `waiting_input` is explicitly a weak state: visible in Board/Session Panel, but not a message, notification, action count, or waiting animation trigger.
+  - the design is documented at `docs/superpowers/specs/2026-05-23-pet-message-board-modes-design.md`.
 - Fixed Activity mode card stack layout:
   - imported/built-in sprite Activity HUD now anchors below the rendered pet height instead of the unscaled 208px atlas frame, reducing the medium-size pet-to-HUD gap from about 70px to 14px in browser QA.
   - imported/built-in Activity window height now reserves enough space for three visible cards plus the pager; the 4-session / 3-visible-row QA fixture no longer clips the bottom controls.
