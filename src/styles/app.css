@@ -624,7 +624,7 @@ button:disabled {
 }
 
 .sprite-pet.loop.quiet-idle {
-  animation: sprite-quiet-idle var(--sprite-quiet-cycle, 5500ms) steps(var(--sprite-frames)) infinite;
+  animation: sprite-quiet-idle var(--sprite-quiet-cycle, 4200ms) steps(var(--sprite-frames)) infinite;
 }
 
 .sprite-pet.once {
@@ -1148,7 +1148,7 @@ h1 {
 
 @keyframes sprite-quiet-idle {
   0%,
-  55% {
+  68% {
     background-position-x: 0;
   }
 

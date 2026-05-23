@@ -76,7 +76,7 @@
     "Message-mode completion cards no longer reappear on statusline heartbeat refreshes: message identity uses a stable status-event fingerprint instead of updated_at, and acknowledged message keys are pruned once the matching message state is no longer current",
     "README.md and README.zh-CN.md now document the user-facing session status mechanism: Claude Code hook/statusline triggers, stored statuses, Message mode card rules, Board mode visibility/sorting, native notifications, and pet animation behavior",
     "The Windows app/taskbar icon has been regenerated as a DPI-aware multi-size ICO from a tighter mascot crop, with refreshed Vite favicon/project PNGs; the existing tray icon is unchanged because its 32px mascot crop already renders clearly",
-    "Idle pet playback is quieter at the renderer level for built-in and imported Codex atlas pets: idle now uses a 5.5-second cycle that holds the first frame for about 3 seconds, then plays the remaining idle frames more slowly; running/waiting/action animations remain unchanged",
+    "Idle pet playback is quieter at the renderer level for built-in and imported Codex atlas pets: idle now uses a 4.2-second cycle that holds the first frame for about 2.9 seconds, then plays the remaining idle frames near normal speed to avoid low-framerate stutter; running/waiting/action animations remain unchanged",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
