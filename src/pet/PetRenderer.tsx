@@ -256,7 +256,7 @@ export function PetRenderer({
                 '--sprite-hold-offset': `${spriteHoldOffset}px`,
                 '--sprite-once-steps': spriteOnceSteps,
                 '--sprite-duration': `${spriteDuration}ms`,
-                ...(useQuietIdle ? { '--sprite-quiet-cycle': '10000ms' } : {}),
+                ...(useQuietIdle ? { '--sprite-quiet-cycle': '5500ms' } : {}),
               } as CSSProperties
             }
           />

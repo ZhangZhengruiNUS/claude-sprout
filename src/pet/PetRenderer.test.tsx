@@ -53,7 +53,7 @@ describe('PetRenderer', () => {
     )
 
     expect(idleHtml).toContain('sprite-pet loop quiet-idle')
-    expect(idleHtml).toContain('--sprite-quiet-cycle:10000ms')
+    expect(idleHtml).toContain('--sprite-quiet-cycle:5500ms')
     expect(runningHtml).toContain('sprite-pet loop')
     expect(runningHtml).not.toContain('quiet-idle')
     expect(runningHtml).not.toContain('--sprite-quiet-cycle')
