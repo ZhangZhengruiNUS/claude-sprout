@@ -4,8 +4,9 @@
 
 - Fixed pet right-click context menu anchoring during release acceptance testing:
   - root cause was the custom menu being rendered inside the tiny transparent pet window, where CSS clamping forced most click positions to the same top-left menu coordinate.
-  - opening the menu now temporarily expands the transparent pet window around the cursor, translates the menu coordinate into the expanded window, and restores the previous window size/position when the menu closes.
-  - added regression coverage for context-menu window expansion/restoration; verified with focused Vitest, lint, production build, browser pet-route right-click QA, and a rebuilt release exe.
+  - replaced the Tauri runtime path with the native `Menu.popup()` API so the menu opens at the current cursor location without resizing or repositioning the pet window.
+  - kept the DOM context menu only as a browser-preview fallback; release builds no longer trigger the transparent-window resize flicker that could briefly repaint the pet in the wrong spot.
+  - verified with focused Vitest, lint, production build, and a rebuilt release exe.
 - Changed main panel window-control behavior:
   - removed the frontend resize/minimize listener that converted minimize into `hide + unminimize`.
   - minimizing the panel now leaves it minimized on the Windows taskbar.
