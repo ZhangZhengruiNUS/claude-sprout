@@ -2,6 +2,10 @@
 
 ## 2026-05-23
 
+- Documented the user-facing Claude Code session status mechanism in both READMEs:
+  - README now explains which Claude Code hook/statusline events produce each stored status from the user's perspective.
+  - the status table includes Message mode behavior, Board mode behavior, native notification behavior, and pet animation behavior.
+  - Message card lifetime rules and Board sorting/visibility rules are now explicitly documented, with a maintainer note to keep README.md and README.zh-CN.md in sync when status behavior changes.
 - Implemented the pet Message/Board mode redesign:
   - user-facing Minimal/Activity labels now read Message/Board while persisted `minimal` / `activity` settings remain compatible.
   - Message mode now interrupts only for permission, completion, and failure, with richer session identity, status detail, and metadata.
