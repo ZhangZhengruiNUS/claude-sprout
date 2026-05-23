@@ -2,6 +2,10 @@
 
 ## 2026-05-23
 
+- Changed main panel window-control behavior:
+  - removed the frontend resize/minimize listener that converted minimize into `hide + unminimize`.
+  - minimizing the panel now leaves it minimized on the Windows taskbar.
+  - closing the panel still uses the Rust `CloseRequested` handler to hide it to the tray.
 - Added a persisted panel theme preference beside Language in Settings:
   - options are System, Light, and Dark.
   - System follows `prefers-color-scheme`.
@@ -202,7 +206,7 @@
   - startup now re-hides the main session window after window-state restore so the pet remains the primary launch surface.
   - the tray explicitly uses the bundled app icon.
   - opening the panel from the pet/tray unminimizes the window before showing and focusing it.
-  - minimizing or closing the main window now hides it to the tray instead of leaving it as the primary surface.
+  - closing the main window now hides it to the tray instead of leaving it as the primary surface.
   - hook docs now include an empty-session troubleshooting flow for missing Claude Sprout hook/statusLine configuration.
 - Polished follow-up release-smoke feedback:
   - tray icon now uses a generated tighter 32px sprout icon for a larger visual footprint in the Windows notification area.
@@ -210,7 +214,7 @@
 - Re-ran manual release desktop smoke after the launch/tray/pet-menu fixes:
   - startup shows only the pet window; the main panel no longer appears on launch.
   - tray icon is visible and the revised icon size is acceptable.
-  - pet click opens the main panel; main-panel minimize and close both hide to tray.
+  - pet click opens the main panel; main-panel close hides to tray.
   - pet right-click menu works for Open, Hide, Larger, and Smaller; tray Show / Hide Pet restores the hidden pet.
   - tray Quit still exits cleanly.
 - Added the first tagged release checklist for `v0.1.0`:

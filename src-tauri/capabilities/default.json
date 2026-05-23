@@ -7,7 +7,6 @@
     "core:default",
     "core:window:allow-show",
     "core:window:allow-hide",
-    "core:window:allow-is-minimized",
     "core:window:allow-unminimize",
     "core:window:allow-set-focus",
     "core:window:allow-set-always-on-top",
