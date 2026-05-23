@@ -2,6 +2,10 @@
 
 ## 2026-05-23
 
+- Regenerated the Windows app icon for high-DPI taskbar use:
+  - root cause was the app icon rendering the full mascot too small inside the square canvas, which made Win11 taskbar and Alt-Tab scaling look soft on a 4K display.
+  - `src-tauri/icons/icon.ico` now includes DPI-aware 16/20/24/32/40/48/64/128/256px layers generated from a tighter mascot crop.
+  - refreshed `src/assets/claude-sprout-icon.png` and `public/favicon.png` from the same app-icon crop; left the tray PNG unchanged because its existing 32px crop was already clear.
 - Documented the user-facing Claude Code session status mechanism in both READMEs:
   - README now explains which Claude Code hook/statusline events produce each stored status from the user's perspective.
   - the status table includes Message mode behavior, Board mode behavior, native notification behavior, and pet animation behavior.

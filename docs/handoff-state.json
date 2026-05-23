@@ -74,6 +74,7 @@
     "Activity mode now anchors the session stack close below the rendered built-in/imported pet, reserves enough height for three visible cards plus pager, and shows the total active/open session count instead of ambiguous overflow text",
     "Pet assistant user-facing modes are now Message and Board while persisted minimal/activity settings remain compatible: Message mode interrupts only for permission/completion/failure with richer session identity, detail, metadata, and optional conversation preview, while waiting_input remains a weak Board/Session Panel state",
     "README.md and README.zh-CN.md now document the user-facing session status mechanism: Claude Code hook/statusline triggers, stored statuses, Message mode card rules, Board mode visibility/sorting, native notifications, and pet animation behavior",
+    "The Windows app/taskbar icon has been regenerated as a DPI-aware multi-size ICO from a tighter mascot crop, with refreshed Vite favicon/project PNGs; the existing tray icon is unchanged because its 32px mascot crop already renders clearly",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -98,6 +99,7 @@
   "nextTasks": [
     "Ask the user to acceptance-test the new language selector in Settings on the release exe: system language resolution, English/Simplified Chinese switching, localized session panel/settings/storage/pet activity text, native notification titles, and tray menu labels after switching language.",
     "Ask the user to run final acceptance testing for the pet assistant modes, event-triggered pet actions, and Codex-aligned imported pet animations in real desktop use, especially waiting/completion/error transitions, imported pet drag/cropping/directional-running behavior, drag cancellation after shortcut/focus changes, Minimal persistent intervention cards, Activity mode paging, pet resize/context-menu behavior, and real Claude Code session transitions.",
+    "Ask the user to verify the rebuilt release exe on Win11 4K taskbar and Alt-Tab after restarting the app; if Windows still shows the previous blurry icon, have them unpin/repin or clear the shell icon cache before retesting.",
     "After user acceptance, continue with release closure: run NSIS installer smoke, regenerate final official artifact hashes for the standalone exe and NSIS setup, then proceed through the v0.1.0 release checklist and GitHub release publication."
   ],
   "importantDecisions": [
