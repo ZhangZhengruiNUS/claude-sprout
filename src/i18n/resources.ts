@@ -13,8 +13,6 @@ export const resources = {
       },
       app: {
         petPreviewLabel: 'Claude Sprout pet preview',
-        eyebrow: 'Windows-first Claude Code companion',
-        title: 'Session status center',
         sessionsTab: 'Sessions',
         settingsTab: 'Settings',
         doNotDisturb: 'Do not disturb',
@@ -205,8 +203,6 @@ export const resources = {
       },
       app: {
         petPreviewLabel: 'Claude Sprout 宠物预览',
-        eyebrow: 'Windows 优先的 Claude Code 桌面伴侣',
-        title: '会话状态中心',
         sessionsTab: '会话',
         settingsTab: '设置',
         doNotDisturb: '勿扰',

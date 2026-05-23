@@ -5,7 +5,6 @@ import {
   LayoutList,
   PanelTopOpen,
   PawPrint,
-  RefreshCw,
   Settings,
   ZoomIn,
   ZoomOut,
@@ -913,24 +912,6 @@ function App() {
       </aside>
 
       <section className="content-panel">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">{t('app.eyebrow')}</p>
-            <h1>{t('app.title')}</h1>
-          </div>
-          <div className="topbar-actions">
-            <button
-              type="button"
-              onClick={async () => {
-                await reloadSessions({ showLoading: false, notify: true })
-              }}
-            >
-              <RefreshCw size={16} />
-              {t('app.refresh')}
-            </button>
-          </div>
-        </header>
-
         <div className="status-strip">
           <div>
             <span className="metric">{activeCount}</span>

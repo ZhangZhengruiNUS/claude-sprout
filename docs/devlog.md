@@ -10,6 +10,9 @@
   - introduced light/dark design tokens for acrylic-style surfaces, borders, typography, controls, and status colors.
   - upgraded the panel rail, status strip, Settings surface, segmented controls, session cards, storage rows, and form controls with glassy translucent styling.
   - preserved the pet window's transparent route and hit-target behavior so the new panel background does not leak into the floating pet window.
+- Removed the large top title band from the panel after visual review:
+  - the panel now starts with the compact status strip and then the active Sessions or Settings surface.
+  - this avoids a dashboard-like hero/header area and keeps the panel focused on settings plus detailed session inspection.
 - Verified the theme/settings slice with focused frontend tests, Rust app settings tests, lint, production build, and browser checks for dark, light, mobile, and pet-route views.
 - Demoted Do Not Disturb to an ordinary Settings control:
   - removed the duplicate topbar Do Not Disturb toggle because the feature only suppresses Windows native notifications.

@@ -81,6 +81,7 @@
     "Message-mode HUD badges now follow smaller atlas pets with a small breathing gap: the running/finished/action pill row uses a measured bottom offset based on the sprite frame height and pet scale instead of staying fixed to the reserved window footprint",
     "Do Not Disturb is now treated as a normal Settings notification toggle instead of a topbar priority action; its description clarifies that only Windows system notifications are suppressed while pet cards, Board, and session state remain visible",
     "Session panel appearance has a persisted system/light/dark theme setting next to Language in Settings; the panel now uses light and dark glass/acrylic design tokens with translucent rails, panels, controls, segmented buttons, and session/storage rows while preserving the pet window's transparent route",
+    "The session panel no longer has the large top hero/title band; content now starts with the compact local status strip followed by the current Sessions or Settings surface, keeping the panel focused on settings and detailed Claude Code session inspection rather than dashboard-style presentation",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
