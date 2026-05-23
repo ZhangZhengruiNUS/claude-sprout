@@ -6,6 +6,11 @@ export const resources = {
         english: 'English',
         chinese: 'Simplified Chinese',
       },
+      theme: {
+        system: 'System',
+        light: 'Light',
+        dark: 'Dark',
+      },
       app: {
         petPreviewLabel: 'Claude Sprout pet preview',
         eyebrow: 'Windows-first Claude Code companion',
@@ -54,6 +59,8 @@ export const resources = {
         title: 'Settings',
         languageTitle: 'Language',
         languageDescription: 'Use the system locale by default, or pin Claude Sprout to English or Chinese.',
+        themeTitle: 'Theme',
+        themeDescription: 'Follow Windows by default, or pin the panel to Light or Dark.',
         doNotDisturbDescription: 'Suppress Windows system notifications only; pet cards, Board, and session state stay visible.',
         petInformationMode: 'Pet mode',
         petInformationModeDescription: 'Message mode only interrupts for permission, completion, and failure. Board mode keeps a session stack visible.',
@@ -191,6 +198,11 @@ export const resources = {
         english: 'English',
         chinese: '简体中文',
       },
+      theme: {
+        system: '跟随系统',
+        light: '浅色',
+        dark: '深色',
+      },
       app: {
         petPreviewLabel: 'Claude Sprout 宠物预览',
         eyebrow: 'Windows 优先的 Claude Code 桌面伴侣',
@@ -239,6 +251,8 @@ export const resources = {
         title: '设置',
         languageTitle: '语言',
         languageDescription: '默认跟随系统语言，也可以固定为英文或中文。',
+        themeTitle: '主题',
+        themeDescription: '默认跟随 Windows 外观，也可以固定为浅色或深色。',
         doNotDisturbDescription: '只隐藏 Windows 系统通知；宠物卡片、看板和会话状态仍会显示。',
         petInformationMode: '宠物模式',
         petInformationModeDescription: '消息模式只在授权、完成、失败时介入；看板模式会长期显示会话堆栈。',

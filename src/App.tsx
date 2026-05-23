@@ -79,6 +79,7 @@ import {
   settingsWithPetScale,
   settingsWithPetSizePreset,
 } from './settings/appSettings'
+import { applyAppTheme } from './settings/appTheme'
 import { loadPersistedAppSettings, savePersistedAppSettings } from './settings/appSettingsApi'
 import {
   cleanStorage,
@@ -381,6 +382,20 @@ function App() {
   useEffect(() => {
     void applyAppLanguage(settings.language)
   }, [settings.language])
+
+  useEffect(() => {
+    applyAppTheme(settings.theme)
+
+    if (settings.theme !== 'system' || typeof window.matchMedia !== 'function') return
+
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleSystemThemeChange = () => {
+      applyAppTheme(settings.theme)
+    }
+
+    media.addEventListener('change', handleSystemThemeChange)
+    return () => media.removeEventListener('change', handleSystemThemeChange)
+  }, [settings.theme])
 
   useEffect(() => {
     petAssetsRef.current = petAssets
@@ -878,11 +893,19 @@ function App() {
           petAsset={previewPetAsset}
         />
         <div className="rail-actions">
-          <button type="button" onClick={() => setActiveTab('sessions')}>
+          <button
+            type="button"
+            className={activeTab === 'sessions' ? 'active' : ''}
+            onClick={() => setActiveTab('sessions')}
+          >
             <Bell size={16} />
             {t('app.sessionsTab')}
           </button>
-          <button type="button" onClick={() => setActiveTab('settings')}>
+          <button
+            type="button"
+            className={activeTab === 'settings' ? 'active' : ''}
+            onClick={() => setActiveTab('settings')}
+          >
             <Settings size={16} />
             {t('app.settingsTab')}
           </button>

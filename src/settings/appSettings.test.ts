@@ -50,6 +50,7 @@ describe('app settings persistence', () => {
       JSON.stringify({
         doNotDisturb: true,
         language: 'zh-CN',
+        theme: 'dark',
         petAlwaysOnTop: false,
         petLockPosition: true,
         petScale: 99,
@@ -66,6 +67,7 @@ describe('app settings persistence', () => {
     expect(loadAppSettings(storage)).toEqual({
       doNotDisturb: true,
       language: 'zh-CN',
+      theme: 'dark',
       petAlwaysOnTop: false,
       petLockPosition: true,
       petScale: PET_SIZE_OPTIONS.large.scale,
@@ -165,5 +167,17 @@ describe('app settings persistence', () => {
     saveAppSettings({ ...DEFAULT_APP_SETTINGS, petConversationPreviewEnabled: true }, storage)
 
     expect(loadAppSettings(storage).petConversationPreviewEnabled).toBe(true)
+  })
+
+  it('defaults invalid theme values to system', () => {
+    const storage = new MemoryStorage()
+    storage.setItem(
+      'claude-sprout.settings.v1',
+      JSON.stringify({
+        theme: 'sepia',
+      }),
+    )
+
+    expect(loadAppSettings(storage).theme).toBe('system')
   })
 })

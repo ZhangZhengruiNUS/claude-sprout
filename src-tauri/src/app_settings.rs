@@ -38,8 +38,20 @@ pub enum AppLanguage {
     ZhCn,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum AppTheme {
+    System,
+    Light,
+    Dark,
+}
+
 fn default_language() -> AppLanguage {
     AppLanguage::System
+}
+
+fn default_theme() -> AppTheme {
+    AppTheme::System
 }
 
 fn default_pet_display_mode() -> PetDisplayMode {
@@ -72,6 +84,8 @@ pub struct AppSettings {
     pub do_not_disturb: bool,
     #[serde(default = "default_language")]
     pub language: AppLanguage,
+    #[serde(default = "default_theme")]
+    pub theme: AppTheme,
     pub pet_always_on_top: bool,
     pub pet_lock_position: bool,
     pub pet_scale: f64,
@@ -97,6 +111,7 @@ impl Default for AppSettings {
         Self {
             do_not_disturb: false,
             language: AppLanguage::System,
+            theme: AppTheme::System,
             pet_always_on_top: true,
             pet_lock_position: false,
             pet_scale: 1.0,
@@ -203,6 +218,7 @@ mod tests {
         let settings = AppSettings {
             do_not_disturb: true,
             language: AppLanguage::ZhCn,
+            theme: AppTheme::Dark,
             pet_always_on_top: false,
             pet_lock_position: true,
             pet_scale: 1.25,
@@ -272,6 +288,7 @@ mod tests {
         assert_eq!(settings.active_pet_id, None);
         assert!(settings.do_not_disturb);
         assert_eq!(settings.language, AppLanguage::System);
+        assert_eq!(settings.theme, AppTheme::System);
         assert_eq!(settings.pet_display_mode, PetDisplayMode::Minimal);
         assert_eq!(settings.pet_completion_toast_seconds, 5);
         assert_eq!(settings.pet_activity_visible_count, 3);

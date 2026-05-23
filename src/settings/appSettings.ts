@@ -1,10 +1,12 @@
 export type PetSizePreset = 'small' | 'medium' | 'large' | 'custom'
 export type PetDisplayMode = 'minimal' | 'activity'
 export type AppLanguage = 'system' | 'en' | 'zh-CN'
+export type AppTheme = 'system' | 'light' | 'dark'
 
 export type AppSettings = {
   doNotDisturb: boolean
   language: AppLanguage
+  theme: AppTheme
   petAlwaysOnTop: boolean
   petLockPosition: boolean
   petScale: number
@@ -41,6 +43,7 @@ export const PET_SIZE_OPTIONS = {
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   doNotDisturb: false,
   language: 'system',
+  theme: 'system',
   petAlwaysOnTop: true,
   petLockPosition: false,
   petScale: PET_SIZE_OPTIONS.medium.scale,
@@ -57,6 +60,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
 const PET_SIZE_PRESETS = new Set<PetSizePreset>(['small', 'medium', 'large', 'custom'])
 const PET_DISPLAY_MODES = new Set<PetDisplayMode>(['minimal', 'activity'])
 const APP_LANGUAGES = new Set<AppLanguage>(['system', 'en', 'zh-CN'])
+const APP_THEMES = new Set<AppTheme>(['system', 'light', 'dark'])
 
 export function clampPetScale(value: number) {
   if (!Number.isFinite(value)) return DEFAULT_APP_SETTINGS.petScale
@@ -117,6 +121,7 @@ function normalizeAppSettings(settings: StoredAppSettings): AppSettings {
   return {
     doNotDisturb: settings.doNotDisturb ?? DEFAULT_APP_SETTINGS.doNotDisturb,
     language: isAppLanguage(settings.language) ? settings.language : DEFAULT_APP_SETTINGS.language,
+    theme: isAppTheme(settings.theme) ? settings.theme : DEFAULT_APP_SETTINGS.theme,
     petAlwaysOnTop: settings.petAlwaysOnTop ?? DEFAULT_APP_SETTINGS.petAlwaysOnTop,
     petLockPosition: settings.petLockPosition ?? DEFAULT_APP_SETTINGS.petLockPosition,
     petScale: clampPetScale(presetScale ?? storedScale ?? DEFAULT_APP_SETTINGS.petScale),
@@ -184,6 +189,10 @@ function isPetDisplayMode(value: unknown): value is PetDisplayMode {
 
 function isAppLanguage(value: unknown): value is AppLanguage {
   return typeof value === 'string' && APP_LANGUAGES.has(value as AppLanguage)
+}
+
+function isAppTheme(value: unknown): value is AppTheme {
+  return typeof value === 'string' && APP_THEMES.has(value as AppTheme)
 }
 
 function clampIntegerSetting(value: unknown, min: number, max: number, fallback: number) {

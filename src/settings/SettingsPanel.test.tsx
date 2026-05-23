@@ -42,4 +42,13 @@ describe('SettingsPanel', () => {
     expect(html).toContain('Suppress Windows system notifications only')
     expect(html).toContain('pet cards, Board, and session state stay visible')
   })
+
+  it('renders theme selection alongside language settings', () => {
+    const html = renderSettingsPanel()
+
+    expect(html).toContain('Theme')
+    expect(html).toContain('Follow Windows by default')
+    expect(html).toContain('Light')
+    expect(html).toContain('Dark')
+  })
 })

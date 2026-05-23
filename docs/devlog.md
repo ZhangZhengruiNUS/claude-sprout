@@ -2,6 +2,15 @@
 
 ## 2026-05-23
 
+- Added a persisted panel theme preference beside Language in Settings:
+  - options are System, Light, and Dark.
+  - System follows `prefers-color-scheme`.
+  - Tauri app-data settings now preserve the theme field alongside the existing language setting.
+- Refreshed the session panel visual system without turning it into a monitoring dashboard:
+  - introduced light/dark design tokens for acrylic-style surfaces, borders, typography, controls, and status colors.
+  - upgraded the panel rail, status strip, Settings surface, segmented controls, session cards, storage rows, and form controls with glassy translucent styling.
+  - preserved the pet window's transparent route and hit-target behavior so the new panel background does not leak into the floating pet window.
+- Verified the theme/settings slice with focused frontend tests, Rust app settings tests, lint, production build, and browser checks for dark, light, mobile, and pet-route views.
 - Demoted Do Not Disturb to an ordinary Settings control:
   - removed the duplicate topbar Do Not Disturb toggle because the feature only suppresses Windows native notifications.
   - Settings now explains that pet cards, Board, and session state remain visible while Do Not Disturb is enabled.

@@ -1,4 +1,4 @@
-import { Download, FileText, Lock, Pin, RefreshCw, Search, VolumeX } from 'lucide-react'
+import { Download, FileText, Lock, Monitor, Moon, Pin, RefreshCw, Search, Sun, VolumeX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
   isBuiltInPetSelectionId,
@@ -8,7 +8,7 @@ import type { CodexPetCandidate, PetAsset } from '../pet/petAssetsApi'
 import type { PetAnimation } from '../pet/petStateMapper'
 import { StoragePanel } from '../storage/StoragePanel'
 import type { StorageCleanKind, StorageSummary } from '../storage/storageApi'
-import type { AppLanguage, AppSettings, PetDisplayMode, PetSizePreset } from './appSettings'
+import type { AppLanguage, AppSettings, AppTheme, PetDisplayMode, PetSizePreset } from './appSettings'
 import {
   PET_ACTIVITY_WINDOW_WIDTH_MAX,
   PET_ACTIVITY_WINDOW_WIDTH_MIN,
@@ -47,6 +47,15 @@ const APP_LANGUAGE_OPTIONS: Array<{ value: AppLanguage; labelKey: string }> = [
   { value: 'system', labelKey: 'language.system' },
   { value: 'en', labelKey: 'language.english' },
   { value: 'zh-CN', labelKey: 'language.chinese' },
+]
+const APP_THEME_OPTIONS: Array<{
+  value: AppTheme
+  labelKey: string
+  Icon: typeof Monitor
+}> = [
+  { value: 'system', labelKey: 'theme.system', Icon: Monitor },
+  { value: 'light', labelKey: 'theme.light', Icon: Sun },
+  { value: 'dark', labelKey: 'theme.dark', Icon: Moon },
 ]
 const PET_DISPLAY_MODES: Array<{ value: PetDisplayMode; labelKey: string }> = [
   { value: 'minimal', labelKey: 'settings.minimal' },
@@ -106,6 +115,25 @@ export function SettingsPanel({
               onClick={() => onSettingsChange({ ...settings, language: option.value })}
             >
               {t(option.labelKey)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="setting-row">
+        <span>
+          <strong>{t('settings.themeTitle')}</strong>
+          <small>{t('settings.themeDescription')}</small>
+        </span>
+        <div className="size-segment theme-segment" role="group" aria-label={t('settings.themeTitle')}>
+          {APP_THEME_OPTIONS.map(({ value, labelKey, Icon }) => (
+            <button
+              key={value}
+              type="button"
+              className={settings.theme === value ? 'active' : ''}
+              onClick={() => onSettingsChange({ ...settings, theme: value })}
+            >
+              <Icon size={15} />
+              {t(labelKey)}
             </button>
           ))}
         </div>
