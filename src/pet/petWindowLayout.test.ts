@@ -105,9 +105,9 @@ describe('pet window layout', () => {
     })
   })
 
-  it('moves the minimal HUD upward as imported atlas pets shrink inside the reserved footprint', () => {
+  it('moves the minimal HUD upward while leaving a small gap below tiny atlas pets', () => {
     expect(minimalHudBottomOffset(208, 1)).toBe(7)
-    expect(minimalHudBottomOffset(208, 0.65)).toBe(40)
-    expect(minimalHudBottomOffset(208, 0.55)).toBe(49)
+    expect(minimalHudBottomOffset(208, 0.65)).toBe(27)
+    expect(minimalHudBottomOffset(208, 0.55)).toBe(32)
   })
 })
