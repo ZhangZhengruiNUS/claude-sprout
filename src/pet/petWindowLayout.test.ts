@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { petWindowSizeForDisplay } from './petWindowLayout'
+import { minimalHudBottomOffset, petWindowSizeForDisplay } from './petWindowLayout'
 
 describe('pet window layout', () => {
   it('keeps minimal mode at the compact pet size', () => {
@@ -103,5 +103,11 @@ describe('pet window layout', () => {
       width: 360,
       height: 232,
     })
+  })
+
+  it('moves the minimal HUD upward as imported atlas pets shrink inside the reserved footprint', () => {
+    expect(minimalHudBottomOffset(208, 1)).toBe(7)
+    expect(minimalHudBottomOffset(208, 0.65)).toBe(40)
+    expect(minimalHudBottomOffset(208, 0.55)).toBe(49)
   })
 })

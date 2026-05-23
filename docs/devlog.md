@@ -6,6 +6,10 @@
   - shared frontend and Rust app-data settings now clamp pet scale at `0.55` instead of `0.75`.
   - Settings `Small` now maps to `0.65`, while `Medium` and `Large` remain unchanged.
   - added frontend and Rust regression tests so persisted settings and local UI settings keep the same lower bound.
+- Fixed Message-mode HUD positioning for small pets:
+  - root cause was atlas pets reserving the unscaled 192x208 footprint while the visible sprite shrank upward inside that footprint.
+  - the running/finished/action pill row now uses a measured `--pet-minimal-hud-bottom` offset derived from frame height and current pet scale.
+  - browser QA at 216x232 with `petScale: 0.55` confirmed the HUD bottom offset moves from the old fixed 7px to 49px so the badges follow the smaller pet.
 - Quieted idle pet playback without changing mascot assets:
   - imported and built-in Codex atlas pets now use a renderer-level quiet idle class when the effective animation is `idle` and no action override is active.
   - quiet idle now uses a 4.2-second cycle: it holds the first sprite frame for about 2.9 seconds, then plays the remaining idle frames near normal speed to avoid low-framerate stutter.

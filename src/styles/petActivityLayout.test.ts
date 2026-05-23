@@ -15,4 +15,8 @@ describe('pet Activity layout CSS', () => {
       'top: var(--pet-activity-hud-top',
     )
   })
+
+  it('anchors the minimal HUD from a measured bottom variable so it follows small pets', () => {
+    expect(cssBlock('.pet-minimal-hud')).toContain('bottom: var(--pet-minimal-hud-bottom')
+  })
 })

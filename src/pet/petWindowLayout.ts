@@ -15,6 +15,8 @@ const IMPORTED_ACTIVITY_HUD_GAP = 14
 const IMPORTED_ACTIVITY_HUD_BOTTOM_MARGIN = 8
 const IMPORTED_ACTIVITY_HUD_CHROME_HEIGHT = 68
 const IMPORTED_ACTIVITY_CARD_ROW_HEIGHT = 70
+const MINIMAL_HUD_BASE_BOTTOM = 7
+const COMPACT_HIT_TARGET_HEIGHT_RATIO = 0.9
 
 type PetWindowSizeOptions = {
   scale: number
@@ -83,6 +85,12 @@ function importedPetFootprint(
 
 export function importedActivityHudTop(frameHeight: number, scale: number) {
   return Math.round(frameHeight * scale * IMPORTED_ACTIVITY_PET_SCALE + IMPORTED_ACTIVITY_HUD_GAP)
+}
+
+export function minimalHudBottomOffset(frameHeight: number, scale: number) {
+  const normalizedScale = clampPetScale(scale)
+  const shrinkOffset = Math.max(0, 1 - normalizedScale) * frameHeight * COMPACT_HIT_TARGET_HEIGHT_RATIO * 0.5
+  return Math.round(MINIMAL_HUD_BASE_BOTTOM + shrinkOffset)
 }
 
 function importedActivityHudHeight(visibleCount: number) {

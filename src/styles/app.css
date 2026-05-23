@@ -243,7 +243,7 @@ button:disabled {
   position: absolute;
   left: 0.35rem;
   right: 0.35rem;
-  bottom: 0.45rem;
+  bottom: var(--pet-minimal-hud-bottom, 0.45rem);
   display: flex;
   justify-content: center;
   gap: 0.35rem;

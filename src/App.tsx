@@ -51,7 +51,11 @@ import {
   getPetWindow,
   hideCurrentPetWindow,
 } from './pet/petWindowControls'
-import { importedActivityHudTop, petWindowSizeForDisplay } from './pet/petWindowLayout'
+import {
+  importedActivityHudTop,
+  minimalHudBottomOffset,
+  petWindowSizeForDisplay,
+} from './pet/petWindowLayout'
 import { shouldDismissPetContextMenu } from './pet/petContextMenu'
 import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
@@ -1116,6 +1120,10 @@ function importedPetFrameStyle(activePetAsset: PetAsset | null, settings: AppSet
     '--pet-imported-frame-width': `${activePetAsset.atlasProfile.frameWidth}px`,
     '--pet-imported-frame-height': `${activePetAsset.atlasProfile.frameHeight}px`,
     '--pet-activity-hud-top': `${importedActivityHudTop(
+      activePetAsset.atlasProfile.frameHeight,
+      settings.petScale,
+    )}px`,
+    '--pet-minimal-hud-bottom': `${minimalHudBottomOffset(
       activePetAsset.atlasProfile.frameHeight,
       settings.petScale,
     )}px`,
