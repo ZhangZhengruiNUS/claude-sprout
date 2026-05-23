@@ -79,6 +79,7 @@
     "Idle pet playback is quieter at the renderer level for built-in and imported Codex atlas pets: idle now uses a 4.2-second cycle that holds the first frame for about 2.9 seconds, then plays the remaining idle frames near normal speed to avoid low-framerate stutter; running/waiting/action animations remain unchanged",
     "Pet resizing now supports smaller sizes: the shared frontend/Rust minimum pet scale is 0.55, and the Settings small preset uses 0.65 while keeping medium and large unchanged",
     "Message-mode HUD badges now follow smaller atlas pets with a small breathing gap: the running/finished/action pill row uses a measured bottom offset based on the sprite frame height and pet scale instead of staying fixed to the reserved window footprint",
+    "Do Not Disturb is now treated as a normal Settings notification toggle instead of a topbar priority action; its description clarifies that only Windows system notifications are suppressed while pet cards, Board, and session state remain visible",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],

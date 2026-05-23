@@ -3,7 +3,6 @@ import {
   EyeOff,
   FolderOpen,
   LayoutList,
-  Moon,
   PanelTopOpen,
   PawPrint,
   RefreshCw,
@@ -897,17 +896,6 @@ function App() {
             <h1>{t('app.title')}</h1>
           </div>
           <div className="topbar-actions">
-            <button
-              type="button"
-              className={settings.doNotDisturb ? 'toggle active' : 'toggle'}
-              onClick={() => {
-                void updateSettings({ ...settings, doNotDisturb: !settings.doNotDisturb })
-              }}
-              aria-pressed={settings.doNotDisturb}
-            >
-              <Moon size={16} />
-              {t('app.doNotDisturb')}
-            </button>
             <button
               type="button"
               onClick={async () => {

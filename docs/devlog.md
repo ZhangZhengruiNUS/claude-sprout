@@ -2,6 +2,10 @@
 
 ## 2026-05-23
 
+- Demoted Do Not Disturb to an ordinary Settings control:
+  - removed the duplicate topbar Do Not Disturb toggle because the feature only suppresses Windows native notifications.
+  - Settings now explains that pet cards, Board, and session state remain visible while Do Not Disturb is enabled.
+  - added SettingsPanel coverage for the native-notification-only wording.
 - Lowered the pet resize floor:
   - shared frontend and Rust app-data settings now clamp pet scale at `0.55` instead of `0.75`.
   - Settings `Small` now maps to `0.65`, while `Medium` and `Large` remain unchanged.
