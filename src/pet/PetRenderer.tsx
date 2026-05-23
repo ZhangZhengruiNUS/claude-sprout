@@ -48,6 +48,7 @@ export function PetRenderer({
   const animation = action ?? statusToPetAnimation(status)
   const atlasAnimation = petAsset?.atlasProfile.animations[animation]
   const animationMode = atlasAnimation?.mode ?? builtInAnimationMode(animation)
+  const useQuietIdle = animation === 'idle' && (action === null || action === undefined)
   const animationKey = petAnimationRenderKey({
     animation,
     mode: animationMode,
@@ -241,7 +242,7 @@ export function PetRenderer({
         {petAsset && atlasAnimation ? (
           <div
             key={animationKey}
-            className={`sprite-pet ${atlasAnimation.mode}`}
+            className={`sprite-pet ${atlasAnimation.mode}${useQuietIdle ? ' quiet-idle' : ''}`}
             style={
               {
                 '--sprite-url': `url("${petAsset.imageSrc}")`,
@@ -255,6 +256,7 @@ export function PetRenderer({
                 '--sprite-hold-offset': `${spriteHoldOffset}px`,
                 '--sprite-once-steps': spriteOnceSteps,
                 '--sprite-duration': `${spriteDuration}ms`,
+                ...(useQuietIdle ? { '--sprite-quiet-cycle': '10000ms' } : {}),
               } as CSSProperties
             }
           />

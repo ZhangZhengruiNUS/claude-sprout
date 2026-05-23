@@ -623,6 +623,10 @@ button:disabled {
   animation: sprite-frames var(--sprite-duration) steps(var(--sprite-frames)) infinite;
 }
 
+.sprite-pet.loop.quiet-idle {
+  animation: sprite-quiet-idle var(--sprite-quiet-cycle, 10000ms) steps(var(--sprite-frames)) infinite;
+}
+
 .sprite-pet.once {
   animation: sprite-frames-once var(--sprite-duration) steps(var(--sprite-once-steps)) 1;
   animation-fill-mode: forwards;
@@ -1138,6 +1142,17 @@ h1 {
   }
 
   to {
+    background-position-x: var(--sprite-end-offset);
+  }
+}
+
+@keyframes sprite-quiet-idle {
+  0%,
+  90% {
+    background-position-x: 0;
+  }
+
+  100% {
     background-position-x: var(--sprite-end-offset);
   }
 }

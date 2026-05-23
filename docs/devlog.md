@@ -2,6 +2,10 @@
 
 ## 2026-05-23
 
+- Quieted idle pet playback without changing mascot assets:
+  - imported and built-in Codex atlas pets now use a renderer-level quiet idle class when the effective animation is `idle` and no action override is active.
+  - quiet idle holds the first sprite frame for most of a 10-second cycle, then plays a short idle motion segment before returning to stillness.
+  - active loop and action states remain unchanged so running, waiting_permission, completion, failure, and drag-direction animations still carry attention.
 - Fixed repeated Message-mode completion cards:
   - root cause was `petAssistantMessageKey` including `updated_at`, while Claude Code statusline refreshes preserve `done` but update `updated_at` on each heartbeat.
   - message keys now use a stable status-event fingerprint, preferring `ended_at` for terminal states and otherwise using last event, notification type, tool, and end reason.

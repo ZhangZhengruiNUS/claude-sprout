@@ -44,6 +44,21 @@ describe('PetRenderer', () => {
     expect(html).toContain('--sprite-duration:820ms')
   })
 
+  it('uses quiet idle playback for idle atlas sprites without muting active loop states', () => {
+    const idleHtml = renderToStaticMarkup(
+      <PetRenderer status="idle" alertCount={0} petAsset={codexPetAsset} />,
+    )
+    const runningHtml = renderToStaticMarkup(
+      <PetRenderer status="running" alertCount={0} petAsset={codexPetAsset} />,
+    )
+
+    expect(idleHtml).toContain('sprite-pet loop quiet-idle')
+    expect(idleHtml).toContain('--sprite-quiet-cycle:10000ms')
+    expect(runningHtml).toContain('sprite-pet loop')
+    expect(runningHtml).not.toContain('quiet-idle')
+    expect(runningHtml).not.toContain('--sprite-quiet-cycle')
+  })
+
   it('keeps compact interaction handlers on a tighter pet hit target', () => {
     const html = renderToStaticMarkup(
       <PetRenderer status="idle" alertCount={0} compact petAsset={builtInPetAsset} />,
