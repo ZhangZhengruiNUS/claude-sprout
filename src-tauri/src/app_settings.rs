@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
 
 const SETTINGS_FILE: &str = "settings.json";
-pub const MIN_PET_SCALE: f64 = 0.75;
+pub const MIN_PET_SCALE: f64 = 0.55;
 pub const MAX_PET_SCALE: f64 = 1.65;
 pub const MAX_PET_COMPLETION_TOAST_SECONDS: u32 = 120;
 pub const MAX_PET_ACTIVITY_VISIBLE_COUNT: u32 = 12;
@@ -238,6 +238,22 @@ mod tests {
         let settings = load_from_root(&root).expect("settings load should succeed");
 
         assert_eq!(settings.pet_scale, MAX_PET_SCALE);
+        fs::remove_dir_all(root).expect("temp settings root should be removable");
+    }
+
+    #[test]
+    fn clamps_tiny_pet_scale_values_to_the_supported_minimum() {
+        let root = temp_root();
+        fs::create_dir_all(&root).expect("temp settings root should be created");
+        fs::write(
+            root.join("settings.json"),
+            r#"{"doNotDisturb":false,"petAlwaysOnTop":true,"petLockPosition":false,"petScale":0.1,"petSizePreset":"custom"}"#,
+        )
+        .expect("settings file should be writable");
+
+        let settings = load_from_root(&root).expect("settings load should succeed");
+
+        assert_eq!(settings.pet_scale, 0.55);
         fs::remove_dir_all(root).expect("temp settings root should be removable");
     }
 

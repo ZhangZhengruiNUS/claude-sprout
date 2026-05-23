@@ -2,6 +2,10 @@
 
 ## 2026-05-23
 
+- Lowered the pet resize floor:
+  - shared frontend and Rust app-data settings now clamp pet scale at `0.55` instead of `0.75`.
+  - Settings `Small` now maps to `0.65`, while `Medium` and `Large` remain unchanged.
+  - added frontend and Rust regression tests so persisted settings and local UI settings keep the same lower bound.
 - Quieted idle pet playback without changing mascot assets:
   - imported and built-in Codex atlas pets now use a renderer-level quiet idle class when the effective animation is `idle` and no action override is active.
   - quiet idle now uses a 4.2-second cycle: it holds the first sprite frame for about 2.9 seconds, then plays the remaining idle frames near normal speed to avoid low-framerate stutter.

@@ -77,6 +77,7 @@
     "README.md and README.zh-CN.md now document the user-facing session status mechanism: Claude Code hook/statusline triggers, stored statuses, Message mode card rules, Board mode visibility/sorting, native notifications, and pet animation behavior",
     "The Windows app/taskbar icon has been regenerated as a DPI-aware multi-size ICO from a tighter mascot crop, with refreshed Vite favicon/project PNGs; the existing tray icon is unchanged because its 32px mascot crop already renders clearly",
     "Idle pet playback is quieter at the renderer level for built-in and imported Codex atlas pets: idle now uses a 4.2-second cycle that holds the first frame for about 2.9 seconds, then plays the remaining idle frames near normal speed to avoid low-framerate stutter; running/waiting/action animations remain unchanged",
+    "Pet resizing now supports smaller sizes: the shared frontend/Rust minimum pet scale is 0.55, and the Settings small preset uses 0.65 while keeping medium and large unchanged",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -103,6 +104,7 @@
     "Ask the user to run final acceptance testing for the pet assistant modes, event-triggered pet actions, and Codex-aligned imported pet animations in real desktop use, especially waiting/completion/error transitions, imported pet drag/cropping/directional-running behavior, drag cancellation after shortcut/focus changes, Minimal persistent intervention cards, Activity mode paging, pet resize/context-menu behavior, and real Claude Code session transitions.",
     "Ask the user to verify the rebuilt release exe on Win11 4K taskbar and Alt-Tab after restarting the app; if Windows still shows the previous blurry icon, have them unpin/repin or clear the shell icon cache before retesting.",
     "Ask the user to acceptance-test quiet idle playback in real desktop use: idle should move often enough to feel alive but slowly enough to avoid pulling attention, while running/tool, waiting_permission, completion, error, and drag-direction animations should still be noticeable.",
+    "Ask the user to acceptance-test the smaller pet size range in real desktop use: Settings small preset should be noticeably smaller, and pet menu/wheel shrinking should continue down to the new 0.55 minimum without making drag/click unreliable.",
     "After user acceptance, continue with release closure: run NSIS installer smoke, regenerate final official artifact hashes for the standalone exe and NSIS setup, then proceed through the v0.1.0 release checklist and GitHub release publication."
   ],
   "importantDecisions": [

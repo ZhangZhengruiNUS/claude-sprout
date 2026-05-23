@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_APP_SETTINGS,
+  PET_SCALE_MIN,
   PET_SIZE_OPTIONS,
+  clampPetScale,
   loadAppSettings,
   saveAppSettings,
   hasStoredAppSettings,
@@ -107,6 +109,11 @@ describe('app settings persistence', () => {
     expect(loadAppSettings(storage).petScale).toBe(DEFAULT_APP_SETTINGS.petScale)
   })
 
+  it('allows the pet scale to shrink to the smaller supported minimum', () => {
+    expect(PET_SCALE_MIN).toBe(0.55)
+    expect(clampPetScale(0.4)).toBe(0.55)
+  })
+
   it('migrates the older pet scale key into current settings', () => {
     const storage = new MemoryStorage()
     storage.setItem('claude-sprout.pet-scale', '1.25')
@@ -129,6 +136,10 @@ describe('app settings persistence', () => {
       petScale: PET_SIZE_OPTIONS.small.scale,
       petSizePreset: 'small',
     })
+  })
+
+  it('maps the small preset to a visibly smaller pet size', () => {
+    expect(settingsWithPetSizePreset(DEFAULT_APP_SETTINGS, 'small').petScale).toBe(0.65)
   })
 
   it('detects current or legacy stored settings', () => {

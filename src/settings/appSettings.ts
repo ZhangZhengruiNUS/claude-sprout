@@ -23,7 +23,7 @@ type StoredAppSettings = Partial<AppSettings>
 export const APP_SETTINGS_STORAGE_KEY = 'claude-sprout.settings.v1'
 export const LEGACY_PET_SCALE_STORAGE_KEY = 'claude-sprout.pet-scale'
 
-export const PET_SCALE_MIN = 0.75
+export const PET_SCALE_MIN = 0.55
 export const PET_SCALE_MAX = 1.65
 export const PET_COMPLETION_TOAST_SECONDS_MAX = 120
 export const PET_ACTIVITY_VISIBLE_COUNT_MAX = 12
@@ -33,7 +33,7 @@ export const PET_MESSAGE_BOX_OPACITY_MIN = 25
 export const PET_MESSAGE_BOX_OPACITY_MAX = 95
 
 export const PET_SIZE_OPTIONS = {
-  small: { label: 'Small', scale: 0.85 },
+  small: { label: 'Small', scale: 0.65 },
   medium: { label: 'Medium', scale: 1 },
   large: { label: 'Large', scale: 1.25 },
 } as const
