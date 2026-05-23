@@ -2,6 +2,10 @@
 
 ## 2026-05-23
 
+- Fixed pet right-click context menu anchoring during release acceptance testing:
+  - root cause was the custom menu being rendered inside the tiny transparent pet window, where CSS clamping forced most click positions to the same top-left menu coordinate.
+  - opening the menu now temporarily expands the transparent pet window around the cursor, translates the menu coordinate into the expanded window, and restores the previous window size/position when the menu closes.
+  - added regression coverage for context-menu window expansion/restoration; verified with focused Vitest, lint, production build, browser pet-route right-click QA, and a rebuilt release exe.
 - Changed main panel window-control behavior:
   - removed the frontend resize/minimize listener that converted minimize into `hide + unminimize`.
   - minimizing the panel now leaves it minimized on the Windows taskbar.

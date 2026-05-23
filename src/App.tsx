@@ -9,7 +9,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
@@ -45,9 +45,11 @@ import {
 import {
   applyPetAlwaysOnTop,
   applyPetScale,
+  beginPetContextMenu,
   beginPetDrag,
   getPetWindow,
   hideCurrentPetWindow,
+  type PetContextMenuSession,
 } from './pet/petWindowControls'
 import {
   importedActivityHudTop,
@@ -152,10 +154,20 @@ function App() {
   const storageLoadSequenceRef = useRef(0)
   const petMessageFirstSeenAtRef = useRef(new Map<string, number>())
   const petContextMenuRef = useRef<HTMLDivElement | null>(null)
+  const petContextMenuSessionRef = useRef<PetContextMenuSession | null>(null)
+  const petContextMenuOpenSequenceRef = useRef(0)
   const playedPetEventActionKeysRef = useRef(new Set<string>())
   const petEventActionQueueRef = useRef<PetEventAction[]>([])
   const isPlayingQueuedPetEventActionRef = useRef(false)
   const petActionClearTimerRef = useRef<number | null>(null)
+
+  const closePetContextMenu = useCallback(() => {
+    petContextMenuOpenSequenceRef.current += 1
+    setPetMenuPosition(null)
+    const session = petContextMenuSessionRef.current
+    petContextMenuSessionRef.current = null
+    return session?.end() ?? Promise.resolve()
+  }, [])
 
   async function load(options: { showLoading?: boolean; notify?: boolean } = {}) {
     const sequence = loadSequenceRef.current + 1
@@ -411,12 +423,12 @@ function App() {
 
     function closeMenuOnOutsidePointer(event: PointerEvent) {
       if (shouldDismissPetContextMenu(event.target, petContextMenuRef.current)) {
-        setPetMenuPosition(null)
+        void closePetContextMenu()
       }
     }
 
     function closeMenuOnWindowBlur() {
-      setPetMenuPosition(null)
+      void closePetContextMenu()
     }
 
     window.addEventListener('pointerdown', closeMenuOnOutsidePointer, true)
@@ -425,7 +437,7 @@ function App() {
       window.removeEventListener('pointerdown', closeMenuOnOutsidePointer, true)
       window.removeEventListener('blur', closeMenuOnWindowBlur)
     }
-  }, [petMenuPosition, windowKind])
+  }, [closePetContextMenu, petMenuPosition, windowKind])
 
   useEffect(() => {
     if (windowKind !== 'panel' || activeTab !== 'settings') return
@@ -526,7 +538,7 @@ function App() {
       petEventActionQueueRef.current = []
       isPlayingQueuedPetEventActionRef.current = false
     }
-    setPetMenuPosition(null)
+    void closePetContextMenu()
     setPetActionReplayKey((current) => current + 1)
     setPetAction(action)
     if (petActionClearTimerRef.current !== null) {
@@ -545,13 +557,29 @@ function App() {
     }, durationMs)
   }
 
+  async function openPetContextMenu(position: { x: number; y: number }) {
+    await closePetContextMenu()
+    const sequence = petContextMenuOpenSequenceRef.current + 1
+    petContextMenuOpenSequenceRef.current = sequence
+    const session = await beginPetContextMenu(
+      position,
+      petWindowSizeForCurrentSettings(settings, activityCardCount, activePetAsset),
+    )
+    if (sequence !== petContextMenuOpenSequenceRef.current) {
+      await session.end()
+      return
+    }
+    petContextMenuSessionRef.current = session
+    setPetMenuPosition(session.position)
+  }
+
   async function resizePet(delta: number) {
-    setPetMenuPosition(null)
+    await closePetContextMenu()
     await updateSettings(settingsWithPetScale(settings, settings.petScale + delta * 0.1))
   }
 
   async function togglePetDisplayMode() {
-    setPetMenuPosition(null)
+    await closePetContextMenu()
     await updateSettingsFromLatest((currentSettings) => ({
       ...currentSettings,
       petDisplayMode: nextPetDisplayMode(currentSettings.petDisplayMode),
@@ -559,7 +587,7 @@ function App() {
   }
 
   async function hidePet() {
-    setPetMenuPosition(null)
+    await closePetContextMenu()
     await hideCurrentPetWindow()
   }
 
@@ -734,12 +762,12 @@ function App() {
           petAsset={activePetAsset}
           showAlertBubble={false}
           onClick={() => {
-            setPetMenuPosition(null)
+            void closePetContextMenu()
             void showSessionPanel()
           }}
           onDoubleClick={() => playPetAction('waving')}
           onContextMenu={(position) => {
-            setPetMenuPosition(position)
+            void openPetContextMenu(position)
           }}
           onWheel={(delta) => {
             void resizePet(delta)
@@ -753,7 +781,7 @@ function App() {
           onDragStateChange={(dragging) => {
             setIsPetDragging(dragging)
             if (dragging) {
-              setPetMenuPosition(null)
+              void closePetContextMenu()
             }
             if (!dragging) {
               setPetDragAnimation(null)
@@ -766,7 +794,7 @@ function App() {
           activityPage={petActivityPage}
           onActivityPageChange={setPetActivityPage}
           onOpenPanel={() => {
-            setPetMenuPosition(null)
+            void closePetContextMenu()
             void showSessionPanel()
           }}
           onAcknowledgeMessage={(key) => {
@@ -789,7 +817,7 @@ function App() {
               type="button"
               title={t('petMenu.openTitle')}
               onClick={() => {
-                setPetMenuPosition(null)
+                void closePetContextMenu()
                 void showSessionPanel()
               }}
             >
@@ -1049,6 +1077,25 @@ function importedPetDragWindowResize(
       petFrameSize,
     }),
   }
+}
+
+function petWindowSizeForCurrentSettings(
+  settings: AppSettings,
+  activityCardCount: number,
+  activePetAsset: PetAsset | null,
+) {
+  return petWindowSizeForDisplay({
+    scale: settings.petScale,
+    displayMode: settings.petDisplayMode,
+    visibleCount: effectiveActivityVisibleCount(settings, activityCardCount),
+    activityWidth: settings.petActivityWindowWidth,
+    petFrameSize: activePetAsset
+      ? {
+          width: activePetAsset.atlasProfile.frameWidth,
+          height: activePetAsset.atlasProfile.frameHeight,
+        }
+      : null,
+  })
 }
 
 function countOpenSessions(sessions: SessionSnapshot[]) {

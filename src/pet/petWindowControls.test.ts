@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { beginPetDrag } from './petWindowControls'
+import { beginPetContextMenu, beginPetDrag } from './petWindowControls'
 
 const setSizeMock = vi.fn()
 const setPositionMock = vi.fn()
@@ -86,6 +86,34 @@ describe('pet window controls', () => {
     expect(setPositionMock).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({ x: 525, y: 331 }),
+    )
+  })
+
+  it('expands the pet window around the cursor while a context menu is open', async () => {
+    const menuSession = await beginPetContextMenu(
+      { x: 140, y: 160 },
+      { width: 180, height: 210 },
+    )
+
+    expect(menuSession.position).toEqual({ x: 220, y: 272 })
+    expect(setSizeMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ width: 340, height: 434 }),
+    )
+    expect(setPositionMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ x: -60, y: -104 }),
+    )
+
+    await menuSession.end()
+
+    expect(setSizeMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ width: 180, height: 210 }),
+    )
+    expect(setPositionMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ x: 100, y: 120 }),
     )
   })
 })

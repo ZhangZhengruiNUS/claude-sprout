@@ -600,10 +600,12 @@ input:focus-visible {
 }
 
 .pet-context-menu {
+  --pet-menu-width: 7rem;
+  --pet-menu-height: 11.25rem;
   position: absolute;
-  left: min(var(--pet-menu-x), calc(100% - 7.25rem));
-  top: min(var(--pet-menu-y), calc(100% - 12rem));
-  width: 7rem;
+  left: clamp(0.25rem, var(--pet-menu-x), calc(100% - var(--pet-menu-width) - 0.25rem));
+  top: clamp(0.25rem, var(--pet-menu-y), calc(100% - var(--pet-menu-height) - 0.25rem));
+  width: var(--pet-menu-width);
   display: grid;
   gap: 0.2rem;
   padding: 0.25rem;
