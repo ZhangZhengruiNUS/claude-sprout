@@ -127,7 +127,30 @@ export function buildPetAssistantView({
 }
 
 export function petAssistantMessageKey(session: SessionSnapshot) {
-  return `${session.session_id}:${session.status}:${session.updated_at}`
+  return `${session.session_id}:${session.status}:${messageEventFingerprint(session)}`
+}
+
+export function petAssistantMessageKeysForSessions(sessions: SessionSnapshot[]) {
+  const keys = new Set<string>()
+  for (const session of sessions) {
+    if (MESSAGE_STATUSES.has(session.status)) {
+      keys.add(petAssistantMessageKey(session))
+    }
+  }
+  return keys
+}
+
+export function prunePetAssistantMessageKeys(
+  keys: ReadonlySet<string>,
+  currentKeys: ReadonlySet<string>,
+) {
+  const next = new Set<string>()
+  for (const key of keys) {
+    if (currentKeys.has(key)) {
+      next.add(key)
+    }
+  }
+  return next
 }
 
 export function isPersistentPetMessage(status: SessionStatus, completionToastSeconds = 5) {
@@ -171,6 +194,17 @@ function messageForSession(
     persistent: isPersistentPetMessage(session.status, completionToastSeconds),
     updatedAt: session.updated_at,
   }
+}
+
+function messageEventFingerprint(session: SessionSnapshot) {
+  const endedAt = safeInlineText(session.ended_at)
+  if (endedAt) return `ended:${endedAt}`
+  return [
+    safeInlineText(session.last_event) ?? 'event',
+    safeInlineText(session.notification_type) ?? '',
+    safeInlineText(session.last_tool) ?? '',
+    safeInlineText(session.end_reason) ?? '',
+  ].join('|')
 }
 
 function activityCardForSession(

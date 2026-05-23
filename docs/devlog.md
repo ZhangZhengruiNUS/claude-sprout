@@ -2,6 +2,11 @@
 
 ## 2026-05-23
 
+- Fixed repeated Message-mode completion cards:
+  - root cause was `petAssistantMessageKey` including `updated_at`, while Claude Code statusline refreshes preserve `done` but update `updated_at` on each heartbeat.
+  - message keys now use a stable status-event fingerprint, preferring `ended_at` for terminal states and otherwise using last event, notification type, tool, and end reason.
+  - acknowledged message keys are pruned when a session leaves the matching message state, so later permission/error/completion events in the same session can still surface.
+  - added regression coverage for heartbeat-refreshed `done` snapshots and acknowledged-key pruning; verified with `npm test -- --run`, `npm run lint`, and `npm run build`.
 - Regenerated the Windows app icon for high-DPI taskbar use:
   - root cause was the app icon rendering the full mascot too small inside the square canvas, which made Win11 taskbar and Alt-Tab scaling look soft on a 4K display.
   - `src-tauri/icons/icon.ico` now includes DPI-aware 16/20/24/32/40/48/64/128/256px layers generated from a tighter mascot crop.

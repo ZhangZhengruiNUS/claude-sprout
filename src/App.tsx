@@ -57,8 +57,9 @@ import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
 import {
   buildPetAssistantView,
-  PET_ASSISTANT_MESSAGE_STATUSES,
+  petAssistantMessageKeysForSessions,
   petAssistantMessageKey,
+  prunePetAssistantMessageKeys,
 } from './pet/petAssistantViewModel'
 import { SessionPanel } from './sessions/SessionPanel'
 import { getDataRoot, loadSessions, refreshSessions, showSessionPanel } from './sessions/sessionApi'
@@ -199,6 +200,11 @@ function App() {
       }
     }
     sessionsRef.current = nextSessions
+    const currentMessageKeys = petAssistantMessageKeysForSessions(nextSessions)
+    setAcknowledgedPetMessageKeys((current) => {
+      const next = prunePetAssistantMessageKeys(current, currentMessageKeys)
+      return next.size === current.size ? current : next
+    })
     setSessions(nextSessions)
     if (options.showLoading ?? true) {
       setIsLoading(false)
@@ -303,12 +309,11 @@ function App() {
   )
 
   useEffect(() => {
-    const currentKeys = new Set<string>()
+    const currentKeys = petAssistantMessageKeysForSessions(sessions)
     const now = Date.now()
     for (const session of sessions) {
-      if (!PET_ASSISTANT_MESSAGE_STATUSES.has(session.status)) continue
+      if (!currentKeys.has(petAssistantMessageKey(session))) continue
       const key = petAssistantMessageKey(session)
-      currentKeys.add(key)
       if (!petMessageFirstSeenAtRef.current.has(key)) {
         petMessageFirstSeenAtRef.current.set(key, now)
       }

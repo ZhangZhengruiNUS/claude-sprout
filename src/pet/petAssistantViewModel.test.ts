@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildPetAssistantView,
+  petAssistantMessageKeysForSessions,
   petAssistantMessageKey,
+  prunePetAssistantMessageKeys,
   type PetAssistantDisplayMode,
 } from './petAssistantViewModel'
 import type { SessionSnapshot, SessionStatus } from '../sessions/sessionTypes'
@@ -235,5 +237,68 @@ describe('pet assistant view model', () => {
       }),
     )
     expect(view.messages[0].detail).not.toContain('Secret-looking')
+  })
+
+  it('does not treat statusline heartbeat updates as new completion messages', () => {
+    const completedAt = '2026-05-22T00:00:00Z'
+    const firstDone = session('done', 'done', completedAt, {
+      ended_at: completedAt,
+      last_event: 'Stop',
+    })
+    const heartbeatRefreshedDone = session('done', 'done', '2026-05-22T00:01:00Z', {
+      ended_at: completedAt,
+      last_event: 'Stop',
+      source: 'claude-code-statusline',
+    })
+    const firstSeenAt = new Date(completedAt).getTime()
+
+    const view = buildPetAssistantView({
+      sessions: [heartbeatRefreshedDone],
+      displayMode: 'minimal',
+      visibleCount: 3,
+      completionToastSeconds: 5,
+      messageFirstSeenAt: new Map([[petAssistantMessageKey(firstDone), firstSeenAt]]),
+      now: new Date('2026-05-22T00:00:10Z'),
+    })
+
+    expect(view.messages).toEqual([])
+  })
+
+  it('keeps acknowledged message keys only while that logical message is still current', () => {
+    const permission = session('permission', 'waiting_permission', '2026-05-22T00:00:00Z', {
+      last_event: 'PermissionRequest',
+      last_tool: 'Bash',
+    })
+    const heartbeatRefreshedPermission = session(
+      'permission',
+      'waiting_permission',
+      '2026-05-22T00:01:00Z',
+      {
+        last_event: 'PermissionRequest',
+        last_tool: 'Bash',
+        source: 'claude-code-statusline',
+      },
+    )
+    const running = session('permission', 'running', '2026-05-22T00:02:00Z', {
+      last_event: 'PostToolUse',
+      last_tool: 'Bash',
+    })
+    const acknowledged = new Set([petAssistantMessageKey(permission)])
+
+    expect(petAssistantMessageKey(heartbeatRefreshedPermission)).toBe(
+      petAssistantMessageKey(permission),
+    )
+    expect(
+      [...prunePetAssistantMessageKeys(
+        acknowledged,
+        petAssistantMessageKeysForSessions([heartbeatRefreshedPermission]),
+      )],
+    ).toEqual([petAssistantMessageKey(permission)])
+    expect(
+      [...prunePetAssistantMessageKeys(
+        acknowledged,
+        petAssistantMessageKeysForSessions([running]),
+      )],
+    ).toEqual([])
   })
 })
