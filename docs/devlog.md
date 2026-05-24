@@ -2,6 +2,10 @@
 
 ## 2026-05-24
 
+- Fixed Settings segmented control sizing:
+  - root cause was the shared `.size-segment` grid being hard-coded to three columns even when the control only had two options.
+  - segmented controls now pass their option count through `--segment-count`, so Message/Board renders as two slots while Language, Theme, and Pet size remain three slots.
+  - added SettingsPanel static render coverage and verified the Settings page with Playwright; the pet-mode control no longer reserves a third empty position.
 - Reworked Settings > Pet appearance into a compact manager flow:
   - the Settings row now shows only the current pet and imported-pet count plus a Manage pets action, avoiding an expanding grid in the main settings surface.
   - the pet appearance manager opens as a portal-backed modal with large pet preview, wave preview, apply/cancel, installed-pet cards, refresh, and Codex scan/import.

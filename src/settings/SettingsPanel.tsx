@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
@@ -83,6 +84,11 @@ const PET_SIZE_LABEL_KEYS: Record<Exclude<PetSizePreset, 'custom'>, string> = {
   small: 'settings.petSizeSmall',
   medium: 'settings.petSizeMedium',
   large: 'settings.petSizeLarge',
+}
+type SegmentStyle = CSSProperties & { '--segment-count': number }
+
+function segmentStyle(optionCount: number): SegmentStyle {
+  return { '--segment-count': optionCount }
 }
 
 export function SettingsPanel({
@@ -299,7 +305,12 @@ export function SettingsPanel({
           <strong>{t('settings.languageTitle')}</strong>
           <small>{t('settings.languageDescription')}</small>
         </span>
-        <div className="size-segment" role="group" aria-label={t('settings.languageTitle')}>
+        <div
+          className="size-segment"
+          role="group"
+          aria-label={t('settings.languageTitle')}
+          style={segmentStyle(APP_LANGUAGE_OPTIONS.length)}
+        >
           {APP_LANGUAGE_OPTIONS.map((option) => (
             <button
               key={option.value}
@@ -317,7 +328,12 @@ export function SettingsPanel({
           <strong>{t('settings.themeTitle')}</strong>
           <small>{t('settings.themeDescription')}</small>
         </span>
-        <div className="size-segment theme-segment" role="group" aria-label={t('settings.themeTitle')}>
+        <div
+          className="size-segment theme-segment"
+          role="group"
+          aria-label={t('settings.themeTitle')}
+          style={segmentStyle(APP_THEME_OPTIONS.length)}
+        >
           {APP_THEME_OPTIONS.map(({ value, labelKey, Icon }) => (
             <button
               key={value}
@@ -350,7 +366,12 @@ export function SettingsPanel({
           <strong>{t('settings.petInformationMode')}</strong>
           <small>{t('settings.petInformationModeDescription')}</small>
         </span>
-        <div className="size-segment" role="group" aria-label={t('settings.petInformationMode')}>
+        <div
+          className="size-segment"
+          role="group"
+          aria-label={t('settings.petInformationMode')}
+          style={segmentStyle(PET_DISPLAY_MODES.length)}
+        >
           {PET_DISPLAY_MODES.map((mode) => (
             <button
               key={mode.value}
@@ -481,7 +502,12 @@ export function SettingsPanel({
           <strong>{t('settings.petSize')}</strong>
           <small>{t('settings.petSizeDescription')}</small>
         </span>
-        <div className="size-segment" role="group" aria-label={t('settings.petSize')}>
+        <div
+          className="size-segment"
+          role="group"
+          aria-label={t('settings.petSize')}
+          style={segmentStyle(PET_SIZE_PRESETS.length)}
+        >
           {PET_SIZE_PRESETS.map((preset) => (
             <button
               key={preset}

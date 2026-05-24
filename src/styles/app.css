@@ -1178,7 +1178,7 @@ p {
 
 .size-segment {
   display: inline-grid;
-  grid-template-columns: repeat(3, minmax(4.5rem, 1fr));
+  grid-template-columns: repeat(var(--segment-count, 3), minmax(4.5rem, 1fr));
   gap: 0.25rem;
   padding: 0.2rem;
   border-radius: var(--radius-lg);

@@ -69,4 +69,12 @@ describe('SettingsPanel', () => {
     expect(html).toContain('Claude Sprout')
     expect(html).not.toContain('Handoff</button>')
   })
+
+  it('sizes segmented controls from their option counts', () => {
+    const html = renderSettingsPanel()
+
+    expect(html).toContain('aria-label="Pet mode" style="--segment-count:2"')
+    expect(html).toContain('aria-label="Language" style="--segment-count:3"')
+    expect(html).toContain('aria-label="Pet size" style="--segment-count:3"')
+  })
 })
