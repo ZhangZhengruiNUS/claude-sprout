@@ -1,10 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { beginPetDrag } from './petWindowControls'
+import { beginPetContextMenu, beginPetDrag } from './petWindowControls'
 
+const invokeMock = vi.hoisted(() => vi.fn())
 const setSizeMock = vi.fn()
 const setPositionMock = vi.fn()
 const outerPositionMock = vi.fn()
 const scaleFactorMock = vi.fn()
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: invokeMock,
+}))
 
 vi.mock('@tauri-apps/api/window', () => ({
   getCurrentWindow: () => ({
@@ -19,6 +24,7 @@ vi.mock('@tauri-apps/api/window', () => ({
 describe('pet window controls', () => {
   beforeEach(() => {
     ;(globalThis as { isTauri?: boolean }).isTauri = true
+    invokeMock.mockReset().mockResolvedValue(undefined)
     setSizeMock.mockReset().mockResolvedValue(undefined)
     setPositionMock.mockReset().mockResolvedValue(undefined)
     outerPositionMock.mockReset().mockResolvedValue({ x: 100, y: 120 })
@@ -89,4 +95,33 @@ describe('pet window controls', () => {
     )
   })
 
+  it('expands and restores the pet window with atomic bounds while a context menu is open', async () => {
+    const menuSession = await beginPetContextMenu(
+      { x: 140, y: 160 },
+      { width: 180, height: 210 },
+    )
+
+    expect(menuSession.position).toEqual({ x: 220, y: 272 })
+    expect(invokeMock).toHaveBeenNthCalledWith(1, 'set_pet_window_bounds', {
+      x: -60,
+      y: -104,
+      width: 680,
+      height: 868,
+    })
+    expect(setSizeMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ width: 340, height: 434 }),
+    )
+    expect(setPositionMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ x: -60, y: -104 }),
+    )
+
+    await menuSession.end()
+
+    expect(invokeMock).toHaveBeenNthCalledWith(2, 'set_pet_window_bounds', {
+      x: 100,
+      y: 120,
+      width: 360,
+      height: 420,
+    })
+  })
 })

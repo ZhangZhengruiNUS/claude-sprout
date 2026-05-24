@@ -1,6 +1,6 @@
 use crate::{app_settings, pet_import, session_store, storage_cleanup};
 use std::{path::Path, process::Command};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
 
 #[tauri::command]
 pub fn list_sessions() -> Result<Vec<session_store::SessionSnapshot>, String> {
@@ -64,6 +64,21 @@ pub fn toggle_pet_window(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn set_pet_window_bounds(
+    app: AppHandle,
+    x: i32,
+    y: i32,
+    width: u32,
+    height: u32,
+) -> Result<(), String> {
+    let window = app
+        .get_webview_window("pet")
+        .ok_or_else(|| "Pet window is not available".to_string())?;
+
+    set_window_bounds(&window, x, y, width, height)
+}
+
+#[tauri::command]
 pub fn scan_codex_pets() -> Result<Vec<pet_import::CodexPetCandidate>, String> {
     pet_import::scan_codex_pets()
 }
@@ -100,4 +115,49 @@ fn open_path(path: &Path) -> Result<(), String> {
         .spawn()
         .map_err(|error| error.to_string())?;
     Ok(())
+}
+
+#[cfg(windows)]
+fn set_window_bounds<R: Runtime>(
+    window: &WebviewWindow<R>,
+    x: i32,
+    y: i32,
+    width: u32,
+    height: u32,
+) -> Result<(), String> {
+    use windows::Win32::UI::WindowsAndMessaging::{
+        SetWindowPos, SWP_NOACTIVATE, SWP_NOOWNERZORDER, SWP_NOZORDER,
+    };
+
+    let hwnd = window.hwnd().map_err(|error| error.to_string())?;
+    unsafe {
+        SetWindowPos(
+            hwnd,
+            None,
+            x,
+            y,
+            width as i32,
+            height as i32,
+            SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE,
+        )
+        .map_err(|error| error.to_string())
+    }
+}
+
+#[cfg(not(windows))]
+fn set_window_bounds<R: Runtime>(
+    window: &WebviewWindow<R>,
+    x: i32,
+    y: i32,
+    width: u32,
+    height: u32,
+) -> Result<(), String> {
+    use tauri::{PhysicalPosition, PhysicalSize};
+
+    window
+        .set_position(PhysicalPosition::new(x, y))
+        .map_err(|error| error.to_string())?;
+    window
+        .set_size(PhysicalSize::new(width, height))
+        .map_err(|error| error.to_string())
 }

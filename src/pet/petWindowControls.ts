@@ -1,4 +1,5 @@
 import { LogicalSize, PhysicalPosition } from '@tauri-apps/api/dpi'
+import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow, Window } from '@tauri-apps/api/window'
 import { loadAppSettings, type AppSettings } from '../settings/appSettings'
 import { isTauriRuntime } from '../tauriRuntime'
@@ -23,6 +24,17 @@ export type PetDragWindowResize = {
   dragSize: PetWindowSize
   restoreSize: PetWindowSize
 }
+
+export type PetContextMenuSession = {
+  position: { x: number; y: number }
+  end: () => Promise<void>
+}
+
+const PET_CONTEXT_MENU_SIZE = {
+  width: 128,
+  height: 192,
+}
+const PET_CONTEXT_MENU_WINDOW_MARGIN = 16
 
 export function loadPetScale() {
   return loadAppSettings().petScale
@@ -101,6 +113,46 @@ export async function beginPetDrag(
   }
 }
 
+export async function beginPetContextMenu(
+  position: { x: number; y: number },
+  restoreSize: PetWindowSize,
+): Promise<PetContextMenuSession> {
+  if (!isTauriRuntime()) {
+    return {
+      position,
+      end: async () => {},
+    }
+  }
+
+  const appWindow = getCurrentWindow()
+  const [initialPosition, scaleFactor] = await Promise.all([
+    appWindow.outerPosition(),
+    appWindow.scaleFactor(),
+  ])
+  const expandedSize = {
+    width: restoreSize.width + PET_CONTEXT_MENU_SIZE.width + PET_CONTEXT_MENU_WINDOW_MARGIN * 2,
+    height: restoreSize.height + PET_CONTEXT_MENU_SIZE.height + PET_CONTEXT_MENU_WINDOW_MARGIN * 2,
+  }
+  const leftPadding = Math.round((expandedSize.width - restoreSize.width) / 2)
+  const topPadding = Math.round((expandedSize.height - restoreSize.height) / 2)
+  const expandedPosition = new PhysicalPosition(
+    Math.round(initialPosition.x - leftPadding * scaleFactor),
+    Math.round(initialPosition.y - topPadding * scaleFactor),
+  )
+
+  await setCurrentPetWindowBounds(expandedPosition, expandedSize, scaleFactor)
+
+  return {
+    position: {
+      x: position.x + leftPadding,
+      y: position.y + topPadding,
+    },
+    async end() {
+      await setCurrentPetWindowBounds(initialPosition, restoreSize, scaleFactor)
+    },
+  }
+}
+
 function dragAnchorOffset(
   origin: PetDragOrigin,
   dragSize: PetWindowSize,
@@ -119,6 +171,19 @@ function dragAnchorOffset(
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value)
+}
+
+async function setCurrentPetWindowBounds(
+  position: PhysicalPosition,
+  size: PetWindowSize,
+  scaleFactor: number,
+) {
+  await invoke('set_pet_window_bounds', {
+    x: position.x,
+    y: position.y,
+    width: Math.round(size.width * scaleFactor),
+    height: Math.round(size.height * scaleFactor),
+  })
 }
 
 export async function applyPetAlwaysOnTop(alwaysOnTop: boolean, targetWindow?: Window) {

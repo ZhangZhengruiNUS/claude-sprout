@@ -2,6 +2,11 @@
 
 ## 2026-05-23
 
+- Restored the pet right-click menu's custom glass/icon styling after release acceptance feedback:
+  - replaced the native OS popup menu path with the original React-rendered menu.
+  - added a small Windows-only Tauri command that applies pet-window bounds with one `SetWindowPos` call, avoiding the separate resize/move sequence that caused a one-frame pet flash.
+  - kept browser preview behavior on the DOM fallback and verified that menu coordinates still follow the right-click point.
+  - verified with focused Vitest, Rust tests, lint, production build, browser preview checks, and a rebuilt release exe.
 - Fixed pet right-click context menu anchoring during release acceptance testing:
   - root cause was the custom menu being rendered inside the tiny transparent pet window, where CSS clamping forced most click positions to the same top-left menu coordinate.
   - replaced the Tauri runtime path with the native `Menu.popup()` API so the menu opens at the current cursor location without resizing or repositioning the pet window.

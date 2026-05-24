@@ -41,6 +41,7 @@ pub fn run() {
             commands::save_app_settings,
             commands::show_session_panel,
             commands::toggle_pet_window,
+            commands::set_pet_window_bounds,
             commands::open_data_folder,
             commands::open_project_folder,
             commands::scan_codex_pets,
