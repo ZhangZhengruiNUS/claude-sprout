@@ -20,7 +20,7 @@ type Props = {
   showAlertBubble?: boolean
   onClick?: () => void
   onDoubleClick?: () => void
-  onContextMenu?: (position: { x: number; y: number }) => void
+  onContextMenu?: (position: { x: number; y: number; screenX: number; screenY: number }) => void
   onWheel?: (delta: number) => void
   onDragStart?: (origin: PetDragOrigin) => Promise<PetDragSession | null>
   onDragStateChange?: (isDragging: boolean) => void
@@ -216,7 +216,12 @@ export function PetRenderer({
       onDoubleClick={onDoubleClick}
       onContextMenu={(event) => {
         event.preventDefault()
-        onContextMenu?.({ x: event.clientX, y: event.clientY })
+        onContextMenu?.({
+          x: event.clientX,
+          y: event.clientY,
+          screenX: event.screenX,
+          screenY: event.screenY,
+        })
       }}
       onWheel={(event) => {
         if (!compact) return

@@ -34,6 +34,19 @@
         "visible": true,
         "resizable": false,
         "skipTaskbar": true
+      },
+      {
+        "label": "pet-menu",
+        "title": "Claude Sprout Pet Menu",
+        "width": 128,
+        "height": 192,
+        "decorations": false,
+        "transparent": true,
+        "shadow": false,
+        "alwaysOnTop": true,
+        "visible": false,
+        "resizable": false,
+        "skipTaskbar": true
       }
     ],
     "security": {

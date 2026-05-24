@@ -2,6 +2,12 @@
 
 ## 2026-05-24
 
+- Fixed the remaining pet right-click menu resize/flicker bug in Message and Board modes:
+  - root cause was still changing the pet window bounds to make room for the custom menu; Board cards and Message layout reacted to that viewport change.
+  - added a dedicated hidden transparent `pet-menu` Tauri window that renders the same glass/icon React menu.
+  - right-click now moves and shows only the menu window, while button clicks emit actions back to the pet window.
+  - removed the temporary Windows bounds command and direct `windows` dependency from the app crate.
+  - verified with focused Vitest, Rust tests, lint, production build, browser route checks, and a rebuilt release exe.
 - Improved the Sessions panel so it no longer shows less information than Board mode:
   - extracted shared session presentation helpers for display names, activity/output detail, Board-aligned metadata, status sorting, and preview opt-in handling.
   - Sessions cards now show Claude `display_name` as the primary title when available, keep project/path/session details visible, and add activity/output plus source/ended diagnostics.

@@ -1,17 +1,12 @@
 import {
   Bell,
-  EyeOff,
   FolderOpen,
-  LayoutList,
-  PanelTopOpen,
   PawPrint,
   Settings,
-  ZoomIn,
-  ZoomOut,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
-import { emit, listen } from '@tauri-apps/api/event'
+import { emit, emitTo, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import {
   isPermissionGranted,
@@ -19,6 +14,7 @@ import {
   sendNotification,
 } from '@tauri-apps/plugin-notification'
 import { PetRenderer } from './pet/PetRenderer'
+import { PetContextMenu } from './pet/petContextMenuView'
 import { FloatingPetAssistant } from './pet/FloatingPetAssistant'
 import { builtInPetAsset } from './pet/builtInPetAsset'
 import {
@@ -45,17 +41,21 @@ import {
 import {
   applyPetAlwaysOnTop,
   applyPetScale,
-  beginPetContextMenu,
   beginPetDrag,
   getPetWindow,
+  hidePetContextMenuWindow,
   hideCurrentPetWindow,
-  type PetContextMenuSession,
+  openPetContextMenuWindow,
 } from './pet/petWindowControls'
 import {
   importedActivityHudTop,
   minimalHudBottomOffset,
   petWindowSizeForDisplay,
 } from './pet/petWindowLayout'
+import {
+  PET_CONTEXT_MENU_ACTION_EVENT,
+  type PetContextMenuAction,
+} from './pet/petContextMenuActions'
 import { shouldDismissPetContextMenu } from './pet/petContextMenu'
 import type { PetAnimation } from './pet/petStateMapper'
 import { getHighestPriorityStatus } from './pet/petStateMapper'
@@ -94,7 +94,7 @@ import { isTauriRuntime } from './tauriRuntime'
 import { applyAppLanguage } from './i18n/i18n'
 import './styles/app.css'
 
-type WindowKind = 'panel' | 'pet'
+type WindowKind = 'panel' | 'pet' | 'pet-menu'
 const SETTINGS_CHANGED_EVENT = 'claude-sprout://settings-changed'
 const PET_ASSETS_CHANGED_EVENT = 'claude-sprout://pet-assets-changed'
 const SESSION_CHANGED_EVENT = 'claude-sprout://sessions-changed'
@@ -105,9 +105,13 @@ function resolveInitialWindowKind(): WindowKind {
   if (params.get('window') === 'pet') {
     return 'pet'
   }
+  if (params.get('window') === 'pet-menu') {
+    return 'pet-menu'
+  }
 
   try {
-    return getCurrentWindow().label === 'pet' ? 'pet' : 'panel'
+    const label = getCurrentWindow().label
+    return label === 'pet' || label === 'pet-menu' ? label : 'panel'
   } catch {
     return 'panel'
   }
@@ -154,19 +158,14 @@ function App() {
   const storageLoadSequenceRef = useRef(0)
   const petMessageFirstSeenAtRef = useRef(new Map<string, number>())
   const petContextMenuRef = useRef<HTMLDivElement | null>(null)
-  const petContextMenuSessionRef = useRef<PetContextMenuSession | null>(null)
-  const petContextMenuOpenSequenceRef = useRef(0)
   const playedPetEventActionKeysRef = useRef(new Set<string>())
   const petEventActionQueueRef = useRef<PetEventAction[]>([])
   const isPlayingQueuedPetEventActionRef = useRef(false)
   const petActionClearTimerRef = useRef<number | null>(null)
 
   const closePetContextMenu = useCallback(() => {
-    petContextMenuOpenSequenceRef.current += 1
     setPetMenuPosition(null)
-    const session = petContextMenuSessionRef.current
-    petContextMenuSessionRef.current = null
-    return session?.end() ?? Promise.resolve()
+    return hidePetContextMenuWindow()
   }, [])
 
   async function load(options: { showLoading?: boolean; notify?: boolean } = {}) {
@@ -238,6 +237,7 @@ function App() {
   }
 
   useEffect(() => {
+    if (windowKind === 'pet-menu') return
     // Session data is an external Tauri-backed store; initial load belongs in this subscription effect.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load()
@@ -250,10 +250,12 @@ function App() {
   }, [windowKind])
 
   useEffect(() => {
+    if (windowKind === 'pet-menu') return
     void refreshPetAssets()
-  }, [])
+  }, [windowKind])
 
   useEffect(() => {
+    if (windowKind === 'pet-menu') return
     let isMounted = true
     void getDataRoot()
       .then((root) => {
@@ -270,7 +272,7 @@ function App() {
     return () => {
       isMounted = false
     }
-  }, [t])
+  }, [t, windowKind])
 
   const topStatus = useMemo(() => getHighestPriorityStatus(sessions), [sessions])
   const activeCount = sessions.filter((session) => !['closed'].includes(session.status)).length
@@ -440,6 +442,50 @@ function App() {
   }, [closePetContextMenu, petMenuPosition, windowKind])
 
   useEffect(() => {
+    if (!isTauriRuntime() || windowKind !== 'pet') return
+
+    let isMounted = true
+    let unlisten: (() => void) | null = null
+
+    void listen<PetContextMenuAction>(PET_CONTEXT_MENU_ACTION_EVENT, (event) => {
+      if (!isMounted) return
+      void handlePetContextMenuAction(event.payload)
+    }).then((handler) => {
+      unlisten = handler
+    })
+
+    return () => {
+      isMounted = false
+      unlisten?.()
+    }
+    // The handler intentionally reads latest refs through the action helpers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windowKind])
+
+  useEffect(() => {
+    if (windowKind !== 'pet-menu') return
+
+    function hideMenuWindow() {
+      if (isTauriRuntime()) {
+        void getCurrentWindow().hide()
+      }
+    }
+
+    function hideOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        hideMenuWindow()
+      }
+    }
+
+    window.addEventListener('blur', hideMenuWindow)
+    window.addEventListener('keydown', hideOnEscape)
+    return () => {
+      window.removeEventListener('blur', hideMenuWindow)
+      window.removeEventListener('keydown', hideOnEscape)
+    }
+  }, [windowKind])
+
+  useEffect(() => {
     if (windowKind !== 'panel' || activeTab !== 'settings') return
     void loadStorageSummary()
     // Storage refresh is keyed by the visible Settings tab; the loader intentionally reads current translation state.
@@ -557,26 +603,47 @@ function App() {
     }, durationMs)
   }
 
-  async function openPetContextMenu(position: { x: number; y: number }) {
+  async function openPetContextMenu(position: {
+    x: number
+    y: number
+    screenX: number
+    screenY: number
+  }) {
     await closePetContextMenu()
-    const sequence = petContextMenuOpenSequenceRef.current + 1
-    petContextMenuOpenSequenceRef.current = sequence
-    const session = await beginPetContextMenu(
-      position,
-      petWindowSizeForCurrentSettings(settings, activityCardCount, activePetAsset),
-    )
-    if (sequence !== petContextMenuOpenSequenceRef.current) {
-      await session.end()
+
+    if (await openPetContextMenuWindow(position)) {
       return
     }
 
-    petContextMenuSessionRef.current = session
-    setPetMenuPosition(session.position)
+    setPetMenuPosition({ x: position.x, y: position.y })
+  }
+
+  async function handlePetContextMenuAction(action: PetContextMenuAction) {
+    switch (action) {
+      case 'open':
+        await closePetContextMenu()
+        await showSessionPanel()
+        return
+      case 'hide':
+        await hidePet()
+        return
+      case 'toggleDisplayMode':
+        await togglePetDisplayMode()
+        return
+      case 'larger':
+        await resizePet(1)
+        return
+      case 'smaller':
+        await resizePet(-1)
+        return
+    }
   }
 
   async function resizePet(delta: number) {
     await closePetContextMenu()
-    await updateSettings(settingsWithPetScale(settings, settings.petScale + delta * 0.1))
+    await updateSettingsFromLatest((currentSettings) =>
+      settingsWithPetScale(currentSettings, currentSettings.petScale + delta * 0.1),
+    )
   }
 
   async function togglePetDisplayMode() {
@@ -741,6 +808,29 @@ function App() {
       ? petAssetForId(previewPetId, petAssets)
       : activePetAsset
 
+  if (windowKind === 'pet-menu') {
+    return (
+      <main
+        className="pet-menu-window-shell"
+        onContextMenu={(event) => event.preventDefault()}
+      >
+        <PetContextMenu
+          settings={settings}
+          windowMenu
+          onAction={(action) => {
+            if (isTauriRuntime()) {
+              void emitTo('pet', PET_CONTEXT_MENU_ACTION_EVENT, action)
+              void getCurrentWindow().hide()
+              return
+            }
+
+            void handlePetContextMenuAction(action)
+          }}
+        />
+      </main>
+    )
+  }
+
   if (windowKind === 'pet') {
     const petRenderScale = settings.petDisplayMode === 'activity' ? settings.petScale * 0.78 : settings.petScale
 
@@ -803,73 +893,21 @@ function App() {
           }}
         />
         {petMenuPosition ? (
-          <div
-            ref={petContextMenuRef}
-            className="pet-context-menu"
+          <PetContextMenu
+            menuRef={(node) => {
+              petContextMenuRef.current = node
+            }}
+            settings={settings}
             style={
               {
                 '--pet-menu-x': `${petMenuPosition.x}px`,
                 '--pet-menu-y': `${petMenuPosition.y}px`,
               } as CSSProperties
             }
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              title={t('petMenu.openTitle')}
-              onClick={() => {
-                void closePetContextMenu()
-                void showSessionPanel()
-              }}
-            >
-              <PanelTopOpen size={14} />
-              {t('petMenu.open')}
-            </button>
-            <button
-              type="button"
-              title={t('petMenu.hideTitle')}
-              onClick={() => {
-                void hidePet()
-              }}
-            >
-              <EyeOff size={14} />
-              {t('petMenu.hide')}
-            </button>
-            <button
-              type="button"
-              title={t(
-                settings.petDisplayMode === 'activity'
-                  ? 'petMenu.switchToMinimal'
-                  : 'petMenu.switchToActivity',
-              )}
-              onClick={() => {
-                void togglePetDisplayMode()
-              }}
-            >
-              <LayoutList size={14} />
-              {t(settings.petDisplayMode === 'activity' ? 'petMenu.minimal' : 'petMenu.activity')}
-            </button>
-            <button
-              type="button"
-              title={t('petMenu.largerTitle')}
-              onClick={() => {
-                void resizePet(1)
-              }}
-            >
-              <ZoomIn size={14} />
-              {t('petMenu.larger')}
-            </button>
-            <button
-              type="button"
-              title={t('petMenu.smallerTitle')}
-              onClick={() => {
-                void resizePet(-1)
-              }}
-            >
-              <ZoomOut size={14} />
-              {t('petMenu.smaller')}
-            </button>
-          </div>
+            onAction={(action) => {
+              void handlePetContextMenuAction(action)
+            }}
+          />
         ) : null}
       </main>
     )
@@ -1019,6 +1057,8 @@ async function applySettingsToPet(
   activityCardCount = settings.petActivityVisibleCount,
   activePetAsset: PetAsset | null = null,
 ) {
+  if (windowKind === 'pet-menu') return
+
   const layoutSettings = {
     ...settings,
     petActivityVisibleCount: effectiveActivityVisibleCount(settings, activityCardCount),
@@ -1079,25 +1119,6 @@ function importedPetDragWindowResize(
       petFrameSize,
     }),
   }
-}
-
-function petWindowSizeForCurrentSettings(
-  settings: AppSettings,
-  activityCardCount: number,
-  activePetAsset: PetAsset | null,
-) {
-  return petWindowSizeForDisplay({
-    scale: settings.petScale,
-    displayMode: settings.petDisplayMode,
-    visibleCount: effectiveActivityVisibleCount(settings, activityCardCount),
-    activityWidth: settings.petActivityWindowWidth,
-    petFrameSize: activePetAsset
-      ? {
-          width: activePetAsset.atlasProfile.frameWidth,
-          height: activePetAsset.atlasProfile.frameHeight,
-        }
-      : null,
-  })
 }
 
 function countOpenSessions(sessions: SessionSnapshot[]) {
