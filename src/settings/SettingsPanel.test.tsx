@@ -77,4 +77,20 @@ describe('SettingsPanel', () => {
     expect(html).toContain('aria-label="Language" style="--segment-count:3"')
     expect(html).toContain('aria-label="Pet size" style="--segment-count:3"')
   })
+
+  it('groups settings into lightweight logical sections', () => {
+    const html = renderSettingsPanel()
+
+    const interfaceIndex = html.indexOf('<h3 id="settings-interface-title" class="settings-section-title">Interface')
+    const petIndex = html.indexOf('<h3 id="settings-pet-title" class="settings-section-title">Pet')
+    const sessionIndex = html.indexOf('<h3 id="settings-session-reminders-title" class="settings-section-title">Session reminders')
+    const localDataIndex = html.indexOf('<h3 id="settings-local-data-title" class="settings-section-title">Local data')
+
+    expect(interfaceIndex).toBeGreaterThan(-1)
+    expect(petIndex).toBeGreaterThan(interfaceIndex)
+    expect(sessionIndex).toBeGreaterThan(petIndex)
+    expect(localDataIndex).toBeGreaterThan(sessionIndex)
+    expect(html.indexOf('Storage')).toBeGreaterThan(localDataIndex)
+    expect(html).toContain('aria-labelledby="settings-interface-title"')
+  })
 })

@@ -1153,6 +1153,62 @@ p {
   border-top: 0;
 }
 
+.settings-panel {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.settings-panel h2 {
+  margin-bottom: 0.15rem;
+}
+
+.settings-section {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--surface-row) 74%, transparent);
+  overflow: hidden;
+}
+
+.settings-section-header {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-control) 46%, transparent);
+}
+
+.settings-section-header span:last-child {
+  display: grid;
+  gap: 0.22rem;
+  min-width: 0;
+}
+
+.settings-section-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.settings-section-icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent-strong);
+}
+
+.settings-section-body {
+  padding: 0 0.95rem;
+}
+
+.settings-section-body > .setting-row:first-child,
+.storage-panel > .setting-row:first-child {
+  border-top: 0;
+}
+
 .setting-row span {
   display: grid;
   gap: 0.25rem;
@@ -1194,6 +1250,7 @@ p {
   display: inline-grid;
   grid-template-columns: repeat(var(--segment-count, 3), minmax(4.5rem, 1fr));
   gap: 0.25rem;
+  max-width: 100%;
   padding: 0.2rem;
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--surface-control) 82%, transparent);
@@ -1203,6 +1260,7 @@ p {
 
 .size-segment button {
   justify-content: center;
+  min-width: 0;
   min-height: 2.15rem;
   padding: 0.4rem 0.65rem;
   background: transparent;
@@ -1472,8 +1530,8 @@ p {
 }
 
 .storage-panel {
-  margin-top: 0.8rem;
-  padding-top: 0.2rem;
+  margin: 0;
+  padding: 0;
 }
 
 .storage-heading {
@@ -1701,6 +1759,10 @@ p {
   .setting-row {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .size-segment {
+    width: 100%;
   }
 
   .setting-actions {

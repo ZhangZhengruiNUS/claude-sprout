@@ -1,5 +1,15 @@
 # Development Log
 
+## 2026-05-25
+
+- Reorganized the Settings panel into lightweight logical sections:
+  - Interface: language and theme.
+  - Pet: appearance, always-on-top, size, and lock position.
+  - Session reminders: Message/Board mode, DND, completion card timing, Board sizing, opacity, and transcript preview opt-in.
+  - Local data: existing Storage summary, refresh, folder access, and preview-bound cleanup controls.
+- Kept the Storage cleanup and imported pet removal semantics unchanged; the change is only information architecture and visual hierarchy.
+- Added static render coverage for the section order and accessible section labels, then verified Settings/Storage tests, full Vitest, lint, build, browser desktop/mobile QA, and release exe build.
+
 ## 2026-05-24
 
 - Cleaned up low-value panel controls:

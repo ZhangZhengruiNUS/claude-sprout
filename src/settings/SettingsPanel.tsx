@@ -1,12 +1,15 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
+  Bell,
+  Database,
   Download,
   FileText,
   Lock,
   Monitor,
   Moon,
+  PawPrint,
   Pin,
   RefreshCw,
   Search,
@@ -14,6 +17,7 @@ import {
   Trash2,
   VolumeX,
   X,
+  type LucideIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { builtInPetAsset } from '../pet/builtInPetAsset'
@@ -89,6 +93,37 @@ type SegmentStyle = CSSProperties & { '--segment-count': number }
 
 function segmentStyle(optionCount: number): SegmentStyle {
   return { '--segment-count': optionCount }
+}
+
+function SettingsSection({
+  id,
+  title,
+  description,
+  Icon,
+  children,
+}: {
+  id: string
+  title: string
+  description: string
+  Icon: LucideIcon
+  children: ReactNode
+}) {
+  const titleId = `${id}-title`
+
+  return (
+    <section className="settings-section" aria-labelledby={titleId}>
+      <div className="settings-section-header">
+        <span className="settings-section-icon" aria-hidden="true">
+          <Icon size={18} />
+        </span>
+        <span>
+          <h3 id={titleId} className="settings-section-title">{title}</h3>
+          <small>{description}</small>
+        </span>
+      </div>
+      <div className="settings-section-body">{children}</div>
+    </section>
+  )
 }
 
 export function SettingsPanel({
@@ -305,273 +340,304 @@ export function SettingsPanel({
   return (
     <section className="settings-panel">
       <h2>{t('settings.title')}</h2>
-      <div className="setting-row">
-        <span>
-          <strong>{t('settings.languageTitle')}</strong>
-          <small>{t('settings.languageDescription')}</small>
-        </span>
-        <div
-          className="size-segment"
-          role="group"
-          aria-label={t('settings.languageTitle')}
-          style={segmentStyle(APP_LANGUAGE_OPTIONS.length)}
-        >
-          {APP_LANGUAGE_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              className={settings.language === option.value ? 'active' : ''}
-              onClick={() => onSettingsChange({ ...settings, language: option.value })}
-            >
-              {t(option.labelKey)}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="setting-row">
-        <span>
-          <strong>{t('settings.themeTitle')}</strong>
-          <small>{t('settings.themeDescription')}</small>
-        </span>
-        <div
-          className="size-segment theme-segment"
-          role="group"
-          aria-label={t('settings.themeTitle')}
-          style={segmentStyle(APP_THEME_OPTIONS.length)}
-        >
-          {APP_THEME_OPTIONS.map(({ value, labelKey, Icon }) => (
-            <button
-              key={value}
-              type="button"
-              className={settings.theme === value ? 'active' : ''}
-              onClick={() => onSettingsChange({ ...settings, theme: value })}
-            >
-              <Icon size={15} />
-              {t(labelKey)}
-            </button>
-          ))}
-        </div>
-      </div>
-      <label className="setting-row">
-        <span>
-          <strong>{t('app.doNotDisturb')}</strong>
-          <small>{t('settings.doNotDisturbDescription')}</small>
-        </span>
-        <span className="setting-control">
-          <VolumeX size={16} />
-          <input
-            type="checkbox"
-            checked={settings.doNotDisturb}
-            onChange={(event) => onSettingsChange({ ...settings, doNotDisturb: event.target.checked })}
-          />
-        </span>
-      </label>
-      <div className="setting-row">
-        <span>
-          <strong>{t('settings.petInformationMode')}</strong>
-          <small>{t('settings.petInformationModeDescription')}</small>
-        </span>
-        <div
-          className="size-segment"
-          role="group"
-          aria-label={t('settings.petInformationMode')}
-          style={segmentStyle(PET_DISPLAY_MODES.length)}
-        >
-          {PET_DISPLAY_MODES.map((mode) => (
-            <button
-              key={mode.value}
-              type="button"
-              className={settings.petDisplayMode === mode.value ? 'active' : ''}
-              onClick={() => onSettingsChange({ ...settings, petDisplayMode: mode.value })}
-            >
-              {t(mode.labelKey)}
-            </button>
-          ))}
-        </div>
-      </div>
-      <label className="setting-row">
-        <span>
-          <strong>{t('settings.completionMessage')}</strong>
-          <small>{t('settings.completionMessageDescription')}</small>
-        </span>
-        <input
-          className="setting-number"
-          type="number"
-          min={0}
-          max={120}
-          value={settings.petCompletionToastSeconds}
-          onChange={(event) =>
-            onSettingsChange({
-              ...settings,
-              petCompletionToastSeconds: Number(event.target.value),
-            })
-          }
-        />
-      </label>
-      <label className="setting-row">
-        <span>
-          <strong>{t('settings.activityRows')}</strong>
-          <small>{t('settings.activityRowsDescription')}</small>
-        </span>
-        <input
-          className="setting-number"
-          type="number"
-          min={1}
-          max={12}
-          value={settings.petActivityVisibleCount}
-          onChange={(event) =>
-            onSettingsChange({
-              ...settings,
-              petActivityVisibleCount: Number(event.target.value),
-            })
-          }
-        />
-      </label>
-      <label className="setting-row">
-        <span>
-          <strong>{t('settings.activityWidth')}</strong>
-          <small>{t('settings.activityWidthDescription')}</small>
-        </span>
-        <input
-          className="setting-number"
-          type="number"
-          min={PET_ACTIVITY_WINDOW_WIDTH_MIN}
-          max={PET_ACTIVITY_WINDOW_WIDTH_MAX}
-          step={20}
-          value={settings.petActivityWindowWidth}
-          onChange={(event) =>
-            onSettingsChange({
-              ...settings,
-              petActivityWindowWidth: Number(event.target.value),
-            })
-          }
-        />
-      </label>
-      <label className="setting-row">
-        <span>
-          <strong>{t('settings.messageOpacity')}</strong>
-          <small>{t('settings.messageOpacityDescription')}</small>
-        </span>
-        <span className="setting-slider">
-          <input
-            type="range"
-            min={PET_MESSAGE_BOX_OPACITY_MIN}
-            max={PET_MESSAGE_BOX_OPACITY_MAX}
-            step={5}
-            value={settings.petMessageBoxOpacity}
-            onChange={(event) =>
-              onSettingsChange({
-                ...settings,
-                petMessageBoxOpacity: Number(event.target.value),
-              })
-            }
-          />
-          <small>{settings.petMessageBoxOpacity}%</small>
-        </span>
-      </label>
-      <label className="setting-row">
-        <span>
-          <strong>{t('settings.readConversationPreview')}</strong>
-          <small>{t('settings.readConversationPreviewDescription')}</small>
-        </span>
-        <span className="setting-control">
-          <FileText size={16} />
-          <input
-            type="checkbox"
-            checked={settings.petConversationPreviewEnabled}
-            onChange={(event) =>
-              onSettingsChange({
-                ...settings,
-                petConversationPreviewEnabled: event.target.checked,
-              })
-            }
-          />
-        </span>
-      </label>
-      <label className="setting-row">
-        <span>
-          <strong>{t('settings.alwaysOnTop')}</strong>
-          <small>{t('settings.alwaysOnTopDescription')}</small>
-        </span>
-        <span className="setting-control">
-          <Pin size={16} />
-          <input
-            type="checkbox"
-            checked={settings.petAlwaysOnTop}
-            onChange={(event) => onSettingsChange({ ...settings, petAlwaysOnTop: event.target.checked })}
-          />
-        </span>
-      </label>
-      <div className="setting-row">
-        <span>
-          <strong>{t('settings.petSize')}</strong>
-          <small>{t('settings.petSizeDescription')}</small>
-        </span>
-        <div
-          className="size-segment"
-          role="group"
-          aria-label={t('settings.petSize')}
-          style={segmentStyle(PET_SIZE_PRESETS.length)}
-        >
-          {PET_SIZE_PRESETS.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              className={settings.petSizePreset === preset ? 'active' : ''}
-              onClick={() => onPetSizePresetChange(preset)}
-            >
-              {t(PET_SIZE_LABEL_KEYS[preset])}
-            </button>
-          ))}
-        </div>
-      </div>
-      <label className="setting-row">
-        <span>
-          <strong>{t('settings.lockPetPosition')}</strong>
-          <small>{t('settings.lockPetPositionDescription')}</small>
-        </span>
-        <span className="setting-control">
-          <Lock size={16} />
-          <input
-            type="checkbox"
-            checked={settings.petLockPosition}
-            onChange={(event) => onSettingsChange({ ...settings, petLockPosition: event.target.checked })}
-          />
-        </span>
-      </label>
-      <div className="setting-row">
-        <span>
-          <strong>{t('settings.petAppearance')}</strong>
-          <small>{t('settings.petAppearanceDescription')}</small>
-        </span>
-        <div className="pet-appearance-entry">
-          <div className="pet-appearance-current">
-            <PetRenderer status="idle" alertCount={0} compact scale={0.28} petAsset={currentPet} />
-            <span>
-              <strong>{currentPet.name}</strong>
-              <small>
-                {t('settings.installedPetCount', { count: importedPetAssets.length })}
-              </small>
-            </span>
+      <SettingsSection
+        id="settings-interface"
+        title={t('settings.groupInterface')}
+        description={t('settings.groupInterfaceDescription')}
+        Icon={Monitor}
+      >
+        <div className="setting-row">
+          <span>
+            <strong>{t('settings.languageTitle')}</strong>
+            <small>{t('settings.languageDescription')}</small>
+          </span>
+          <div
+            className="size-segment"
+            role="group"
+            aria-label={t('settings.languageTitle')}
+            style={segmentStyle(APP_LANGUAGE_OPTIONS.length)}
+          >
+            {APP_LANGUAGE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={settings.language === option.value ? 'active' : ''}
+                onClick={() => onSettingsChange({ ...settings, language: option.value })}
+              >
+                {t(option.labelKey)}
+              </button>
+            ))}
           </div>
-          <button type="button" onClick={() => setIsPetManagerOpen(true)}>
-            {t('settings.managePets')}
-          </button>
         </div>
-      </div>
+        <div className="setting-row">
+          <span>
+            <strong>{t('settings.themeTitle')}</strong>
+            <small>{t('settings.themeDescription')}</small>
+          </span>
+          <div
+            className="size-segment theme-segment"
+            role="group"
+            aria-label={t('settings.themeTitle')}
+            style={segmentStyle(APP_THEME_OPTIONS.length)}
+          >
+            {APP_THEME_OPTIONS.map(({ value, labelKey, Icon }) => (
+              <button
+                key={value}
+                type="button"
+                className={settings.theme === value ? 'active' : ''}
+                onClick={() => onSettingsChange({ ...settings, theme: value })}
+              >
+                <Icon size={15} />
+                {t(labelKey)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </SettingsSection>
+
+      <SettingsSection
+        id="settings-pet"
+        title={t('settings.groupPet')}
+        description={t('settings.groupPetDescription')}
+        Icon={PawPrint}
+      >
+        <div className="setting-row">
+          <span>
+            <strong>{t('settings.petAppearance')}</strong>
+            <small>{t('settings.petAppearanceDescription')}</small>
+          </span>
+          <div className="pet-appearance-entry">
+            <div className="pet-appearance-current">
+              <PetRenderer status="idle" alertCount={0} compact scale={0.28} petAsset={currentPet} />
+              <span>
+                <strong>{currentPet.name}</strong>
+                <small>
+                  {t('settings.installedPetCount', { count: importedPetAssets.length })}
+                </small>
+              </span>
+            </div>
+            <button type="button" onClick={() => setIsPetManagerOpen(true)}>
+              {t('settings.managePets')}
+            </button>
+          </div>
+        </div>
+        <label className="setting-row">
+          <span>
+            <strong>{t('settings.alwaysOnTop')}</strong>
+            <small>{t('settings.alwaysOnTopDescription')}</small>
+          </span>
+          <span className="setting-control">
+            <Pin size={16} />
+            <input
+              type="checkbox"
+              checked={settings.petAlwaysOnTop}
+              onChange={(event) => onSettingsChange({ ...settings, petAlwaysOnTop: event.target.checked })}
+            />
+          </span>
+        </label>
+        <div className="setting-row">
+          <span>
+            <strong>{t('settings.petSize')}</strong>
+            <small>{t('settings.petSizeDescription')}</small>
+          </span>
+          <div
+            className="size-segment"
+            role="group"
+            aria-label={t('settings.petSize')}
+            style={segmentStyle(PET_SIZE_PRESETS.length)}
+          >
+            {PET_SIZE_PRESETS.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                className={settings.petSizePreset === preset ? 'active' : ''}
+                onClick={() => onPetSizePresetChange(preset)}
+              >
+                {t(PET_SIZE_LABEL_KEYS[preset])}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="setting-row">
+          <span>
+            <strong>{t('settings.lockPetPosition')}</strong>
+            <small>{t('settings.lockPetPositionDescription')}</small>
+          </span>
+          <span className="setting-control">
+            <Lock size={16} />
+            <input
+              type="checkbox"
+              checked={settings.petLockPosition}
+              onChange={(event) => onSettingsChange({ ...settings, petLockPosition: event.target.checked })}
+            />
+          </span>
+        </label>
+      </SettingsSection>
+
+      <SettingsSection
+        id="settings-session-reminders"
+        title={t('settings.groupSessionReminders')}
+        description={t('settings.groupSessionRemindersDescription')}
+        Icon={Bell}
+      >
+        <div className="setting-row">
+          <span>
+            <strong>{t('settings.petInformationMode')}</strong>
+            <small>{t('settings.petInformationModeDescription')}</small>
+          </span>
+          <div
+            className="size-segment"
+            role="group"
+            aria-label={t('settings.petInformationMode')}
+            style={segmentStyle(PET_DISPLAY_MODES.length)}
+          >
+            {PET_DISPLAY_MODES.map((mode) => (
+              <button
+                key={mode.value}
+                type="button"
+                className={settings.petDisplayMode === mode.value ? 'active' : ''}
+                onClick={() => onSettingsChange({ ...settings, petDisplayMode: mode.value })}
+              >
+                {t(mode.labelKey)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="setting-row">
+          <span>
+            <strong>{t('app.doNotDisturb')}</strong>
+            <small>{t('settings.doNotDisturbDescription')}</small>
+          </span>
+          <span className="setting-control">
+            <VolumeX size={16} />
+            <input
+              type="checkbox"
+              checked={settings.doNotDisturb}
+              onChange={(event) => onSettingsChange({ ...settings, doNotDisturb: event.target.checked })}
+            />
+          </span>
+        </label>
+        <label className="setting-row">
+          <span>
+            <strong>{t('settings.completionMessage')}</strong>
+            <small>{t('settings.completionMessageDescription')}</small>
+          </span>
+          <input
+            className="setting-number"
+            type="number"
+            min={0}
+            max={120}
+            value={settings.petCompletionToastSeconds}
+            onChange={(event) =>
+              onSettingsChange({
+                ...settings,
+                petCompletionToastSeconds: Number(event.target.value),
+              })
+            }
+          />
+        </label>
+        <label className="setting-row">
+          <span>
+            <strong>{t('settings.activityRows')}</strong>
+            <small>{t('settings.activityRowsDescription')}</small>
+          </span>
+          <input
+            className="setting-number"
+            type="number"
+            min={1}
+            max={12}
+            value={settings.petActivityVisibleCount}
+            onChange={(event) =>
+              onSettingsChange({
+                ...settings,
+                petActivityVisibleCount: Number(event.target.value),
+              })
+            }
+          />
+        </label>
+        <label className="setting-row">
+          <span>
+            <strong>{t('settings.activityWidth')}</strong>
+            <small>{t('settings.activityWidthDescription')}</small>
+          </span>
+          <input
+            className="setting-number"
+            type="number"
+            min={PET_ACTIVITY_WINDOW_WIDTH_MIN}
+            max={PET_ACTIVITY_WINDOW_WIDTH_MAX}
+            step={20}
+            value={settings.petActivityWindowWidth}
+            onChange={(event) =>
+              onSettingsChange({
+                ...settings,
+                petActivityWindowWidth: Number(event.target.value),
+              })
+            }
+          />
+        </label>
+        <label className="setting-row">
+          <span>
+            <strong>{t('settings.messageOpacity')}</strong>
+            <small>{t('settings.messageOpacityDescription')}</small>
+          </span>
+          <span className="setting-slider">
+            <input
+              type="range"
+              min={PET_MESSAGE_BOX_OPACITY_MIN}
+              max={PET_MESSAGE_BOX_OPACITY_MAX}
+              step={5}
+              value={settings.petMessageBoxOpacity}
+              onChange={(event) =>
+                onSettingsChange({
+                  ...settings,
+                  petMessageBoxOpacity: Number(event.target.value),
+                })
+              }
+            />
+            <small>{settings.petMessageBoxOpacity}%</small>
+          </span>
+        </label>
+        <label className="setting-row">
+          <span>
+            <strong>{t('settings.readConversationPreview')}</strong>
+            <small>{t('settings.readConversationPreviewDescription')}</small>
+          </span>
+          <span className="setting-control">
+            <FileText size={16} />
+            <input
+              type="checkbox"
+              checked={settings.petConversationPreviewEnabled}
+              onChange={(event) =>
+                onSettingsChange({
+                  ...settings,
+                  petConversationPreviewEnabled: event.target.checked,
+                })
+              }
+            />
+          </span>
+        </label>
+      </SettingsSection>
+
+      <SettingsSection
+        id="settings-local-data"
+        title={t('settings.groupLocalData')}
+        description={t('settings.groupLocalDataDescription')}
+        Icon={Database}
+      >
+        <StoragePanel
+          summary={storageSummary}
+          isLoading={isStorageLoading}
+          isCleaning={isStorageCleaning}
+          message={storageMessage}
+          onRefresh={onRefreshStorage}
+          onClean={onCleanStorage}
+          onOpenDataFolder={onOpenDataFolder}
+        />
+      </SettingsSection>
       {isPetManagerOpen &&
         (typeof document === 'undefined'
           ? petManagerDialog
           : createPortal(petManagerDialog, document.body))}
-      <StoragePanel
-        summary={storageSummary}
-        isLoading={isStorageLoading}
-        isCleaning={isStorageCleaning}
-        message={storageMessage}
-        onRefresh={onRefreshStorage}
-        onClean={onCleanStorage}
-        onOpenDataFolder={onOpenDataFolder}
-      />
     </section>
   )
 }
