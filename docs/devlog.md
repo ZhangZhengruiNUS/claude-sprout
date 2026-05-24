@@ -417,3 +417,8 @@
   - the pet manager now owns a local preview action/replay key and passes it into the modal `PetRenderer`
   - switching preview pets, canceling, opening, or closing the manager resets the local preview action without touching the saved active pet
   - browser QA confirmed clicking `预览挥手` changes only the modal preview animation class while the panel rail pet remains on its normal loop
+- Simplified Settings pet manager preview selection:
+  - removed the separate per-row `Preview` button; clicking the pet identity row now switches the modal preview directly
+  - kept imported-pet removal as explicit buttons, separate from the preview selection target
+  - added a non-interactive `PetRenderer` mode so settings thumbnails and modal previews do not expose the misleading "Open session panel" button semantics
+  - browser QA confirmed the manager renders no `预览` row buttons, no nested pet-surface buttons, and no console warnings or errors

@@ -18,6 +18,7 @@ type Props = {
   actionReplayKey?: number
   petAsset?: PetAsset | null
   showAlertBubble?: boolean
+  interactive?: boolean
   onClick?: () => void
   onDoubleClick?: () => void
   onContextMenu?: (position: { x: number; y: number; screenX: number; screenY: number }) => void
@@ -37,6 +38,7 @@ export function PetRenderer({
   actionReplayKey = 0,
   petAsset,
   showAlertBubble = true,
+  interactive = true,
   onClick,
   onDoubleClick,
   onContextMenu,
@@ -207,34 +209,10 @@ export function PetRenderer({
     onClick?.()
   }
 
-  return (
-    <button
-      type="button"
-      className={`pet-surface ${status}${petAsset ? ' imported-pet' : ''}${compact ? ' compact' : ''}${!draggable ? ' locked' : ''}`}
-      aria-label="Open session panel"
-      onClick={handleClick}
-      onDoubleClick={onDoubleClick}
-      onContextMenu={(event) => {
-        event.preventDefault()
-        onContextMenu?.({
-          x: event.clientX,
-          y: event.clientY,
-          screenX: event.screenX,
-          screenY: event.screenY,
-        })
-      }}
-      onWheel={(event) => {
-        if (!compact) return
-        event.preventDefault()
-        onWheel?.(event.deltaY < 0 ? 1 : -1)
-      }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerEnd}
-      onPointerCancel={handlePointerEnd}
-      onLostPointerCapture={handlePointerEnd}
-      style={{ '--pet-scale': scale } as CSSProperties}
-    >
+  const className = `pet-surface ${status}${petAsset ? ' imported-pet' : ''}${compact ? ' compact' : ''}${!draggable ? ' locked' : ''}`
+  const style = { '--pet-scale': scale } as CSSProperties
+  const content = (
+    <>
       <div
         className="pet-hit-target"
         style={
@@ -279,6 +257,46 @@ export function PetRenderer({
         <div className="alert-bubble">Permission needed{alertCount > 1 ? ` x${alertCount}` : ''}</div>
       ) : null}
       {!compact ? <div className="pet-caption">{status}</div> : null}
+    </>
+  )
+
+  if (!interactive) {
+    return (
+      <div className={className} aria-hidden="true" style={style}>
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      className={className}
+      aria-label="Open session panel"
+      onClick={handleClick}
+      onDoubleClick={onDoubleClick}
+      onContextMenu={(event) => {
+        event.preventDefault()
+        onContextMenu?.({
+          x: event.clientX,
+          y: event.clientY,
+          screenX: event.screenX,
+          screenY: event.screenY,
+        })
+      }}
+      onWheel={(event) => {
+        if (!compact) return
+        event.preventDefault()
+        onWheel?.(event.deltaY < 0 ? 1 : -1)
+      }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerEnd}
+      onPointerCancel={handlePointerEnd}
+      onLostPointerCapture={handlePointerEnd}
+      style={style}
+    >
+      {content}
     </button>
   )
 }

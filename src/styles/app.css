@@ -191,6 +191,8 @@ input:focus-visible {
 }
 
 .pet-surface {
+  display: inline-flex;
+  align-items: center;
   min-height: 260px;
   background: var(--surface-panel);
   border: 1px solid var(--border-subtle);
@@ -258,6 +260,13 @@ input:focus-visible {
 
 .pet-surface.compact.locked .pet-hit-target:active {
   cursor: pointer;
+}
+
+.pet-surface[aria-hidden='true'] .pet-hit-target,
+.pet-surface.compact[aria-hidden='true'] .pet-hit-target,
+.pet-surface.compact[aria-hidden='true'] .pet-hit-target:active {
+  cursor: default;
+  pointer-events: none;
 }
 
 .pet-surface.compact:hover {
@@ -1450,16 +1459,26 @@ p {
   grid-template-columns: 3rem minmax(0, 1fr);
   align-items: center;
   gap: 0.65rem;
-  padding: 0;
+  width: 100%;
+  padding: 0.3rem;
   border: 0;
+  border-radius: var(--radius-sm);
   background: transparent;
   box-shadow: none;
   text-align: left;
 }
 
 .pet-manager-select:hover {
-  background: transparent;
+  background: color-mix(in srgb, var(--surface-control-hover) 54%, transparent);
   transform: none;
+}
+
+.pet-manager-select[aria-disabled='true'] {
+  cursor: default;
+}
+
+.pet-manager-select[aria-disabled='true']:hover {
+  background: transparent;
 }
 
 .pet-manager-select .pet-surface {

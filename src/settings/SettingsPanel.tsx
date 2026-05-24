@@ -129,6 +129,94 @@ function SettingsSection({
   )
 }
 
+export function PetManagerCard({
+  petAsset,
+  isBuiltIn,
+  isSelected,
+  isActive,
+  currentLabel,
+  previewingLabel,
+  removeFromAppLabel,
+  deletePetFilesLabel,
+  onPreviewPet,
+  onRemoveFromApp,
+  onDeletePetFiles,
+}: {
+  petAsset: PetAsset
+  isBuiltIn: boolean
+  isSelected: boolean
+  isActive: boolean
+  currentLabel: string
+  previewingLabel: string
+  removeFromAppLabel: string
+  deletePetFilesLabel: string
+  onPreviewPet: () => void
+  onRemoveFromApp: () => void
+  onDeletePetFiles: () => void
+}) {
+  const canPreview = !isSelected
+
+  function previewPet() {
+    if (canPreview) {
+      onPreviewPet()
+    }
+  }
+
+  return (
+    <article
+      className={`pet-manager-card${isSelected ? ' selected' : ''}`}
+    >
+      <button
+        type="button"
+        className="pet-manager-select"
+        tabIndex={canPreview ? 0 : -1}
+        aria-pressed={isSelected}
+        aria-current={isActive ? 'true' : undefined}
+        aria-disabled={!canPreview}
+        onClick={previewPet}
+      >
+        <PetRenderer
+          status="idle"
+          alertCount={0}
+          compact
+          scale={0.3}
+          petAsset={petAsset}
+          interactive={false}
+        />
+        <span>
+          <strong>{petAsset.name}</strong>
+          <small>{petAsset.description ?? petAsset.spritesheetPath}</small>
+        </span>
+      </button>
+      <div className="pet-manager-card-actions">
+        {isActive ? (
+          <small className="pet-manager-status">{currentLabel}</small>
+        ) : isSelected ? (
+          <small className="pet-manager-status">{previewingLabel}</small>
+        ) : null}
+        {!isBuiltIn && (
+          <>
+            <button
+              type="button"
+              onClick={onRemoveFromApp}
+            >
+              {removeFromAppLabel}
+            </button>
+            <button
+              type="button"
+              className="danger-button"
+              onClick={onDeletePetFiles}
+            >
+              <Trash2 size={15} />
+              {deletePetFilesLabel}
+            </button>
+          </>
+        )}
+      </div>
+    </article>
+  )
+}
+
 export function SettingsPanel({
   settings,
   petAssets,
@@ -242,6 +330,7 @@ export function SettingsPanel({
               action={petManagerPreviewAnimation.action}
               actionReplayKey={petManagerPreviewAnimation.replayKey}
               petAsset={selectedPet}
+              interactive={false}
             />
             <span>
               <strong>{selectedPet.name}</strong>
@@ -278,49 +367,23 @@ export function SettingsPanel({
               const isActive = normalizedActivePetId === normalizedPetId
 
               return (
-                <article
+                <PetManagerCard
                   key={petAsset.id}
-                  className={`pet-manager-card${isSelected ? ' selected' : ''}`}
-                >
-                  <div className="pet-manager-select">
-                    <PetRenderer status="idle" alertCount={0} compact scale={0.3} petAsset={petAsset} />
-                    <span>
-                      <strong>{petAsset.name}</strong>
-                      <small>{petAsset.description ?? petAsset.spritesheetPath}</small>
-                    </span>
-                  </div>
-                  <div className="pet-manager-card-actions">
-                    {isActive && <small>{t('settings.current')}</small>}
-                    <button
-                      type="button"
-                      disabled={isSelected}
-                      onClick={() => {
-                        resetPetManagerPreviewAnimation()
-                        onPreviewPet(normalizedPetId)
-                      }}
-                    >
-                      {isSelected ? t('settings.previewing') : t('settings.previewPet')}
-                    </button>
-                    {!isBuiltIn && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => confirmPetRemoval(petAsset, false)}
-                        >
-                          {t('settings.removeFromApp')}
-                        </button>
-                        <button
-                          type="button"
-                          className="danger-button"
-                          onClick={() => confirmPetRemoval(petAsset, true)}
-                        >
-                          <Trash2 size={15} />
-                          {t('settings.deletePetFiles')}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </article>
+                  petAsset={petAsset}
+                  isBuiltIn={isBuiltIn}
+                  isSelected={isSelected}
+                  isActive={isActive}
+                  currentLabel={t('settings.current')}
+                  previewingLabel={t('settings.previewing')}
+                  removeFromAppLabel={t('settings.removeFromApp')}
+                  deletePetFilesLabel={t('settings.deletePetFiles')}
+                  onPreviewPet={() => {
+                    resetPetManagerPreviewAnimation()
+                    onPreviewPet(normalizedPetId)
+                  }}
+                  onRemoveFromApp={() => confirmPetRemoval(petAsset, false)}
+                  onDeletePetFiles={() => confirmPetRemoval(petAsset, true)}
+                />
               )
             })}
           </div>
@@ -464,7 +527,14 @@ export function SettingsPanel({
           </span>
           <div className="pet-appearance-entry">
             <div className="pet-appearance-current">
-              <PetRenderer status="idle" alertCount={0} compact scale={0.28} petAsset={currentPet} />
+              <PetRenderer
+                status="idle"
+                alertCount={0}
+                compact
+                scale={0.28}
+                petAsset={currentPet}
+                interactive={false}
+              />
               <span>
                 <strong>{currentPet.name}</strong>
                 <small>

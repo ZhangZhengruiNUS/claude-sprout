@@ -4,7 +4,10 @@ import '../i18n/i18n'
 import { builtInPetAsset } from '../pet/builtInPetAsset'
 import { DEFAULT_APP_SETTINGS } from './appSettings'
 import { nextPetManagerPreviewAnimationState } from './petManagerPreviewAnimation'
-import { SettingsPanel } from './SettingsPanel'
+import {
+  PetManagerCard,
+  SettingsPanel,
+} from './SettingsPanel'
 
 function renderSettingsPanel() {
   return renderToStaticMarkup(
@@ -78,6 +81,39 @@ describe('SettingsPanel', () => {
     expect(
       nextPetManagerPreviewAnimationState({ action: 'waving', replayKey: 1 }, 'waving'),
     ).toEqual({ action: 'waving', replayKey: 2 })
+  })
+
+  it('uses the pet manager row itself as the preview trigger', () => {
+    const html = renderToStaticMarkup(
+      <PetManagerCard
+        petAsset={{
+          ...builtInPetAsset,
+          id: 'handoff',
+          name: 'Handoff',
+          description: 'Imported helper',
+          spritesheetPath: 'C:/pets/handoff/spritesheet.webp',
+        }}
+        isBuiltIn={false}
+        isSelected={false}
+        isActive={false}
+        currentLabel="Current"
+        previewingLabel="Previewing"
+        removeFromAppLabel="Remove from app"
+        deletePetFilesLabel="Delete files"
+        onPreviewPet={vi.fn()}
+        onRemoveFromApp={vi.fn()}
+        onDeletePetFiles={vi.fn()}
+      />,
+    )
+
+    expect(html).toContain('<button type="button" class="pet-manager-select"')
+    expect(html).toContain('tabindex="0"')
+    expect(html).toContain('aria-pressed="false"')
+    expect(html).toContain('aria-disabled="false"')
+    expect(html).toContain('Handoff')
+    expect(html).toContain('<div class="pet-surface idle imported-pet compact"')
+    expect(html).not.toContain('<button type="button" class="pet-surface')
+    expect(html).not.toContain('>Preview</button>')
   })
 
   it('sizes segmented controls from their option counts', () => {
