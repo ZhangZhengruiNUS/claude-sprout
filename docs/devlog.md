@@ -1,5 +1,13 @@
 # Development Log
 
+## 2026-05-24
+
+- Improved the Sessions panel so it no longer shows less information than Board mode:
+  - extracted shared session presentation helpers for display names, activity/output detail, Board-aligned metadata, status sorting, and preview opt-in handling.
+  - Sessions cards now show Claude `display_name` as the primary title when available, keep project/path/session details visible, and add activity/output plus source/ended diagnostics.
+  - added SessionPanel regression coverage for renamed sessions and conversation-preview privacy gating.
+- Kept the current styled pet context menu path buildable by moving the reusable menu component to a non-conflicting filename, avoiding the Windows case-only `PetContextMenu` / `petContextMenu` TypeScript conflict.
+
 ## 2026-05-23
 
 - Restored the pet right-click menu's custom glass/icon styling after release acceptance feedback:

@@ -930,6 +930,7 @@ function App() {
             sessions={sessions}
             isLoading={isLoading}
             loadError={sessionLoadError}
+            conversationPreviewEnabled={settings.petConversationPreviewEnabled}
             onRefresh={() => reloadSessions({ showLoading: true, notify: true })}
           />
         ) : (

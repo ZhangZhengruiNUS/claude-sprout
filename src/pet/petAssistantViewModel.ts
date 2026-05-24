@@ -1,5 +1,12 @@
 import type { SessionSnapshot, SessionStatus } from '../sessions/sessionTypes'
 import i18n from '../i18n/i18n'
+import {
+  SESSION_STATUS_PRIORITY,
+  sessionActivityDetail,
+  sessionActivityMeta,
+  sessionActivityTitle,
+  type Translate,
+} from '../sessions/sessionPresentation'
 
 export type PetAssistantDisplayMode = 'minimal' | 'activity'
 export type PetAssistantMessageTone = 'intervention' | 'complete' | 'failed'
@@ -50,22 +57,7 @@ type BuildPetAssistantViewOptions = {
   translate?: Translate
 }
 
-type Translate = (key: string, options?: Record<string, unknown>) => string
-
 const defaultTranslate: Translate = (key, options) => i18n.getFixedT('en')(key, options)
-
-const STATUS_PRIORITY: Record<SessionStatus, number> = {
-  waiting_permission: 0,
-  error: 1,
-  tool_running: 2,
-  running: 3,
-  done: 4,
-  waiting_input: 5,
-  stale: 6,
-  probably_closed: 7,
-  idle: 8,
-  closed: 9,
-}
 
 const FINISHED_UNCLOSED_STATUSES = new Set<SessionStatus>(['done', 'error'])
 const RUNNING_STATUSES = new Set<SessionStatus>(['running', 'tool_running'])
@@ -215,7 +207,7 @@ function activityCardForSession(
   return {
     key: `${session.session_id}:${session.status}:${session.updated_at}`,
     sessionId: session.session_id,
-    title: activityTitle(session, translate),
+    title: sessionActivityTitle(session, translate),
     detail: sessionActivityDetail(session, conversationPreviewEnabled, translate),
     meta: sessionActivityMeta(session, translate),
     status: session.status,
@@ -225,7 +217,7 @@ function activityCardForSession(
 }
 
 function messageTitle(session: SessionSnapshot, translate: Translate) {
-  const subject = activityTitle(session, translate)
+  const subject = sessionActivityTitle(session, translate)
   switch (session.status) {
     case 'waiting_permission':
       return translate('petAssistant.title.waiting_permission', { project: subject })
@@ -236,61 +228,6 @@ function messageTitle(session: SessionSnapshot, translate: Translate) {
     default:
       return subject
   }
-}
-
-function sessionActivityDetail(
-  session: SessionSnapshot,
-  conversationPreviewEnabled: boolean,
-  translate: Translate,
-) {
-  const tool = safeInlineText(session.last_tool)
-  const event = safeInlineText(session.last_event)
-  const preview = conversationPreviewEnabled ? safeInlineText(session.conversation_preview) : null
-  switch (session.status) {
-    case 'waiting_permission':
-      return tool
-        ? translate('petAssistant.activity.waitingPermissionWithTool', { tool })
-        : translate('petAssistant.activity.waitingPermission')
-    case 'waiting_input':
-      return translate('petAssistant.activity.waitingInput')
-    case 'tool_running':
-      return preview ?? (tool ? translate('petAssistant.activity.usingToolWithTool', { tool }) : translate('petAssistant.activity.usingTool'))
-    case 'running':
-      return preview ?? (tool
-        ? translate('petAssistant.activity.runningAfterTool', { tool })
-        : event
-          ? translate('petAssistant.activity.runningAfterEvent', { event })
-          : translate('petAssistant.activity.running'))
-    case 'done':
-      return preview ?? translate('petAssistant.activity.completed')
-    case 'error':
-      return preview ?? (tool ? translate('petAssistant.activity.failedAroundTool', { tool }) : translate('petAssistant.activity.failed'))
-    case 'stale':
-      return translate('petAssistant.activity.stale')
-    case 'probably_closed':
-      return translate('petAssistant.activity.probablyClosed')
-    case 'idle':
-      return translate('petAssistant.activity.idle')
-    case 'closed':
-      return translate('petAssistant.activity.closed')
-    default:
-      return statusLabel(session.status, translate)
-  }
-}
-
-function sessionActivityMeta(session: SessionSnapshot, translate: Translate) {
-  const context = contextLabel(session.context_used_percentage, translate)
-  if (displayName(session)) {
-    return [displayProjectName(session, translate), shortSessionId(session.session_id, translate), context].filter(Boolean).join(' - ')
-  }
-  return [statusLabel(session.status, translate), context].filter(Boolean).join(' - ')
-}
-
-function activityTitle(session: SessionSnapshot, translate: Translate) {
-  return displayName(session) ?? translate('petAssistant.activity.titleWithSession', {
-    project: displayProjectName(session, translate),
-    sessionId: shortSessionId(session.session_id, translate),
-  })
 }
 
 function messageTone(status: SessionStatus): PetAssistantMessageTone {
@@ -308,7 +245,7 @@ function cardTone(status: SessionStatus): PetAssistantCardTone {
 }
 
 function compareCards(a: PetAssistantActivityCard, b: PetAssistantActivityCard) {
-  const priorityDelta = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status]
+  const priorityDelta = SESSION_STATUS_PRIORITY[a.status] - SESSION_STATUS_PRIORITY[b.status]
   if (priorityDelta !== 0) return priorityDelta
   return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
 }
@@ -326,37 +263,11 @@ function messagePriority(tone: PetAssistantMessageTone) {
   return 2
 }
 
-function displayProjectName(session: SessionSnapshot, translate: Translate) {
-  return session.project_name || projectNameFromCwd(session.cwd, translate)
-}
-
-function displayName(session: SessionSnapshot) {
-  return safeInlineText(session.display_name)
-}
-
 function safeInlineText(value: string | null | undefined) {
   if (typeof value !== 'string') return null
   const trimmed = value.trim().replace(/\s+/g, ' ')
   if (!trimmed) return null
   return trimmed
-}
-
-function shortSessionId(sessionId: string, translate: Translate) {
-  const trimmed = sessionId.trim()
-  return trimmed ? trimmed.slice(0, 6) : translate('petAssistant.localSession')
-}
-
-function contextLabel(value: number | null | undefined, translate: Translate) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return null
-  return translate('petAssistant.context', { value: Math.round(value) })
-}
-
-function projectNameFromCwd(cwd: string, translate: Translate) {
-  return cwd.split(/[\\/]/).filter(Boolean).at(-1) ?? translate('petAssistant.fallbackProject')
-}
-
-function statusLabel(status: SessionStatus, translate: Translate) {
-  return translate(`status.${status}`)
 }
 
 function clampVisibleCount(value: number) {

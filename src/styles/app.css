@@ -887,6 +887,8 @@ p {
 }
 
 .session-main {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0.8rem;
@@ -959,11 +961,48 @@ p {
 }
 
 .status-pill {
+  flex: 0 0 auto;
   border-radius: 999px;
   padding: 0.28rem 0.55rem;
   font-size: 0.82rem;
   font-weight: 700;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.session-activity-summary {
+  display: grid;
+  gap: 0.3rem;
+  margin-bottom: 0.9rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-row);
+  min-width: 0;
+}
+
+.session-activity-summary span {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.session-activity-summary strong,
+.session-activity-summary small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-activity-summary strong {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.session-activity-summary small {
+  color: var(--text-secondary);
 }
 
 .session-meta {

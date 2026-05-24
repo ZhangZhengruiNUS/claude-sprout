@@ -1,25 +1,19 @@
-import { Clock, FolderOpen, Hammer, RefreshCw, Trash2 } from 'lucide-react'
+import { Clock, FolderOpen, Hammer, MessageSquareText, RefreshCw, Trash2 } from 'lucide-react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { openProjectFolder } from './sessionApi'
-import type { SessionSnapshot, SessionStatus } from './sessionTypes'
-
-const statusRank: Record<SessionStatus, number> = {
-  waiting_permission: 0,
-  error: 1,
-  waiting_input: 2,
-  tool_running: 3,
-  running: 4,
-  done: 5,
-  stale: 6,
-  probably_closed: 7,
-  idle: 8,
-  closed: 9,
-}
+import {
+  compareSessionsByActivity,
+  displayProjectName,
+  sessionActivitySummary,
+} from './sessionPresentation'
+import type { SessionSnapshot } from './sessionTypes'
 
 type Props = {
   sessions: SessionSnapshot[]
   isLoading: boolean
   loadError?: string | null
+  conversationPreviewEnabled?: boolean
   onRefresh: () => void | Promise<void>
 }
 
@@ -32,13 +26,18 @@ function formatTime(value: string | null | undefined, language: string | undefin
   }).format(new Date(value))
 }
 
-export function SessionPanel({ sessions, isLoading, loadError, onRefresh }: Props) {
+export function SessionPanel({
+  sessions,
+  isLoading,
+  loadError,
+  conversationPreviewEnabled = false,
+  onRefresh,
+}: Props) {
   const { t, i18n } = useTranslation()
-  const sortedSessions = [...sessions].sort((a, b) => {
-    const rankDelta = statusRank[a.status] - statusRank[b.status]
-    if (rankDelta !== 0) return rankDelta
-    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-  })
+  const sortedSessions = useMemo(
+    () => [...sessions].sort(compareSessionsByActivity),
+    [sessions],
+  )
 
   return (
     <section className="session-panel">
@@ -60,70 +59,96 @@ export function SessionPanel({ sessions, isLoading, loadError, onRefresh }: Prop
           <p className="session-empty">{t('sessions.empty')}</p>
         ) : null}
 
-        {sortedSessions.map((session) => (
-          <article className="session-card" key={session.session_id}>
-            <div className="session-main">
-              <div className="session-title">
-                <span className={`status-dot ${session.status}`} />
-                <div>
-                  <h3>{session.project_name || t('sessions.unknownProject')}</h3>
-                  <p>{session.cwd}</p>
+        {sortedSessions.map((session) => {
+          const summary = sessionActivitySummary(session, conversationPreviewEnabled, t)
+          const projectName = displayProjectName(session, t)
+
+          return (
+            <article className="session-card" key={session.session_id}>
+              <div className="session-main">
+                <div className="session-title">
+                  <span className={`status-dot ${session.status}`} />
+                  <div>
+                    <h3 title={summary.title}>{summary.title}</h3>
+                    <p title={session.cwd}>{session.cwd}</p>
+                  </div>
                 </div>
+                <span className={`status-pill ${session.status}`}>
+                  {t(`status.${session.status}`)}
+                </span>
               </div>
-              <span className={`status-pill ${session.status}`}>
-                {t(`status.${session.status}`)}
-              </span>
-            </div>
 
-            <dl className="session-meta">
-              <div>
-                <dt>{t('sessions.session')}</dt>
-                <dd>{session.session_id}</dd>
+              <div className="session-activity-summary">
+                <span>
+                  <MessageSquareText size={14} />
+                  {t('sessions.activityOutput')}
+                </span>
+                <strong title={summary.detail}>{summary.detail}</strong>
+                {summary.meta ? <small title={summary.meta}>{summary.meta}</small> : null}
               </div>
-              <div>
-                <dt>{t('sessions.lastEvent')}</dt>
-                <dd>{session.last_event || t('common.na')}</dd>
-              </div>
-              <div>
-                <dt>{t('sessions.lastTool')}</dt>
-                <dd>
-                  <Hammer size={14} />
-                  {session.last_tool || t('common.na')}
-                </dd>
-              </div>
-              <div>
-                <dt>{t('sessions.heartbeat')}</dt>
-                <dd>
-                  <Clock size={14} />
-                  {formatTime(session.last_heartbeat_at, i18n.resolvedLanguage, t('common.na'))}
-                </dd>
-              </div>
-              <div>
-                <dt>{t('sessions.context')}</dt>
-                <dd>
-                  {typeof session.context_used_percentage === 'number'
-                    ? `${session.context_used_percentage}%`
-                    : t('common.na')}
-                </dd>
-              </div>
-              <div>
-                <dt>{t('sessions.updated')}</dt>
-                <dd>{formatTime(session.updated_at, i18n.resolvedLanguage, t('common.na'))}</dd>
-              </div>
-            </dl>
 
-            <div className="card-actions">
-              <button type="button" onClick={() => openProjectFolder(session.cwd)}>
-                <FolderOpen size={16} />
-                {t('sessions.openProject')}
-              </button>
-              <button type="button" disabled>
-                <Trash2 size={16} />
-                {t('sessions.clean')}
-              </button>
-            </div>
-          </article>
-        ))}
+              <dl className="session-meta">
+                <div>
+                  <dt>{t('sessions.project')}</dt>
+                  <dd>{projectName}</dd>
+                </div>
+                <div>
+                  <dt>{t('sessions.session')}</dt>
+                  <dd>{session.session_id}</dd>
+                </div>
+                <div>
+                  <dt>{t('sessions.lastEvent')}</dt>
+                  <dd>{session.last_event || t('common.na')}</dd>
+                </div>
+                <div>
+                  <dt>{t('sessions.lastTool')}</dt>
+                  <dd>
+                    <Hammer size={14} />
+                    {session.last_tool || t('common.na')}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{t('sessions.heartbeat')}</dt>
+                  <dd>
+                    <Clock size={14} />
+                    {formatTime(session.last_heartbeat_at, i18n.resolvedLanguage, t('common.na'))}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{t('sessions.context')}</dt>
+                  <dd>
+                    {typeof session.context_used_percentage === 'number'
+                      ? `${session.context_used_percentage}%`
+                      : t('common.na')}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{t('sessions.updated')}</dt>
+                  <dd>{formatTime(session.updated_at, i18n.resolvedLanguage, t('common.na'))}</dd>
+                </div>
+                <div>
+                  <dt>{t('sessions.source')}</dt>
+                  <dd>{session.source || t('common.na')}</dd>
+                </div>
+                <div>
+                  <dt>{t('sessions.ended')}</dt>
+                  <dd>{formatTime(session.ended_at, i18n.resolvedLanguage, t('common.na'))}</dd>
+                </div>
+              </dl>
+
+              <div className="card-actions">
+                <button type="button" onClick={() => openProjectFolder(session.cwd)}>
+                  <FolderOpen size={16} />
+                  {t('sessions.openProject')}
+                </button>
+                <button type="button" disabled>
+                  <Trash2 size={16} />
+                  {t('sessions.clean')}
+                </button>
+              </div>
+            </article>
+          )
+        })}
       </div>
     </section>
   )
