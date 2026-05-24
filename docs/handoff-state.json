@@ -93,7 +93,7 @@
     "Pet manager selection no longer uses a separate Preview button: the whole pet card switches the modal preview except explicit remove/delete action buttons, with hover/focus feedback and non-interactive preview thumbnails.",
     "Imported pets can be removed in two modes: remove from Claude Sprout by deleting only the installed manifest while preserving local imported files, or delete the imported pet directory from %USERPROFILE%\\.claude-sprout\\pets; Rust validates pet ids to prevent path traversal.",
     "Settings now uses lightweight logical groups instead of a single flat list: Interface, Pet, Session reminders, and Local data sections reduce wide-screen blank bands while preserving storage cleanup and pet removal semantics.",
-    "Project-level UI/UX review agents are available for both Codex and Claude Code: .codex/agents/ui-ux-reviewer.toml and .claude/agents/claude-sprout-ui-ux-reviewer.md define a read-only reviewer focused on pet-first interaction quality, Message/Board behavior, panel/settings UX, Windows desktop expectations, accessibility, localization, privacy, and acceptance evidence.",
+    "A project-level Codex UI/UX review agent is available at .codex/agents/ui-ux-reviewer.toml, defining a read-only reviewer focused on pet-first interaction quality, Message/Board behavior, panel/settings UX, Windows desktop expectations, accessibility, localization, privacy, and acceptance evidence.",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],

@@ -2,10 +2,8 @@
 
 ## 2026-05-25
 
-- Added project-level UI/UX review agent definitions for Codex and Claude Code:
-  - `.codex/agents/ui-ux-reviewer.toml` defines a read-only Codex reviewer for pet-first interaction quality, Message/Board behavior, panel/settings UX, Windows desktop expectations, accessibility, localization, privacy, and acceptance evidence.
-  - `.claude/agents/claude-sprout-ui-ux-reviewer.md` provides the same review rubric as a Claude Code project subagent with read-only tools.
-  - The reviewer instructions were based on current official Codex and Claude Code guidance: use project-level subagents for scoped review work, keep reusable instructions focused, and require concrete findings with evidence and validation steps.
+- Added `.codex/agents/ui-ux-reviewer.toml` as a project-level read-only Codex UI/UX reviewer for pet-first interaction quality, Message/Board behavior, panel/settings UX, Windows desktop expectations, accessibility, localization, privacy, and acceptance evidence.
+- Removed the earlier Claude Code subagent variant because Claude Code was only a reference point for comparable agent-app review practices; this project is developed in Codex.
 - Reorganized the Settings panel into lightweight logical sections:
   - Interface: language and theme.
   - Pet: appearance, always-on-top, size, and lock position.
