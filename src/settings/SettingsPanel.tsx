@@ -1,4 +1,4 @@
-import type { CSSProperties, MouseEvent, ReactNode } from 'react'
+import type { CSSProperties, KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
@@ -54,7 +54,7 @@ type Props = {
   storageSummary: StorageSummary | null
   isStorageLoading: boolean
   isStorageCleaning: boolean
-  storageMessage: string | null
+  storageMessage: { kind: 'success' | 'error'; text: string } | null
   onSettingsChange: (settings: AppSettings) => void
   onPetSizePresetChange: (preset: Exclude<PetSizePreset, 'custom'>) => void
   onPreviewPet: (petId: string | null) => void
@@ -136,6 +136,7 @@ export function PetManagerCard({
   isActive,
   currentLabel,
   previewingLabel,
+  previewPetLabel,
   removeFromAppLabel,
   deletePetFilesLabel,
   onPreviewPet,
@@ -148,6 +149,7 @@ export function PetManagerCard({
   isActive: boolean
   currentLabel: string
   previewingLabel: string
+  previewPetLabel: string
   removeFromAppLabel: string
   deletePetFilesLabel: string
   onPreviewPet: () => void
@@ -177,8 +179,7 @@ export function PetManagerCard({
       <button
         type="button"
         className="pet-manager-card-keyboard-target"
-        tabIndex={canPreview ? 0 : -1}
-        aria-label={petAsset.name}
+        aria-label={canPreview ? previewPetLabel : `${petAsset.name} - ${statusLabel ?? currentLabel}`}
         aria-pressed={isSelected}
         aria-current={isActive ? 'true' : undefined}
         aria-disabled={!canPreview}
@@ -259,6 +260,9 @@ export function SettingsPanel({
   const [petManagerPreviewAnimation, setPetManagerPreviewAnimation] =
     useState<PetManagerPreviewAnimationState>({ action: null, replayKey: 0 })
   const petManagerPreviewClearTimer = useRef<number | null>(null)
+  const petManagerCloseButtonRef = useRef<HTMLButtonElement | null>(null)
+  const petManagerDialogRef = useRef<HTMLElement | null>(null)
+  const petManagerOpenerRef = useRef<HTMLButtonElement | null>(null)
   const importedPetAssets = useMemo(
     () => petAssets.filter((petAsset) => !isBuiltInPetSelectionId(petAsset.id)),
     [petAssets],
@@ -282,6 +286,11 @@ export function SettingsPanel({
     }
   }, [])
 
+  useEffect(() => {
+    if (!isPetManagerOpen) return
+    petManagerCloseButtonRef.current?.focus()
+  }, [isPetManagerOpen])
+
   function clearPetManagerPreviewTimer() {
     if (petManagerPreviewClearTimer.current !== null) {
       window.clearTimeout(petManagerPreviewClearTimer.current)
@@ -292,6 +301,39 @@ export function SettingsPanel({
   function resetPetManagerPreviewAnimation() {
     clearPetManagerPreviewTimer()
     setPetManagerPreviewAnimation({ action: null, replayKey: 0 })
+  }
+
+  function closePetManager() {
+    resetPetManagerPreviewAnimation()
+    setIsPetManagerOpen(false)
+    window.setTimeout(() => petManagerOpenerRef.current?.focus(), 0)
+  }
+
+  function handlePetManagerKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      closePetManager()
+      return
+    }
+    if (event.key !== 'Tab') return
+
+    const focusableElements = petManagerDialogRef.current?.querySelectorAll<HTMLElement>(
+      'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+    )
+    const focusable = focusableElements ? Array.from(focusableElements) : []
+    if (focusable.length === 0) return
+
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+      return
+    }
+    if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
   }
 
   function playPetManagerPreviewAnimation(action: PetAnimation) {
@@ -311,10 +353,13 @@ export function SettingsPanel({
   const petManagerDialog = (
     <div className="settings-modal-backdrop" role="presentation">
       <section
+        ref={petManagerDialogRef}
         className="pet-manager-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="pet-manager-title"
+        tabIndex={-1}
+        onKeyDown={handlePetManagerKeyDown}
       >
         <header className="pet-manager-header">
           <span>
@@ -322,13 +367,11 @@ export function SettingsPanel({
             <small>{t('settings.petManagerDescription')}</small>
           </span>
           <button
+            ref={petManagerCloseButtonRef}
             type="button"
             className="icon-button"
             aria-label={t('common.close')}
-            onClick={() => {
-              resetPetManagerPreviewAnimation()
-              setIsPetManagerOpen(false)
-            }}
+            onClick={closePetManager}
           >
             <X size={17} />
           </button>
@@ -387,6 +430,7 @@ export function SettingsPanel({
                   isActive={isActive}
                   currentLabel={t('settings.current')}
                   previewingLabel={t('settings.previewing')}
+                  previewPetLabel={t('settings.previewPet', { name: petAsset.name })}
                   removeFromAppLabel={t('settings.removeFromApp')}
                   deletePetFilesLabel={t('settings.deletePetFiles')}
                   onPreviewPet={() => {
@@ -493,6 +537,7 @@ export function SettingsPanel({
                 key={option.value}
                 type="button"
                 className={settings.language === option.value ? 'active' : ''}
+                aria-pressed={settings.language === option.value}
                 onClick={() => onSettingsChange({ ...settings, language: option.value })}
               >
                 {t(option.labelKey)}
@@ -516,6 +561,7 @@ export function SettingsPanel({
                 key={value}
                 type="button"
                 className={settings.theme === value ? 'active' : ''}
+                aria-pressed={settings.theme === value}
                 onClick={() => onSettingsChange({ ...settings, theme: value })}
               >
                 <Icon size={15} />
@@ -556,7 +602,9 @@ export function SettingsPanel({
             </div>
             <button
               type="button"
-              onClick={() => {
+              ref={petManagerOpenerRef}
+              onClick={(event) => {
+                petManagerOpenerRef.current = event.currentTarget
                 resetPetManagerPreviewAnimation()
                 setIsPetManagerOpen(true)
               }}
@@ -595,6 +643,7 @@ export function SettingsPanel({
                 key={preset}
                 type="button"
                 className={settings.petSizePreset === preset ? 'active' : ''}
+                aria-pressed={settings.petSizePreset === preset}
                 onClick={() => onPetSizePresetChange(preset)}
               >
                 {t(PET_SIZE_LABEL_KEYS[preset])}
@@ -640,6 +689,7 @@ export function SettingsPanel({
                 key={mode.value}
                 type="button"
                 className={settings.petDisplayMode === mode.value ? 'active' : ''}
+                aria-pressed={settings.petDisplayMode === mode.value}
                 onClick={() => onSettingsChange({ ...settings, petDisplayMode: mode.value })}
               >
                 {t(mode.labelKey)}

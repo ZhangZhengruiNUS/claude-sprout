@@ -7,7 +7,7 @@ type Props = {
   summary: StorageSummary | null
   isLoading: boolean
   isCleaning: boolean
-  message: string | null
+  message: { kind: 'success' | 'error'; text: string } | null
   onRefresh: () => void
   onClean: (kind: StorageCleanKind) => void
   onOpenDataFolder: () => void
@@ -57,7 +57,14 @@ export function StoragePanel({
         </div>
       </div>
 
-      {message ? <p className="storage-message">{message}</p> : null}
+      {message ? (
+        <p
+          className={`storage-message ${message.kind}`}
+          role={message.kind === 'error' ? 'alert' : 'status'}
+        >
+          {message.text}
+        </p>
+      ) : null}
 
       <div className="storage-list">
         <StorageRow

@@ -73,7 +73,6 @@ describe('pet assistant view model', () => {
     expect(view.messages.map((message) => message.sessionId)).toEqual([
       'permission',
       'error',
-      'done',
     ])
     expect(view.messages).toContainEqual(
       expect.objectContaining({
@@ -95,6 +94,22 @@ describe('pet assistant view model', () => {
         persistent: true,
       }),
     )
+    expect(view.messages.some((message) => message.sessionId === done.session_id)).toBe(false)
+  })
+
+  it('shows completion messages when higher-priority Message cards do not fill the cap', () => {
+    const done = session('done', 'done', undefined, {
+      display_name: 'Docs cleanup',
+      conversation_preview: 'Claude: Updated the release checklist',
+      context_used_percentage: 42,
+    })
+    const view = buildPetAssistantView({
+      sessions: [done],
+      displayMode: 'minimal',
+      visibleCount: 3,
+      conversationPreviewEnabled: true,
+    })
+
     expect(view.messages).toContainEqual(
       expect.objectContaining({
         key: petAssistantMessageKey(done),
@@ -105,6 +120,24 @@ describe('pet assistant view model', () => {
         persistent: false,
       }),
     )
+  })
+
+  it('caps Message mode cards to the highest priority items', () => {
+    const view = buildPetAssistantView({
+      sessions: [
+        session('done-a', 'done', '2026-05-22T00:04:00Z'),
+        session('done-b', 'done', '2026-05-22T00:05:00Z'),
+        session('error', 'error', '2026-05-22T00:03:00Z'),
+        session('permission', 'waiting_permission', '2026-05-22T00:02:00Z'),
+      ],
+      displayMode: 'minimal',
+      visibleCount: 3,
+    })
+
+    expect(view.messages.map((message) => message.sessionId)).toEqual([
+      'permission',
+      'error',
+    ])
   })
 
   it('sorts activity cards by action priority and reports overflow', () => {

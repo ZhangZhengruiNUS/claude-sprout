@@ -22,5 +22,13 @@ describe('pet hit target layout', () => {
     expect(cssBlock('.pet-surface.compact .pet-hit-target')).toContain('border-radius: 999px')
     expect(cssBlock('.pet-surface.compact.locked .pet-hit-target')).toContain('cursor: pointer')
     expect(cssBlock('.pet-surface.compact:active .pet-hit-target')).toContain('cursor: grabbing')
+    expect(cssBlock('.pet-surface.compact:hover')).toContain('transform: none')
+  })
+
+  it('honors reduced-motion preferences for the always-on-top pet surface', () => {
+    expect(appCss).toContain('@media (prefers-reduced-motion: reduce)')
+    expect(appCss).toContain('.sprite-pet.loop')
+    expect(appCss).toContain('.pet-message-card')
+    expect(appCss).toContain('animation: none')
   })
 })

@@ -19,6 +19,8 @@ type Props = {
   petAsset?: PetAsset | null
   showAlertBubble?: boolean
   interactive?: boolean
+  openSessionPanelLabel?: string
+  permissionNeededLabel?: string
   onClick?: () => void
   onDoubleClick?: () => void
   onContextMenu?: (position: { x: number; y: number; screenX: number; screenY: number }) => void
@@ -39,6 +41,8 @@ export function PetRenderer({
   petAsset,
   showAlertBubble = true,
   interactive = true,
+  openSessionPanelLabel = 'Open session panel',
+  permissionNeededLabel = 'Permission needed',
   onClick,
   onDoubleClick,
   onContextMenu,
@@ -86,6 +90,7 @@ export function PetRenderer({
   const isDragging = useRef(false)
   const currentDragAnimation = useRef<PetDragAnimation | null>(null)
   const suppressNextClick = useRef(false)
+  const clickTimer = useRef<number | null>(null)
   const dragCaptureTarget = useRef<HTMLButtonElement | null>(null)
   const dragPointerId = useRef<number | null>(null)
   const detachWindowDragListeners = useRef<(() => void) | null>(null)
@@ -93,6 +98,9 @@ export function PetRenderer({
   useEffect(() => {
     return () => {
       detachWindowDragListeners.current?.()
+      if (clickTimer.current !== null) {
+        window.clearTimeout(clickTimer.current)
+      }
     }
   }, [])
 
@@ -206,7 +214,25 @@ export function PetRenderer({
       suppressNextClick.current = false
       return
     }
+    if (onDoubleClick) {
+      if (clickTimer.current !== null) {
+        window.clearTimeout(clickTimer.current)
+      }
+      clickTimer.current = window.setTimeout(() => {
+        clickTimer.current = null
+        onClick?.()
+      }, 180)
+      return
+    }
     onClick?.()
+  }
+
+  function handleDoubleClick() {
+    if (clickTimer.current !== null) {
+      window.clearTimeout(clickTimer.current)
+      clickTimer.current = null
+    }
+    onDoubleClick?.()
   }
 
   const className = `pet-surface ${status}${petAsset ? ' imported-pet' : ''}${compact ? ' compact' : ''}${!draggable ? ' locked' : ''}`
@@ -254,7 +280,9 @@ export function PetRenderer({
         )}
       </div>
       {showAlertBubble && status === 'waiting_permission' ? (
-        <div className="alert-bubble">Permission needed{alertCount > 1 ? ` x${alertCount}` : ''}</div>
+        <div className="alert-bubble">
+          {permissionNeededLabel}{alertCount > 1 ? ` x${alertCount}` : ''}
+        </div>
       ) : null}
       {!compact ? <div className="pet-caption">{status}</div> : null}
     </>
@@ -272,9 +300,9 @@ export function PetRenderer({
     <button
       type="button"
       className={className}
-      aria-label="Open session panel"
+      aria-label={openSessionPanelLabel}
       onClick={handleClick}
-      onDoubleClick={onDoubleClick}
+      onDoubleClick={handleDoubleClick}
       onContextMenu={(event) => {
         event.preventDefault()
         onContextMenu?.({

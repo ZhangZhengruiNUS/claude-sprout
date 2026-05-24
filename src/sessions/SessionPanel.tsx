@@ -18,7 +18,6 @@ const ATTENTION_STATUSES = new Set<SessionSnapshot['status']>([
   'error',
   'tool_running',
   'running',
-  'waiting_input',
 ])
 
 type Props = {
@@ -92,6 +91,7 @@ export function SessionPanel({
               type="button"
               key={nextScope}
               className={scope === nextScope ? 'active' : ''}
+              aria-pressed={scope === nextScope}
               onClick={() => {
                 setScope(nextScope)
                 setPage(1)

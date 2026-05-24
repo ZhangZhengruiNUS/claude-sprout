@@ -63,7 +63,7 @@ describe('SessionPanel', () => {
     expect(html).not.toContain('Secret-looking')
   })
 
-  it('defaults to active and actionable sessions instead of rendering all history', () => {
+  it('defaults to active sessions instead of rendering all history or weak input waits', () => {
     const html = renderToStaticMarkup(
       <SessionPanel
         sessions={[
@@ -71,6 +71,11 @@ describe('SessionPanel', () => {
             session_id: 'running-session',
             display_name: 'Running work',
             status: 'running',
+          }),
+          session({
+            session_id: 'waiting-input-session',
+            display_name: 'Weak reply reminder',
+            status: 'waiting_input',
           }),
           session({
             session_id: 'done-session',
@@ -87,8 +92,10 @@ describe('SessionPanel', () => {
       />,
     )
 
-    expect(html).toContain('Active / needs action')
+    expect(html).toContain('Active sessions')
+    expect(html).toContain('aria-pressed="true"')
     expect(html).toContain('Running work')
+    expect(html).not.toContain('Weak reply reminder')
     expect(html).not.toContain('Finished history')
     expect(html).not.toContain('Closed history')
   })

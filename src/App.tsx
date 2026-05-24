@@ -96,6 +96,7 @@ import { applyAppLanguage } from './i18n/i18n'
 import './styles/app.css'
 
 type WindowKind = 'panel' | 'pet' | 'pet-menu'
+type StorageMessage = { kind: 'success' | 'error'; text: string }
 const SETTINGS_CHANGED_EVENT = 'claude-sprout://settings-changed'
 const PET_ASSETS_CHANGED_EVENT = 'claude-sprout://pet-assets-changed'
 const SESSION_CHANGED_EVENT = 'claude-sprout://sessions-changed'
@@ -142,7 +143,7 @@ function App() {
   const [storageSummary, setStorageSummary] = useState<StorageSummary | null>(null)
   const [isStorageLoading, setIsStorageLoading] = useState(false)
   const [isStorageCleaning, setIsStorageCleaning] = useState(false)
-  const [storageMessage, setStorageMessage] = useState<string | null>(null)
+  const [storageMessage, setStorageMessage] = useState<StorageMessage | null>(null)
   const [petMenuPosition, setPetMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const [isPetDragging, setIsPetDragging] = useState(false)
   const [acknowledgedPetMessageKeys, setAcknowledgedPetMessageKeys] = useState<Set<string>>(
@@ -163,6 +164,7 @@ function App() {
   const petEventActionQueueRef = useRef<PetEventAction[]>([])
   const isPlayingQueuedPetEventActionRef = useRef(false)
   const petActionClearTimerRef = useRef<number | null>(null)
+  const hasLoadedPetSessionsRef = useRef(false)
 
   const closePetContextMenu = useCallback(() => {
     setPetMenuPosition(null)
@@ -201,7 +203,7 @@ function App() {
         pendingSessionNotificationsRef.current,
       )
     }
-    if (windowKind === 'pet') {
+    if (windowKind === 'pet' && hasLoadedPetSessionsRef.current) {
       const eventActions = nextPetEventActions(
         sessionsRef.current,
         nextSessions,
@@ -213,6 +215,18 @@ function App() {
         }
         enqueuePetEventActions(eventActions)
       }
+    }
+    if (windowKind === 'pet' && !hasLoadedPetSessionsRef.current) {
+      const initialHistoricalMessageKeys = [...petAssistantMessageKeysForSessions(nextSessions)]
+        .filter((key) => key.includes(':done:') || key.includes(':error:'))
+      if (initialHistoricalMessageKeys.length > 0) {
+        setAcknowledgedPetMessageKeys((current) => {
+          const next = new Set(current)
+          initialHistoricalMessageKeys.forEach((key) => next.add(key))
+          return next
+        })
+      }
+      hasLoadedPetSessionsRef.current = true
     }
     sessionsRef.current = nextSessions
     const currentMessageKeys = petAssistantMessageKeysForSessions(nextSessions)
@@ -781,7 +795,10 @@ function App() {
       if (sequence !== storageLoadSequenceRef.current) {
         return false
       }
-      setStorageMessage(t('errors.storageSummaryFailed', { message: errorMessage(error) }))
+      setStorageMessage({
+        kind: 'error',
+        text: t('errors.storageSummaryFailed', { message: errorMessage(error) }),
+      })
       return false
     } finally {
       if (sequence === storageLoadSequenceRef.current) {
@@ -810,16 +827,22 @@ function App() {
       const refreshed = await loadStorageSummary({ clearMessage: false })
       if (!refreshed) return
       setStorageMessage(
-        t('storage.deleted', {
-          count: result.deletedFileCount,
-          bytes: formatBytes(result.deletedBytes),
-        }),
+        {
+          kind: 'success',
+          text: t('storage.deleted', {
+            count: result.deletedFileCount,
+            bytes: formatBytes(result.deletedBytes),
+          }),
+        },
       )
       if (kind === 'safe_sessions') {
         await load({ showLoading: false })
       }
     } catch (error) {
-      setStorageMessage(t('errors.storageCleanupFailed', { message: errorMessage(error) }))
+      setStorageMessage({
+        kind: 'error',
+        text: t('errors.storageCleanupFailed', { message: errorMessage(error) }),
+      })
     } finally {
       setIsStorageCleaning(false)
     }
@@ -874,6 +897,8 @@ function App() {
           actionReplayKey={petActionReplayKey}
           petAsset={activePetAsset}
           showAlertBubble={false}
+          openSessionPanelLabel={t('pet.openSessionPanel')}
+          permissionNeededLabel={t('pet.permissionNeeded')}
           onClick={() => {
             void closePetContextMenu()
             void showSessionPanel()
@@ -948,11 +973,15 @@ function App() {
           action={petAction}
           actionReplayKey={petActionReplayKey}
           petAsset={previewPetAsset}
+          interactive={false}
+          openSessionPanelLabel={t('pet.openSessionPanel')}
+          permissionNeededLabel={t('pet.permissionNeeded')}
         />
         <div className="rail-actions">
           <button
             type="button"
             className={activeTab === 'sessions' ? 'active' : ''}
+            aria-current={activeTab === 'sessions' ? 'page' : undefined}
             onClick={() => setActiveTab('sessions')}
           >
             <Bell size={16} />
@@ -961,6 +990,7 @@ function App() {
           <button
             type="button"
             className={activeTab === 'settings' ? 'active' : ''}
+            aria-current={activeTab === 'settings' ? 'page' : undefined}
             onClick={() => setActiveTab('settings')}
           >
             <Settings size={16} />

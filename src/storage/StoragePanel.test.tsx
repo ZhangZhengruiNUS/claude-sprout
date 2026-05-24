@@ -113,4 +113,30 @@ describe('StoragePanel', () => {
 
     expect(cleanButton?.disabled).toBe(true)
   })
+
+  it('distinguishes success and error storage messages accessibly', () => {
+    const successHtml = StoragePanel({
+      summary: summary(0),
+      isLoading: false,
+      isCleaning: false,
+      message: { kind: 'success', text: 'Deleted 2 files.' },
+      onRefresh: vi.fn(),
+      onClean: vi.fn(),
+      onOpenDataFolder: vi.fn(),
+    })
+    const errorHtml = StoragePanel({
+      summary: summary(0),
+      isLoading: false,
+      isCleaning: false,
+      message: { kind: 'error', text: 'Storage cleanup failed.' },
+      onRefresh: vi.fn(),
+      onClean: vi.fn(),
+      onOpenDataFolder: vi.fn(),
+    })
+
+    expect(JSON.stringify(successHtml)).toContain('storage-message success')
+    expect(JSON.stringify(successHtml)).toContain('status')
+    expect(JSON.stringify(errorHtml)).toContain('storage-message error')
+    expect(JSON.stringify(errorHtml)).toContain('alert')
+  })
 })

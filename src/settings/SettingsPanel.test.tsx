@@ -98,6 +98,7 @@ describe('SettingsPanel', () => {
         isActive={false}
         currentLabel="Current"
         previewingLabel="Previewing"
+        previewPetLabel="Preview Handoff pet"
         removeFromAppLabel="Remove from app"
         deletePetFilesLabel="Delete files"
         onPreviewPet={vi.fn()}
@@ -108,7 +109,7 @@ describe('SettingsPanel', () => {
 
     expect(html).toContain('class="pet-manager-card selectable"')
     expect(html).toContain('<button type="button" class="pet-manager-card-keyboard-target"')
-    expect(html).toContain('aria-label="Handoff"')
+    expect(html).toContain('aria-label="Preview Handoff pet"')
     expect(html).toContain('<div class="pet-manager-select"')
     expect(html).toContain('Handoff')
     expect(html).toContain('<div class="pet-surface idle imported-pet compact"')
@@ -121,6 +122,7 @@ describe('SettingsPanel', () => {
     const html = renderSettingsPanel()
 
     expect(html).toContain('aria-label="Pet mode" style="--segment-count:2"')
+    expect(html).toContain('aria-pressed="true"')
     expect(html).toContain('aria-label="Language" style="--segment-count:3"')
     expect(html).toContain('aria-label="Pet size" style="--segment-count:3"')
   })

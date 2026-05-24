@@ -271,6 +271,7 @@ input:focus-visible {
 
 .pet-surface.compact:hover {
   background: transparent;
+  transform: none;
 }
 
 .floating-pet-shell.activity .pet-surface.compact {
@@ -429,6 +430,27 @@ input:focus-visible {
   animation: pet-message-enter 220ms ease-out;
 }
 
+.pet-message-open {
+  min-width: 0;
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+}
+
+.pet-message-open:hover {
+  background: transparent;
+  transform: none;
+}
+
+.pet-message-open span {
+  min-width: 0;
+}
+
 .pet-message-card.intervention {
   border-color: rgba(233, 177, 90, 0.78);
   box-shadow:
@@ -502,6 +524,13 @@ input:focus-visible {
   background: rgba(255, 255, 255, 0.1);
 }
 
+.pet-message-card .pet-message-open {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  justify-content: flex-start;
+}
+
 .pet-message-card button:hover,
 .pet-activity-pager button:hover {
   background: rgba(255, 255, 255, 0.18);
@@ -547,7 +576,11 @@ input:focus-visible {
 }
 
 .pet-activity-card {
+  appearance: none;
+  border: 0;
+  color: inherit;
   display: grid;
+  width: 100%;
   grid-template-columns: minmax(0, 1fr) minmax(4.4rem, auto);
   align-items: start;
   gap: 0.45rem;
@@ -555,7 +588,9 @@ input:focus-visible {
   padding: 0.46rem 0.52rem;
   border-radius: 7px;
   background: rgba(255, 255, 255, var(--pet-card-fill-alpha, 0.065));
+  box-shadow: none;
   cursor: pointer;
+  text-align: left;
   transition:
     transform 160ms ease,
     background 160ms ease,
@@ -1609,7 +1644,14 @@ p {
 
 .storage-message {
   margin: 0.35rem 0 0.8rem;
+}
+
+.storage-message.success {
   color: var(--success);
+}
+
+.storage-message.error {
+  color: color-mix(in srgb, var(--danger) 82%, var(--text-primary));
 }
 
 .storage-list {
@@ -1744,6 +1786,32 @@ p {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sprout-pet,
+  .sprout-pet.run,
+  .sprout-pet.running,
+  .sprout-pet.runningRight,
+  .sprout-pet.runningLeft,
+  .sprout-pet.wave,
+  .sprout-pet.waving,
+  .sprout-pet.jump,
+  .sprout-pet.jumping,
+  .sprout-pet.waiting,
+  .sprout-pet.failed,
+  .sprout-pet.review,
+  .sprout-pet.idle .sprout-face span,
+  .sprite-pet.loop,
+  .sprite-pet.loop.quiet-idle,
+  .sprite-pet.once,
+  .pet-message-card {
+    animation: none;
+  }
+
+  .sprite-pet.once {
+    background-position-x: var(--sprite-hold-offset);
   }
 }
 

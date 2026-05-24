@@ -157,14 +157,14 @@ function ActivityCard({
   const { t } = useTranslation()
 
   return (
-    <article className={`pet-activity-card ${card.tone}`} onClick={onOpenPanel}>
+    <button type="button" className={`pet-activity-card ${card.tone}`} onClick={onOpenPanel}>
       <div>
         <strong>{card.title}</strong>
         <small>{card.detail}</small>
         <em>{card.meta}</em>
       </div>
       <span>{t(`status.${card.status}`)}</span>
-    </article>
+    </button>
   )
 }
 
@@ -180,12 +180,14 @@ function PetMessageCard({
   const { t } = useTranslation()
 
   return (
-    <article className={`pet-message-card ${message.tone}`} onClick={onOpenPanel}>
-      <div>
-        <strong>{message.title}</strong>
-        <small>{message.detail}</small>
-        <em>{message.meta}</em>
-      </div>
+    <article className={`pet-message-card ${message.tone}`}>
+      <button type="button" className="pet-message-open" onClick={onOpenPanel}>
+        <span>
+          <strong>{message.title}</strong>
+          <small>{message.detail}</small>
+          <em>{message.meta}</em>
+        </span>
+      </button>
       <button
         type="button"
         title={t('petAssistant.acknowledge')}

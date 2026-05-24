@@ -140,5 +140,47 @@ describe('FloatingPetAssistant', () => {
     expect(html).toContain('Release publish finished')
     expect(html).toContain('Claude: Built the release checklist')
     expect(html).toContain('claude-sprout - releas - 42% ctx')
+    expect(html).toContain('class="pet-message-open"')
+    expect(html).toContain('<button type="button" class="pet-message-open"')
+  })
+
+  it('renders Board cards as keyboard-reachable buttons', () => {
+    const html = renderToStaticMarkup(
+      <FloatingPetAssistant
+        view={{
+          ...baseView,
+          activityCards: [
+            {
+              key: 'session:running:now',
+              sessionId: 'session',
+              title: 'claude-sprout - session',
+              detail: 'Using Edit',
+              meta: 'running - 12% ctx',
+              status: 'tool_running',
+              tone: 'running',
+              updatedAt: '2026-05-22T00:00:00.000Z',
+            },
+          ],
+          visibleActivityCards: [
+            {
+              key: 'session:running:now',
+              sessionId: 'session',
+              title: 'claude-sprout - session',
+              detail: 'Using Edit',
+              meta: 'running - 12% ctx',
+              status: 'tool_running',
+              tone: 'running',
+              updatedAt: '2026-05-22T00:00:00.000Z',
+            },
+          ],
+        }}
+        activityPage={0}
+        onActivityPageChange={vi.fn()}
+        onAcknowledgeMessage={vi.fn()}
+        onOpenPanel={vi.fn()}
+      />,
+    )
+
+    expect(html).toContain('<button type="button" class="pet-activity-card running"')
   })
 })

@@ -67,6 +67,7 @@ const MESSAGE_STATUSES = new Set<SessionStatus>([
   'done',
   'error',
 ])
+const MAX_MESSAGE_CARDS = 2
 export const PET_ASSISTANT_MESSAGE_STATUSES = MESSAGE_STATUSES
 
 export function buildPetAssistantView({
@@ -114,7 +115,8 @@ export function buildPetAssistantView({
           messageFirstSeenAt,
         }),
       )
-      .sort(compareMessages),
+      .sort(compareMessages)
+      .slice(0, MAX_MESSAGE_CARDS),
   }
 }
 

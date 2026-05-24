@@ -2,6 +2,20 @@
 
 ## 2026-05-25
 
+- Ran the project Codex UI/UX reviewer workflow with two read-only subagents:
+  - Pet/attention review covered the floating pet, Message/Board modes, context menu, drag/resize/click behavior, imported pet layout, and notification model.
+  - Panel/settings review covered Sessions, Settings grouping, Storage cleanup, pet manager modal, accessibility, localization, privacy copy, and information architecture.
+- Fixed the highest-value review findings:
+  - double-click wave no longer also triggers the single-click panel open path.
+  - first pet-window session load now baselines existing sessions, suppressing historical done/error Message cards and one-shot event animation replays until a real later transition occurs.
+  - Message mode caps visible cards to the top two high-priority items, while Board remains the persistent multi-session surface.
+  - Message and Board cards now expose real keyboard-reachable buttons for opening the panel.
+  - compact pet hover no longer inherits the global button translate, and `prefers-reduced-motion: reduce` disables nonessential pet/message animation.
+  - the pet appearance manager modal now focuses the close button on open, handles Escape, traps Tab within the dialog, and restores focus to Manage pets on close.
+  - Storage cleanup messages now distinguish success/status from error/alert styling.
+  - segmented controls and session scope buttons expose selected state through ARIA, and panel navigation exposes the current page.
+  - `waiting_input` is no longer counted in the default Active sessions view, matching its weak non-interrupting product role.
+  - polished the related English/Simplified Chinese copy for Active sessions, pet preview actions, open-session labels, and conversation snippets.
 - Added `.codex/agents/ui-ux-reviewer.toml` as a project-level read-only Codex UI/UX reviewer for pet-first interaction quality, Message/Board behavior, panel/settings UX, Windows desktop expectations, accessibility, localization, privacy, and acceptance evidence.
 - Removed the earlier Claude Code subagent variant because Claude Code was only a reference point for comparable agent-app review practices; this project is developed in Codex.
 - Reorganized the Settings panel into lightweight logical sections:
