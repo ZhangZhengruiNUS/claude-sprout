@@ -64,4 +64,59 @@ describe('SessionPanel', () => {
     expect(html).toContain('Using Edit')
     expect(html).not.toContain('Secret-looking')
   })
+
+  it('defaults to active and actionable sessions instead of rendering all history', () => {
+    const html = renderToStaticMarkup(
+      <SessionPanel
+        sessions={[
+          session({
+            session_id: 'running-session',
+            display_name: 'Running work',
+            status: 'running',
+          }),
+          session({
+            session_id: 'done-session',
+            display_name: 'Finished history',
+            status: 'done',
+          }),
+          session({
+            session_id: 'closed-session',
+            display_name: 'Closed history',
+            status: 'closed',
+          }),
+        ]}
+        isLoading={false}
+        onRefresh={vi.fn()}
+      />,
+    )
+
+    expect(html).toContain('Active / needs action')
+    expect(html).toContain('Running work')
+    expect(html).not.toContain('Finished history')
+    expect(html).not.toContain('Closed history')
+  })
+
+  it('shows page size and exact page counts for the current view', () => {
+    const activeSessions = Array.from({ length: 12 }, (_, index) =>
+      session({
+        session_id: `active-${String(index + 1).padStart(2, '0')}`,
+        display_name: `Active session ${index + 1}`,
+        status: 'running',
+        updated_at: new Date(Date.now() - index * 1_000).toISOString(),
+      }),
+    )
+
+    const html = renderToStaticMarkup(
+      <SessionPanel
+        sessions={activeSessions}
+        isLoading={false}
+        onRefresh={vi.fn()}
+      />,
+    )
+
+    expect(html).toContain('Per page')
+    expect(html).toContain('1-10 of 12 · page 1/2')
+    expect(html).toContain('Active session 10')
+    expect(html).not.toContain('Active session 11')
+  })
 })

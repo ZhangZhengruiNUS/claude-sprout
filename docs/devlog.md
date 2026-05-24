@@ -12,6 +12,10 @@
   - extracted shared session presentation helpers for display names, activity/output detail, Board-aligned metadata, status sorting, and preview opt-in handling.
   - Sessions cards now show Claude `display_name` as the primary title when available, keep project/path/session details visible, and add activity/output plus source/ended diagnostics.
   - added SessionPanel regression coverage for renamed sessions and conversation-preview privacy gating.
+- Made the Sessions panel less overwhelming for large histories:
+  - default view now shows only active or actionable sessions.
+  - alternate views use explicit labels, `24 小时内` / `Last 24 hours` and `全部历史` / `All history`, instead of vague "recent" wording.
+  - added page-size selection plus exact page/total counts so full history is bounded and predictable.
 - Kept the current styled pet context menu path buildable by moving the reusable menu component to a non-conflicting filename, avoiding the Windows case-only `PetContextMenu` / `petContextMenu` TypeScript conflict.
 
 ## 2026-05-23

@@ -85,6 +85,7 @@
     "The session panel no longer has the large top hero/title band; content now starts with the compact local status strip followed by the current Sessions or Settings surface, keeping the panel focused on settings and detailed Claude Code session inspection rather than dashboard-style presentation",
     "Main panel window controls now follow normal Windows expectations: minimize leaves the panel minimized on the taskbar, while the close button hides the panel to the tray",
     "The Sessions panel now reuses the Board session presentation summary: Claude display_name is shown as the primary session name, project/short id/context metadata is preserved, activity/output detail follows the same preview opt-in rule as Board cards, and source/ended metadata is visible for diagnostics",
+    "The Sessions panel now stays bounded for large histories: it defaults to active/actionable sessions, exposes explicit Active / needs action, Last 24 hours, and All history views with counts, and uses page-size plus exact page/total controls instead of rendering every session at once",
     "Repository continuity files: AGENTS.md, docs/next-session.md, docs/devlog.md",
     "Handoff updater script and optional git pre-commit hook installer"
   ],
@@ -107,7 +108,7 @@
     "The release exe build works with npm run release:exe or npm run tauri -- build --no-bundle, and the NSIS installer build works while the verified local NSIS cache is present."
   ],
   "nextTasks": [
-    "Ask the user to acceptance-test the richer Sessions panel against real Claude Code sessions: renamed sessions should appear by name, activity/output previews should appear only when Read conversation preview is enabled, and project/session/source/ended metadata should remain scannable.",
+    "Ask the user to acceptance-test the richer paginated Sessions panel against real Claude Code sessions: the default Active / needs action view should stay clean, Last 24 hours and All history counts should be understandable, page-size/page totals should match expectations, renamed sessions should appear by name, activity/output previews should appear only when Read conversation preview is enabled, and project/session/source/ended metadata should remain scannable.",
     "Ask the user to acceptance-test the new language and theme selectors in Settings on the release exe: system language/theme resolution, English/Simplified Chinese switching, Light/Dark switching, localized session panel/settings/storage/pet activity text, native notification titles, and tray menu labels after switching language.",
     "Ask the user to run final acceptance testing for the pet assistant modes, event-triggered pet actions, and Codex-aligned imported pet animations in real desktop use, especially waiting/completion/error transitions, imported pet drag/cropping/directional-running behavior, drag cancellation after shortcut/focus changes, Minimal persistent intervention cards, Activity mode paging, pet resize/context-menu behavior including right-click-location anchoring, and real Claude Code session transitions.",
     "Ask the user to verify the rebuilt release exe on Win11 4K taskbar and Alt-Tab after restarting the app; if Windows still shows the previous blurry icon, have them unpin/repin or clear the shell icon cache before retesting.",

@@ -881,6 +881,76 @@ p {
   color: #f0a0a0;
 }
 
+.session-controls {
+  display: grid;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
+}
+
+.session-scope-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.session-scope-tabs button {
+  justify-content: space-between;
+  min-width: 0;
+  min-height: 2.35rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--surface-row);
+  color: var(--text-secondary);
+}
+
+.session-scope-tabs button.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface-row));
+  color: var(--text-primary);
+}
+
+.session-scope-tabs button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-scope-tabs button strong {
+  color: var(--text-primary);
+  font-size: 0.86rem;
+}
+
+.session-pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.session-pagination-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.session-pagination-controls select {
+  width: 4.2rem;
+  padding: 0.28rem 0.45rem;
+}
+
+.session-page-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.session-page-buttons button {
+  min-height: 2rem;
+  padding: 0.3rem 0.55rem;
+}
+
 .session-card,
 .settings-panel {
   border: 1px solid var(--border-subtle);
@@ -1395,6 +1465,23 @@ p {
 
   .session-meta {
     grid-template-columns: 1fr;
+  }
+
+  .session-scope-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .session-pagination-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .session-page-buttons {
+    width: 100%;
+  }
+
+  .session-page-buttons button {
+    flex: 1;
   }
 
   .pet-import-row {

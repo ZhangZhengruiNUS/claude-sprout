@@ -1,5 +1,5 @@
 import { Clock, FolderOpen, Hammer, MessageSquareText, RefreshCw, Trash2 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { openProjectFolder } from './sessionApi'
 import {
@@ -8,6 +8,18 @@ import {
   sessionActivitySummary,
 } from './sessionPresentation'
 import type { SessionSnapshot } from './sessionTypes'
+
+type SessionScope = 'attention' | 'last24h' | 'all'
+
+const PAGE_SIZE_OPTIONS = [10, 20, 50] as const
+const DEFAULT_PAGE_SIZE = 10
+const ATTENTION_STATUSES = new Set<SessionSnapshot['status']>([
+  'waiting_permission',
+  'error',
+  'tool_running',
+  'running',
+  'waiting_input',
+])
 
 type Props = {
   sessions: SessionSnapshot[]
@@ -34,10 +46,23 @@ export function SessionPanel({
   onRefresh,
 }: Props) {
   const { t, i18n } = useTranslation()
+  const [scope, setScope] = useState<SessionScope>('attention')
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
+  const [page, setPage] = useState(1)
   const sortedSessions = useMemo(
     () => [...sessions].sort(compareSessionsByActivity),
     [sessions],
   )
+  const scopeCounts = useMemo(() => sessionScopeCounts(sortedSessions), [sortedSessions])
+  const visibleSessions = useMemo(
+    () => sessionsForScope(sortedSessions, scope),
+    [scope, sortedSessions],
+  )
+  const pageCount = Math.max(1, Math.ceil(visibleSessions.length / pageSize))
+  const safePage = Math.min(page, pageCount)
+  const pageStart = visibleSessions.length === 0 ? 0 : (safePage - 1) * pageSize + 1
+  const pageEnd = Math.min(safePage * pageSize, visibleSessions.length)
+  const pagedSessions = visibleSessions.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   return (
     <section className="session-panel">
@@ -54,12 +79,79 @@ export function SessionPanel({
 
       {loadError ? <p className="session-load-error">{loadError}</p> : null}
 
+      <div className="session-controls">
+        <div className="session-scope-tabs" aria-label={t('sessions.scopeLabel')}>
+          {(['attention', 'last24h', 'all'] satisfies SessionScope[]).map((nextScope) => (
+            <button
+              type="button"
+              key={nextScope}
+              className={scope === nextScope ? 'active' : ''}
+              onClick={() => {
+                setScope(nextScope)
+                setPage(1)
+              }}
+            >
+              <span>{t(`sessions.scope.${nextScope}`)}</span>
+              <strong>{scopeCounts[nextScope]}</strong>
+            </button>
+          ))}
+        </div>
+
+        <div className="session-pagination-controls">
+          <label>
+            {t('sessions.perPage')}
+            <select
+              value={pageSize}
+              onChange={(event) => {
+                setPageSize(Number(event.target.value))
+                setPage(1)
+              }}
+            >
+              {PAGE_SIZE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span>
+            {t('sessions.pageSummary', {
+              page: safePage,
+              pageCount,
+              start: pageStart,
+              end: pageEnd,
+              total: visibleSessions.length,
+            })}
+          </span>
+          <div className="session-page-buttons">
+            <button
+              type="button"
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              disabled={safePage <= 1}
+            >
+              {t('sessions.previousPage')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+              disabled={safePage >= pageCount}
+            >
+              {t('sessions.nextPage')}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="session-list">
         {!isLoading && sortedSessions.length === 0 && !loadError ? (
           <p className="session-empty">{t('sessions.empty')}</p>
         ) : null}
 
-        {sortedSessions.map((session) => {
+        {!isLoading && sortedSessions.length > 0 && pagedSessions.length === 0 && !loadError ? (
+          <p className="session-empty">{t('sessions.emptyScope')}</p>
+        ) : null}
+
+        {pagedSessions.map((session) => {
           const summary = sessionActivitySummary(session, conversationPreviewEnabled, t)
           const projectName = displayProjectName(session, t)
 
@@ -152,4 +244,29 @@ export function SessionPanel({
       </div>
     </section>
   )
+}
+
+function sessionScopeCounts(sessions: SessionSnapshot[]) {
+  return {
+    attention: sessionsForScope(sessions, 'attention').length,
+    last24h: sessionsForScope(sessions, 'last24h').length,
+    all: sessions.length,
+  }
+}
+
+function sessionsForScope(sessions: SessionSnapshot[], scope: SessionScope) {
+  switch (scope) {
+    case 'attention':
+      return sessions.filter((session) => ATTENTION_STATUSES.has(session.status))
+    case 'last24h':
+      return sessions.filter((session) => isWithinLastHours(session.updated_at, 24))
+    case 'all':
+      return sessions
+  }
+}
+
+function isWithinLastHours(value: string, hours: number) {
+  const timestamp = new Date(value).getTime()
+  if (!Number.isFinite(timestamp)) return false
+  return Date.now() - timestamp <= hours * 60 * 60 * 1000
 }
