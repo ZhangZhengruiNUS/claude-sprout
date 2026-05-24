@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import '../i18n/i18n'
 import { builtInPetAsset } from '../pet/builtInPetAsset'
 import { DEFAULT_APP_SETTINGS } from './appSettings'
+import { nextPetManagerPreviewAnimationState } from './petManagerPreviewAnimation'
 import { SettingsPanel } from './SettingsPanel'
 
 function renderSettingsPanel() {
@@ -33,7 +34,6 @@ function renderSettingsPanel() {
       onPetSizePresetChange={vi.fn()}
       onPreviewPet={vi.fn()}
       onApplyPetSelection={vi.fn()}
-      onPreviewPetAnimation={vi.fn()}
       onRefreshPetAssets={vi.fn()}
       onScanCodexPets={vi.fn()}
       onImportCodexPet={vi.fn()}
@@ -68,6 +68,16 @@ describe('SettingsPanel', () => {
     expect(html).toContain('Manage pets')
     expect(html).toContain('Claude Sprout')
     expect(html).not.toContain('Handoff</button>')
+  })
+
+  it('keeps pet manager wave preview local to the manager dialog', () => {
+    expect(
+      nextPetManagerPreviewAnimationState({ action: null, replayKey: 0 }, 'waving'),
+    ).toEqual({ action: 'waving', replayKey: 1 })
+
+    expect(
+      nextPetManagerPreviewAnimationState({ action: 'waving', replayKey: 1 }, 'waving'),
+    ).toEqual({ action: 'waving', replayKey: 2 })
   })
 
   it('sizes segmented controls from their option counts', () => {

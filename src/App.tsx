@@ -1019,7 +1019,6 @@ function App() {
             onApplyPetSelection={() => {
               void applyPreviewPet()
             }}
-            onPreviewPetAnimation={playPetAction}
             onRefreshPetAssets={() => {
               void refreshPetAssets()
             }}

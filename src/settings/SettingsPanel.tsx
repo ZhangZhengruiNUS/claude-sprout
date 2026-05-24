@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
   Bell,
@@ -37,6 +37,10 @@ import {
   PET_MESSAGE_BOX_OPACITY_MAX,
   PET_MESSAGE_BOX_OPACITY_MIN,
 } from './appSettings'
+import {
+  nextPetManagerPreviewAnimationState,
+  type PetManagerPreviewAnimationState,
+} from './petManagerPreviewAnimation'
 
 type Props = {
   settings: AppSettings
@@ -55,7 +59,6 @@ type Props = {
   onPetSizePresetChange: (preset: Exclude<PetSizePreset, 'custom'>) => void
   onPreviewPet: (petId: string | null) => void
   onApplyPetSelection: () => void
-  onPreviewPetAnimation: (action: PetAnimation) => void
   onRefreshPetAssets: () => void
   onScanCodexPets: () => void
   onImportCodexPet: (candidate: CodexPetCandidate) => void
@@ -143,7 +146,6 @@ export function SettingsPanel({
   onPetSizePresetChange,
   onPreviewPet,
   onApplyPetSelection,
-  onPreviewPetAnimation,
   onRefreshPetAssets,
   onScanCodexPets,
   onImportCodexPet,
@@ -154,6 +156,9 @@ export function SettingsPanel({
 }: Props) {
   const { t } = useTranslation()
   const [isPetManagerOpen, setIsPetManagerOpen] = useState(false)
+  const [petManagerPreviewAnimation, setPetManagerPreviewAnimation] =
+    useState<PetManagerPreviewAnimationState>({ action: null, replayKey: 0 })
+  const petManagerPreviewClearTimer = useRef<number | null>(null)
   const importedPetAssets = useMemo(
     () => petAssets.filter((petAsset) => !isBuiltInPetSelectionId(petAsset.id)),
     [petAssets],
@@ -168,6 +173,41 @@ export function SettingsPanel({
   const currentPet = normalizedActivePetId
     ? importedPetAssets.find((petAsset) => petAsset.id === normalizedActivePetId) ?? builtInPetAsset
     : builtInPetAsset
+
+  useEffect(() => {
+    return () => {
+      if (petManagerPreviewClearTimer.current !== null) {
+        window.clearTimeout(petManagerPreviewClearTimer.current)
+      }
+    }
+  }, [])
+
+  function clearPetManagerPreviewTimer() {
+    if (petManagerPreviewClearTimer.current !== null) {
+      window.clearTimeout(petManagerPreviewClearTimer.current)
+      petManagerPreviewClearTimer.current = null
+    }
+  }
+
+  function resetPetManagerPreviewAnimation() {
+    clearPetManagerPreviewTimer()
+    setPetManagerPreviewAnimation({ action: null, replayKey: 0 })
+  }
+
+  function playPetManagerPreviewAnimation(action: PetAnimation) {
+    setPetManagerPreviewAnimation((current) =>
+      nextPetManagerPreviewAnimationState(current, action),
+    )
+    clearPetManagerPreviewTimer()
+    petManagerPreviewClearTimer.current = window.setTimeout(() => {
+      setPetManagerPreviewAnimation((current) => ({
+        action: null,
+        replayKey: current.replayKey,
+      }))
+      petManagerPreviewClearTimer.current = null
+    }, 950)
+  }
+
   const petManagerDialog = (
     <div className="settings-modal-backdrop" role="presentation">
       <section
@@ -185,14 +225,24 @@ export function SettingsPanel({
             type="button"
             className="icon-button"
             aria-label={t('common.close')}
-            onClick={() => setIsPetManagerOpen(false)}
+            onClick={() => {
+              resetPetManagerPreviewAnimation()
+              setIsPetManagerOpen(false)
+            }}
           >
             <X size={17} />
           </button>
         </header>
         <div className="pet-manager-body">
           <div className="pet-preview-panel">
-            <PetRenderer status="idle" alertCount={0} scale={0.68} petAsset={selectedPet} />
+            <PetRenderer
+              status="idle"
+              alertCount={0}
+              scale={0.68}
+              action={petManagerPreviewAnimation.action}
+              actionReplayKey={petManagerPreviewAnimation.replayKey}
+              petAsset={selectedPet}
+            />
             <span>
               <strong>{selectedPet.name}</strong>
               <small>
@@ -202,13 +252,16 @@ export function SettingsPanel({
               </small>
             </span>
             <div className="setting-actions">
-              <button type="button" onClick={() => onPreviewPetAnimation('waving')}>
+              <button type="button" onClick={() => playPetManagerPreviewAnimation('waving')}>
                 {t('settings.previewWave')}
               </button>
               <button
                 type="button"
                 disabled={!hasPendingPetSelection}
-                onClick={() => onPreviewPet(normalizedActivePetId)}
+                onClick={() => {
+                  resetPetManagerPreviewAnimation()
+                  onPreviewPet(normalizedActivePetId)
+                }}
               >
                 {t('common.cancel')}
               </button>
@@ -241,7 +294,10 @@ export function SettingsPanel({
                     <button
                       type="button"
                       disabled={isSelected}
-                      onClick={() => onPreviewPet(normalizedPetId)}
+                      onClick={() => {
+                        resetPetManagerPreviewAnimation()
+                        onPreviewPet(normalizedPetId)
+                      }}
                     >
                       {isSelected ? t('settings.previewing') : t('settings.previewPet')}
                     </button>
@@ -416,7 +472,13 @@ export function SettingsPanel({
                 </small>
               </span>
             </div>
-            <button type="button" onClick={() => setIsPetManagerOpen(true)}>
+            <button
+              type="button"
+              onClick={() => {
+                resetPetManagerPreviewAnimation()
+                setIsPetManagerOpen(true)
+              }}
+            >
               {t('settings.managePets')}
             </button>
           </div>

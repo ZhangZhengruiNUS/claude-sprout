@@ -412,3 +412,8 @@
   - PowerShell hook/statusline writers now use `.NET` `UTF8Encoding(false)` file writes so new snapshots are UTF-8 without BOM
   - tests cover BOM parsing and no-BOM PowerShell output
   - user manually confirmed the rebuilt release app shows real Claude Code sessions in the panel
+- Fixed the Settings pet manager Preview wave target:
+  - root cause was the modal button calling the app-level pet action handler, so the panel rail/floating pet waved while the modal preview stayed idle
+  - the pet manager now owns a local preview action/replay key and passes it into the modal `PetRenderer`
+  - switching preview pets, canceling, opening, or closing the manager resets the local preview action without touching the saved active pet
+  - browser QA confirmed clicking `预览挥手` changes only the modal preview animation class while the panel rail pet remains on its normal loop
