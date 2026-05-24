@@ -422,3 +422,8 @@
   - kept imported-pet removal as explicit buttons, separate from the preview selection target
   - added a non-interactive `PetRenderer` mode so settings thumbnails and modal previews do not expose the misleading "Open session panel" button semantics
   - browser QA confirmed the manager renders no `预览` row buttons, no nested pet-surface buttons, and no console warnings or errors
+- Expanded Settings pet manager card hit areas:
+  - clicking anywhere on a pet card except explicit remove/delete buttons now switches the modal preview
+  - action buttons stop propagation so removal actions stay separate from preview switching
+  - card hover and keyboard focus now use a unified highlight treatment without nesting action buttons inside a card button
+  - browser QA confirmed the card center is the click target, the modal has no row-level `预览` button, and console warnings/errors remain zero

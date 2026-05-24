@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties, MouseEvent, ReactNode } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
@@ -162,19 +162,31 @@ export function PetManagerCard({
     }
   }
 
+  function handleKeyboardPreview(event: MouseEvent<HTMLButtonElement>) {
+    event.stopPropagation()
+    previewPet()
+  }
+
+  const statusLabel = isActive ? currentLabel : isSelected ? previewingLabel : null
+
   return (
     <article
-      className={`pet-manager-card${isSelected ? ' selected' : ''}`}
+      className={`pet-manager-card${canPreview ? ' selectable' : ''}${isSelected ? ' selected' : ''}`}
+      onClick={previewPet}
     >
       <button
         type="button"
-        className="pet-manager-select"
+        className="pet-manager-card-keyboard-target"
         tabIndex={canPreview ? 0 : -1}
+        aria-label={petAsset.name}
         aria-pressed={isSelected}
         aria-current={isActive ? 'true' : undefined}
         aria-disabled={!canPreview}
-        onClick={previewPet}
+        onClick={handleKeyboardPreview}
       >
+        {petAsset.name}
+      </button>
+      <div className="pet-manager-select">
         <PetRenderer
           status="idle"
           alertCount={0}
@@ -187,32 +199,32 @@ export function PetManagerCard({
           <strong>{petAsset.name}</strong>
           <small>{petAsset.description ?? petAsset.spritesheetPath}</small>
         </span>
-      </button>
-      <div className="pet-manager-card-actions">
-        {isActive ? (
-          <small className="pet-manager-status">{currentLabel}</small>
-        ) : isSelected ? (
-          <small className="pet-manager-status">{previewingLabel}</small>
-        ) : null}
-        {!isBuiltIn && (
-          <>
-            <button
-              type="button"
-              onClick={onRemoveFromApp}
-            >
-              {removeFromAppLabel}
-            </button>
-            <button
-              type="button"
-              className="danger-button"
-              onClick={onDeletePetFiles}
-            >
-              <Trash2 size={15} />
-              {deletePetFilesLabel}
-            </button>
-          </>
-        )}
       </div>
+      {statusLabel ? <small className="pet-manager-status">{statusLabel}</small> : null}
+      {!isBuiltIn && (
+        <div className="pet-manager-card-actions">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              onRemoveFromApp()
+            }}
+          >
+            {removeFromAppLabel}
+          </button>
+          <button
+            type="button"
+            className="danger-button"
+            onClick={(event) => {
+              event.stopPropagation()
+              onDeletePetFiles()
+            }}
+          >
+            <Trash2 size={15} />
+            {deletePetFilesLabel}
+          </button>
+        </div>
+      )}
     </article>
   )
 }

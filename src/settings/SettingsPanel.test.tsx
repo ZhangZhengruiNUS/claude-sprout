@@ -106,13 +106,14 @@ describe('SettingsPanel', () => {
       />,
     )
 
-    expect(html).toContain('<button type="button" class="pet-manager-select"')
-    expect(html).toContain('tabindex="0"')
-    expect(html).toContain('aria-pressed="false"')
-    expect(html).toContain('aria-disabled="false"')
+    expect(html).toContain('class="pet-manager-card selectable"')
+    expect(html).toContain('<button type="button" class="pet-manager-card-keyboard-target"')
+    expect(html).toContain('aria-label="Handoff"')
+    expect(html).toContain('<div class="pet-manager-select"')
     expect(html).toContain('Handoff')
     expect(html).toContain('<div class="pet-surface idle imported-pet compact"')
     expect(html).not.toContain('<button type="button" class="pet-surface')
+    expect(html).not.toContain('role="button"')
     expect(html).not.toContain('>Preview</button>')
   })
 
