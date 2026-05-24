@@ -429,3 +429,8 @@
   - action buttons stop propagation so removal actions stay separate from preview switching
   - card hover and keyboard focus now use a unified highlight treatment without nesting action buttons inside a card button
   - browser QA confirmed the card center is the click target, the modal has no row-level `预览` button, and console warnings/errors remain zero
+- Fixed first-row clipping in the Settings pet manager hover state:
+  - root cause was the card hover using `translateY(-1px)` plus an outer shadow inside the scrollable pet-manager list, so the first row could move above the clipping boundary
+  - hover and focus feedback now uses border/background plus inset highlights without shifting the card
+  - added CSS regression coverage to keep the pet manager hover block from reintroducing vertical transform or outer shadow
+  - browser QA confirmed a simulated first selectable card keeps the same top position on hover and console warnings/errors stay at zero
