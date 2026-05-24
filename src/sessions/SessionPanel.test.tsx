@@ -37,7 +37,6 @@ describe('SessionPanel', () => {
         ]}
         isLoading={false}
         conversationPreviewEnabled
-        onRefresh={vi.fn()}
       />,
     )
 
@@ -57,7 +56,6 @@ describe('SessionPanel', () => {
         ]}
         isLoading={false}
         conversationPreviewEnabled={false}
-        onRefresh={vi.fn()}
       />,
     )
 
@@ -86,7 +84,6 @@ describe('SessionPanel', () => {
           }),
         ]}
         isLoading={false}
-        onRefresh={vi.fn()}
       />,
     )
 
@@ -94,6 +91,41 @@ describe('SessionPanel', () => {
     expect(html).toContain('Running work')
     expect(html).not.toContain('Finished history')
     expect(html).not.toContain('Closed history')
+  })
+
+  it('keeps low-value refresh and disabled cleanup controls out of the default view', () => {
+    const html = renderToStaticMarkup(
+      <SessionPanel
+        sessions={[
+          session({
+            display_name: 'Running work',
+            status: 'running',
+          }),
+        ]}
+        isLoading={false}
+      />,
+    )
+
+    expect(html).not.toContain('Refresh')
+    expect(html).not.toContain('Clean')
+    expect(html).not.toContain('Per page')
+    expect(html).not.toContain('Previous')
+    expect(html).not.toContain('Next')
+  })
+
+  it('shows a retry action only when session loading fails', () => {
+    const html = renderToStaticMarkup(
+      <SessionPanel
+        sessions={[]}
+        isLoading={false}
+        loadError="Session load failed: bad file"
+        onRetry={vi.fn()}
+      />,
+    )
+
+    expect(html).toContain('Session load failed: bad file')
+    expect(html).toContain('Retry')
+    expect(html).not.toContain('Refresh')
   })
 
   it('shows page size and exact page counts for the current view', () => {
@@ -110,7 +142,6 @@ describe('SessionPanel', () => {
       <SessionPanel
         sessions={activeSessions}
         isLoading={false}
-        onRefresh={vi.fn()}
       />,
     )
 

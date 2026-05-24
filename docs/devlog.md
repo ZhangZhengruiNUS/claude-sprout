@@ -2,6 +2,12 @@
 
 ## 2026-05-24
 
+- Cleaned up low-value panel controls:
+  - removed the Sessions page's large manual refresh button because session state already updates through the watcher, session-changed events, and periodic polling.
+  - removed disabled per-session cleanup buttons and now shows pagination controls only when the current Sessions view exceeds the default page size.
+  - session load failures now show a small Retry action, while Settings > Storage remains the only cleanup surface.
+  - reduced the pet appearance manager's Refresh action to an icon-only fallback and kept Scan Codex as the prominent text action.
+  - verified with full Vitest, lint, production build, and Playwright desktop/mobile checks with zero console warnings.
 - Fixed Settings segmented control sizing:
   - root cause was the shared `.size-segment` grid being hard-coded to three columns even when the control only had two options.
   - segmented controls now pass their option count through `--segment-count`, so Message/Board renders as two slots while Language, Theme, and Pet size remain three slots.

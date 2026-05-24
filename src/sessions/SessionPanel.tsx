@@ -1,4 +1,4 @@
-import { Clock, FolderOpen, Hammer, MessageSquareText, RefreshCw, Trash2 } from 'lucide-react'
+import { Clock, FolderOpen, Hammer, MessageSquareText } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { openProjectFolder } from './sessionApi'
@@ -26,7 +26,7 @@ type Props = {
   isLoading: boolean
   loadError?: string | null
   conversationPreviewEnabled?: boolean
-  onRefresh: () => void | Promise<void>
+  onRetry?: () => void | Promise<void>
 }
 
 function formatTime(value: string | null | undefined, language: string | undefined, fallback: string) {
@@ -43,7 +43,7 @@ export function SessionPanel({
   isLoading,
   loadError,
   conversationPreviewEnabled = false,
-  onRefresh,
+  onRetry,
 }: Props) {
   const { t, i18n } = useTranslation()
   const [scope, setScope] = useState<SessionScope>('attention')
@@ -63,6 +63,7 @@ export function SessionPanel({
   const pageStart = visibleSessions.length === 0 ? 0 : (safePage - 1) * pageSize + 1
   const pageEnd = Math.min(safePage * pageSize, visibleSessions.length)
   const pagedSessions = visibleSessions.slice((safePage - 1) * pageSize, safePage * pageSize)
+  const shouldShowPaginationControls = visibleSessions.length > DEFAULT_PAGE_SIZE
 
   return (
     <section className="session-panel">
@@ -71,13 +72,18 @@ export function SessionPanel({
           <h2>{t('sessions.title')}</h2>
           <p>{t('sessions.description')}</p>
         </div>
-        <button type="button" onClick={onRefresh} disabled={isLoading}>
-          <RefreshCw size={16} />
-          {isLoading ? t('sessions.refreshing') : t('common.refresh')}
-        </button>
       </div>
 
-      {loadError ? <p className="session-load-error">{loadError}</p> : null}
+      {loadError ? (
+        <div className="session-load-error">
+          <span>{loadError}</span>
+          {onRetry ? (
+            <button type="button" onClick={onRetry} disabled={isLoading}>
+              {isLoading ? t('sessions.refreshing') : t('common.retry')}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="session-controls">
         <div className="session-scope-tabs" aria-label={t('sessions.scopeLabel')}>
@@ -97,49 +103,51 @@ export function SessionPanel({
           ))}
         </div>
 
-        <div className="session-pagination-controls">
-          <label>
-            {t('sessions.perPage')}
-            <select
-              value={pageSize}
-              onChange={(event) => {
-                setPageSize(Number(event.target.value))
-                setPage(1)
-              }}
-            >
-              {PAGE_SIZE_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-          <span>
-            {t('sessions.pageSummary', {
-              page: safePage,
-              pageCount,
-              start: pageStart,
-              end: pageEnd,
-              total: visibleSessions.length,
-            })}
-          </span>
-          <div className="session-page-buttons">
-            <button
-              type="button"
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-              disabled={safePage <= 1}
-            >
-              {t('sessions.previousPage')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
-              disabled={safePage >= pageCount}
-            >
-              {t('sessions.nextPage')}
-            </button>
+        {shouldShowPaginationControls ? (
+          <div className="session-pagination-controls">
+            <label>
+              {t('sessions.perPage')}
+              <select
+                value={pageSize}
+                onChange={(event) => {
+                  setPageSize(Number(event.target.value))
+                  setPage(1)
+                }}
+              >
+                {PAGE_SIZE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span>
+              {t('sessions.pageSummary', {
+                page: safePage,
+                pageCount,
+                start: pageStart,
+                end: pageEnd,
+                total: visibleSessions.length,
+              })}
+            </span>
+            <div className="session-page-buttons">
+              <button
+                type="button"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={safePage <= 1}
+              >
+                {t('sessions.previousPage')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+                disabled={safePage >= pageCount}
+              >
+                {t('sessions.nextPage')}
+              </button>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       <div className="session-list">
@@ -232,10 +240,6 @@ export function SessionPanel({
                 <button type="button" onClick={() => openProjectFolder(session.cwd)}>
                   <FolderOpen size={16} />
                   {t('sessions.openProject')}
-                </button>
-                <button type="button" disabled>
-                  <Trash2 size={16} />
-                  {t('sessions.clean')}
                 </button>
               </div>
             </article>

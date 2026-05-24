@@ -26,6 +26,7 @@ export const resources = {
         cancel: 'Cancel',
         close: 'Close',
         refresh: 'Refresh',
+        retry: 'Retry',
       },
       status: {
         waiting_permission: 'waiting permission',
@@ -67,7 +68,6 @@ export const resources = {
         source: 'Source',
         ended: 'Ended',
         openProject: 'Open project',
-        clean: 'Clean',
       },
       settings: {
         title: 'Settings',
@@ -245,6 +245,7 @@ export const resources = {
         cancel: '取消',
         close: '关闭',
         refresh: '刷新',
+        retry: '重试',
       },
       status: {
         waiting_permission: '等待授权',
@@ -286,7 +287,6 @@ export const resources = {
         source: '来源',
         ended: '结束时间',
         openProject: '打开项目',
-        clean: '清理',
       },
       settings: {
         title: '设置',

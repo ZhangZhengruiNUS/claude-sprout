@@ -879,6 +879,20 @@ p {
 .session-load-error {
   margin-bottom: 0.8rem;
   color: #f0a0a0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.session-load-error span {
+  min-width: 0;
+}
+
+.session-load-error button {
+  min-height: 2rem;
+  padding: 0.3rem 0.6rem;
+  flex: 0 0 auto;
 }
 
 .session-controls {

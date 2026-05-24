@@ -236,9 +236,14 @@ export function SettingsPanel({
         </div>
         <div className="pet-manager-tools">
           <div className="setting-actions">
-            <button type="button" onClick={onRefreshPetAssets}>
+            <button
+              type="button"
+              className="icon-button"
+              aria-label={t('settings.refreshPets')}
+              title={t('settings.refreshPets')}
+              onClick={onRefreshPetAssets}
+            >
               <RefreshCw size={16} />
-              {t('settings.refreshPets')}
             </button>
             <button type="button" onClick={onScanCodexPets} disabled={isScanningCodexPets}>
               <Search size={16} />

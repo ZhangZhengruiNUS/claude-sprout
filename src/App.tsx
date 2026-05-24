@@ -67,7 +67,7 @@ import {
   prunePetAssistantMessageKeys,
 } from './pet/petAssistantViewModel'
 import { SessionPanel } from './sessions/SessionPanel'
-import { getDataRoot, loadSessions, refreshSessions, showSessionPanel } from './sessions/sessionApi'
+import { getDataRoot, loadSessions, showSessionPanel } from './sessions/sessionApi'
 import { deliverSessionNotifications } from './sessions/sessionNotificationDelivery'
 import {
   notificationsForSessionChanges,
@@ -224,17 +224,6 @@ function App() {
     if (options.showLoading ?? true) {
       setIsLoading(false)
     }
-  }
-
-  async function reloadSessions(options: { showLoading?: boolean; notify?: boolean } = {}) {
-    try {
-      await refreshSessions()
-    } catch (error) {
-      setSessionLoadError(t('errors.sessionRefreshFailed', { message: errorMessage(error) }))
-      return
-    }
-
-    await load(options)
   }
 
   useEffect(() => {
@@ -1002,7 +991,7 @@ function App() {
             isLoading={isLoading}
             loadError={sessionLoadError}
             conversationPreviewEnabled={settings.petConversationPreviewEnabled}
-            onRefresh={() => reloadSessions({ showLoading: true, notify: true })}
+            onRetry={() => load({ showLoading: true, notify: false })}
           />
         ) : (
           <SettingsPanel
