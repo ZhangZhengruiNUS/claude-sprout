@@ -34,6 +34,7 @@ import {
 import {
   importCodexPet,
   listPetAssets,
+  removeInstalledPet,
   scanCodexPetCandidates,
   type CodexPetCandidate,
   type PetAsset,
@@ -741,6 +742,38 @@ function App() {
     }
   }
 
+  async function removePet(petId: string, deleteFiles: boolean) {
+    setPetImportError(null)
+    try {
+      await removeInstalledPet(petId, deleteFiles)
+      const nextPetAssets = await refreshPetAssets()
+      const removedActivePet = normalizePetSelectionId(settingsRef.current.activePetId) === petId
+      const removedPreviewPet = normalizePetSelectionId(previewPetId) === petId
+
+      if (removedPreviewPet) {
+        setPreviewPetId(null)
+      }
+
+      if (removedActivePet) {
+        await updateSettingsFromLatest((currentSettings) => ({
+          ...currentSettings,
+          activePetId: null,
+        }))
+      } else if (removedPreviewPet) {
+        const stillPreviewable = nextPetAssets.some((petAsset) => petAsset.id === previewPetId)
+        if (!stillPreviewable) {
+          setPreviewPetId(normalizePetSelectionId(settingsRef.current.activePetId))
+        }
+      }
+
+      if (isTauriRuntime()) {
+        await emit(PET_ASSETS_CHANGED_EVENT)
+      }
+    } catch (error) {
+      setPetImportError(errorMessage(error))
+    }
+  }
+
   async function loadStorageSummary(options: { clearMessage?: boolean } = {}) {
     const sequence = storageLoadSequenceRef.current + 1
     storageLoadSequenceRef.current = sequence
@@ -1006,6 +1039,9 @@ function App() {
             }}
             onImportCodexPet={(candidate) => {
               void importPetCandidate(candidate)
+            }}
+            onRemovePet={(petId, deleteFiles) => {
+              void removePet(petId, deleteFiles)
             }}
             onRefreshStorage={() => {
               void loadStorageSummary()

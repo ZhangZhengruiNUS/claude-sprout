@@ -1,9 +1,26 @@
-import { Download, FileText, Lock, Monitor, Moon, Pin, RefreshCw, Search, Sun, VolumeX } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
+import {
+  Download,
+  FileText,
+  Lock,
+  Monitor,
+  Moon,
+  Pin,
+  RefreshCw,
+  Search,
+  Sun,
+  Trash2,
+  VolumeX,
+  X,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { builtInPetAsset } from '../pet/builtInPetAsset'
 import {
   isBuiltInPetSelectionId,
   normalizePetSelectionId,
 } from '../pet/builtInPetIdentity'
+import { PetRenderer } from '../pet/PetRenderer'
 import type { CodexPetCandidate, PetAsset } from '../pet/petAssetsApi'
 import type { PetAnimation } from '../pet/petStateMapper'
 import { StoragePanel } from '../storage/StoragePanel'
@@ -37,6 +54,7 @@ type Props = {
   onRefreshPetAssets: () => void
   onScanCodexPets: () => void
   onImportCodexPet: (candidate: CodexPetCandidate) => void
+  onRemovePet: (petId: string, deleteFiles: boolean) => void
   onRefreshStorage: () => void
   onCleanStorage: (kind: StorageCleanKind) => void
   onOpenDataFolder: () => void
@@ -88,15 +106,190 @@ export function SettingsPanel({
   onRefreshPetAssets,
   onScanCodexPets,
   onImportCodexPet,
+  onRemovePet,
   onRefreshStorage,
   onCleanStorage,
   onOpenDataFolder,
 }: Props) {
   const { t } = useTranslation()
-  const installedPetIds = new Set(petAssets.map((petAsset) => petAsset.id))
+  const [isPetManagerOpen, setIsPetManagerOpen] = useState(false)
+  const importedPetAssets = useMemo(
+    () => petAssets.filter((petAsset) => !isBuiltInPetSelectionId(petAsset.id)),
+    [petAssets],
+  )
+  const installedPetIds = new Set(importedPetAssets.map((petAsset) => petAsset.id))
   const normalizedPreviewPetId = normalizePetSelectionId(previewPetId)
   const normalizedActivePetId = normalizePetSelectionId(settings.activePetId)
   const hasPendingPetSelection = normalizedPreviewPetId !== normalizedActivePetId
+  const selectedPet = normalizedPreviewPetId
+    ? importedPetAssets.find((petAsset) => petAsset.id === normalizedPreviewPetId) ?? builtInPetAsset
+    : builtInPetAsset
+  const currentPet = normalizedActivePetId
+    ? importedPetAssets.find((petAsset) => petAsset.id === normalizedActivePetId) ?? builtInPetAsset
+    : builtInPetAsset
+  const petManagerDialog = (
+    <div className="settings-modal-backdrop" role="presentation">
+      <section
+        className="pet-manager-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pet-manager-title"
+      >
+        <header className="pet-manager-header">
+          <span>
+            <strong id="pet-manager-title">{t('settings.petManagerTitle')}</strong>
+            <small>{t('settings.petManagerDescription')}</small>
+          </span>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label={t('common.close')}
+            onClick={() => setIsPetManagerOpen(false)}
+          >
+            <X size={17} />
+          </button>
+        </header>
+        <div className="pet-manager-body">
+          <div className="pet-preview-panel">
+            <PetRenderer status="idle" alertCount={0} scale={0.68} petAsset={selectedPet} />
+            <span>
+              <strong>{selectedPet.name}</strong>
+              <small>
+                {hasPendingPetSelection
+                  ? t('settings.previewingPet')
+                  : t('settings.currentPetApplied')}
+              </small>
+            </span>
+            <div className="setting-actions">
+              <button type="button" onClick={() => onPreviewPetAnimation('waving')}>
+                {t('settings.previewWave')}
+              </button>
+              <button
+                type="button"
+                disabled={!hasPendingPetSelection}
+                onClick={() => onPreviewPet(normalizedActivePetId)}
+              >
+                {t('common.cancel')}
+              </button>
+              <button type="button" disabled={!hasPendingPetSelection} onClick={onApplyPetSelection}>
+                {t('common.apply')}
+              </button>
+            </div>
+          </div>
+          <div className="pet-manager-list" aria-label={t('settings.installedPets')}>
+            {[builtInPetAsset, ...importedPetAssets].map((petAsset) => {
+              const normalizedPetId = normalizePetSelectionId(petAsset.id)
+              const isBuiltIn = normalizedPetId === null
+              const isSelected = normalizedPreviewPetId === normalizedPetId
+              const isActive = normalizedActivePetId === normalizedPetId
+
+              return (
+                <article
+                  key={petAsset.id}
+                  className={`pet-manager-card${isSelected ? ' selected' : ''}`}
+                >
+                  <div className="pet-manager-select">
+                    <PetRenderer status="idle" alertCount={0} compact scale={0.3} petAsset={petAsset} />
+                    <span>
+                      <strong>{petAsset.name}</strong>
+                      <small>{petAsset.description ?? petAsset.spritesheetPath}</small>
+                    </span>
+                  </div>
+                  <div className="pet-manager-card-actions">
+                    {isActive && <small>{t('settings.current')}</small>}
+                    <button
+                      type="button"
+                      disabled={isSelected}
+                      onClick={() => onPreviewPet(normalizedPetId)}
+                    >
+                      {isSelected ? t('settings.previewing') : t('settings.previewPet')}
+                    </button>
+                    {!isBuiltIn && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => confirmPetRemoval(petAsset, false)}
+                        >
+                          {t('settings.removeFromApp')}
+                        </button>
+                        <button
+                          type="button"
+                          className="danger-button"
+                          onClick={() => confirmPetRemoval(petAsset, true)}
+                        >
+                          <Trash2 size={15} />
+                          {t('settings.deletePetFiles')}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        </div>
+        <div className="pet-manager-tools">
+          <div className="setting-actions">
+            <button type="button" onClick={onRefreshPetAssets}>
+              <RefreshCw size={16} />
+              {t('settings.refreshPets')}
+            </button>
+            <button type="button" onClick={onScanCodexPets} disabled={isScanningCodexPets}>
+              <Search size={16} />
+              {isScanningCodexPets ? t('settings.scanning') : t('settings.scanCodex')}
+            </button>
+          </div>
+          {(hasScannedCodexPets || petImportError) && (
+            <div className="pet-import-list" aria-live="polite">
+              {petImportError && <p className="pet-import-error">{petImportError}</p>}
+              {codexPetCandidates.length === 0 && hasScannedCodexPets && !isScanningCodexPets ? (
+                <p className="pet-import-empty">{t('settings.noCodexPets')}</p>
+              ) : (
+                codexPetCandidates.map((candidate) => {
+                  const isImporting = importingPetSourcePath === candidate.sourcePath
+                  const isInstalled = installedPetIds.has(candidate.id) || isBuiltInPetSelectionId(candidate.id)
+
+                  return (
+                    <div key={candidate.sourcePath} className="pet-import-row">
+                      <span className="pet-import-meta">
+                        <strong>{candidate.id}</strong>
+                        <small>{candidate.sourcePath}</small>
+                        {!candidate.valid && candidate.reason && (
+                          <small className="pet-import-error">{candidate.reason}</small>
+                        )}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={!candidate.valid || isImporting || isInstalled}
+                        onClick={() => onImportCodexPet(candidate)}
+                      >
+                        <Download size={16} />
+                        {isImporting
+                          ? t('settings.importing')
+                          : isInstalled
+                            ? t('settings.installed')
+                            : t('settings.import')}
+                      </button>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  )
+
+  function confirmPetRemoval(petAsset: PetAsset, deleteFiles: boolean) {
+    const message = deleteFiles
+      ? t('settings.confirmDeletePetFiles', { name: petAsset.name })
+      : t('settings.confirmRemovePet', { name: petAsset.name })
+
+    if (window.confirm(message)) {
+      onRemovePet(petAsset.id, deleteFiles)
+    }
+  }
 
   return (
     <section className="settings-panel">
@@ -320,95 +513,25 @@ export function SettingsPanel({
           <strong>{t('settings.petAppearance')}</strong>
           <small>{t('settings.petAppearanceDescription')}</small>
         </span>
-        <div className="setting-actions">
-          <button type="button" onClick={onRefreshPetAssets}>
-            <RefreshCw size={16} />
-            {t('settings.refreshPets')}
-          </button>
-          <button type="button" onClick={onScanCodexPets} disabled={isScanningCodexPets}>
-            <Search size={16} />
-            {isScanningCodexPets ? t('settings.scanning') : t('settings.scanCodex')}
-          </button>
-        </div>
-      </div>
-      <div className="pet-picker">
-        <button
-          type="button"
-          className={normalizedPreviewPetId === null ? 'active' : ''}
-          onClick={() => onPreviewPet(null)}
-        >
-          Claude Sprout
-        </button>
-        {petAssets.map((petAsset) => (
-          <button
-            key={petAsset.id}
-            type="button"
-            className={normalizedPreviewPetId === petAsset.id ? 'active' : ''}
-            onClick={() => onPreviewPet(petAsset.id)}
-          >
-            {petAsset.name}
-          </button>
-        ))}
-      </div>
-      <div className="pet-apply-row">
-        <span>
-          {hasPendingPetSelection
-            ? t('settings.previewingPet')
-            : t('settings.currentPetApplied')}
-        </span>
-        <div className="setting-actions">
-          <button type="button" onClick={() => onPreviewPetAnimation('waving')}>
-            {t('settings.previewWave')}
-          </button>
-          <button
-            type="button"
-            disabled={!hasPendingPetSelection}
-            onClick={() => onPreviewPet(normalizedActivePetId)}
-          >
-            {t('common.cancel')}
-          </button>
-          <button type="button" disabled={!hasPendingPetSelection} onClick={onApplyPetSelection}>
-            {t('common.apply')}
+        <div className="pet-appearance-entry">
+          <div className="pet-appearance-current">
+            <PetRenderer status="idle" alertCount={0} compact scale={0.28} petAsset={currentPet} />
+            <span>
+              <strong>{currentPet.name}</strong>
+              <small>
+                {t('settings.installedPetCount', { count: importedPetAssets.length })}
+              </small>
+            </span>
+          </div>
+          <button type="button" onClick={() => setIsPetManagerOpen(true)}>
+            {t('settings.managePets')}
           </button>
         </div>
       </div>
-      {(hasScannedCodexPets || petImportError) && (
-        <div className="pet-import-list" aria-live="polite">
-          {petImportError && <p className="pet-import-error">{petImportError}</p>}
-          {codexPetCandidates.length === 0 && hasScannedCodexPets && !isScanningCodexPets ? (
-            <p className="pet-import-empty">{t('settings.noCodexPets')}</p>
-          ) : (
-            codexPetCandidates.map((candidate) => {
-              const isImporting = importingPetSourcePath === candidate.sourcePath
-              const isInstalled = installedPetIds.has(candidate.id) || isBuiltInPetSelectionId(candidate.id)
-
-              return (
-                <div key={candidate.sourcePath} className="pet-import-row">
-                  <span className="pet-import-meta">
-                    <strong>{candidate.id}</strong>
-                    <small>{candidate.sourcePath}</small>
-                    {!candidate.valid && candidate.reason && (
-                      <small className="pet-import-error">{candidate.reason}</small>
-                    )}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={!candidate.valid || isImporting || isInstalled}
-                    onClick={() => onImportCodexPet(candidate)}
-                  >
-                    <Download size={16} />
-                    {isImporting
-                      ? t('settings.importing')
-                      : isInstalled
-                        ? t('settings.installed')
-                        : t('settings.import')}
-                  </button>
-                </div>
-              )
-            })
-          )}
-        </div>
-      )}
+      {isPetManagerOpen &&
+        (typeof document === 'undefined'
+          ? petManagerDialog
+          : createPortal(petManagerDialog, document.body))}
       <StoragePanel
         summary={storageSummary}
         isLoading={isStorageLoading}

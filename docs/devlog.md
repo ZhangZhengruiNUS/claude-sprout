@@ -2,6 +2,13 @@
 
 ## 2026-05-24
 
+- Reworked Settings > Pet appearance into a compact manager flow:
+  - the Settings row now shows only the current pet and imported-pet count plus a Manage pets action, avoiding an expanding grid in the main settings surface.
+  - the pet appearance manager opens as a portal-backed modal with large pet preview, wave preview, apply/cancel, installed-pet cards, refresh, and Codex scan/import.
+  - imported pet management now supports two delete scopes: remove from Claude Sprout while preserving local files, or delete the imported pet directory under `%USERPROFILE%\.claude-sprout\pets`.
+  - Rust validates pet ids before deletion to prevent path traversal and returns the updated installed-pet list.
+  - fixed browser QA issues found during implementation: nested button markup from `PetRenderer` inside card buttons, and mobile modal positioning inside a `backdrop-filter` settings panel.
+  - verified with full Vitest, lint, production build, Rust tests, and Playwright desktop/mobile modal screenshots with zero console errors.
 - Fixed the remaining pet right-click menu resize/flicker bug in Message and Board modes:
   - root cause was still changing the pet window bounds to make room for the custom menu; Board cards and Message layout reacted to that viewport change.
   - added a dedicated hidden transparent `pet-menu` Tauri window that renders the same glass/icon React menu.

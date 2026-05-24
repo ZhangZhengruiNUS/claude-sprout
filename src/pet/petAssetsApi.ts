@@ -44,6 +44,15 @@ export async function importCodexPet(sourcePath: string): Promise<PetManifest> {
   return invoke<PetManifest>('import_codex_pet', { path: sourcePath })
 }
 
+export async function removeInstalledPet(
+  id: string,
+  deleteFiles: boolean,
+): Promise<InstalledPet[]> {
+  if (!isTauriRuntime()) return []
+
+  return invoke<InstalledPet[]>('remove_installed_pet', { id, deleteFiles })
+}
+
 export async function listPetAssets(): Promise<PetAsset[]> {
   if (!isTauriRuntime()) return []
 

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   importCodexPet,
   listPetAssets,
+  removeInstalledPet,
   scanCodexPetCandidates,
   type InstalledPet,
 } from './petAssetsApi'
@@ -74,6 +75,34 @@ describe('pet asset api', () => {
     expect(invokeMock).toHaveBeenCalledWith('import_codex_pet', {
       path: 'C:/Users/Test/.codex/pets/sprout',
     })
+  })
+
+  it('removes an installed pet through Tauri', async () => {
+    invokeMock.mockResolvedValueOnce([
+      {
+        id: 'remaining',
+        name: 'Remaining',
+        description: null,
+        spritesheetPath: 'C:/pets/remaining/spritesheet.webp',
+        atlas: 'codex-8x9',
+      },
+    ] satisfies InstalledPet[])
+
+    const pets = await removeInstalledPet('handoff', true)
+
+    expect(invokeMock).toHaveBeenCalledWith('remove_installed_pet', {
+      id: 'handoff',
+      deleteFiles: true,
+    })
+    expect(pets).toEqual([
+      {
+        id: 'remaining',
+        name: 'Remaining',
+        description: null,
+        spritesheetPath: 'C:/pets/remaining/spritesheet.webp',
+        atlas: 'codex-8x9',
+      },
+    ])
   })
 
   it('returns no scan candidates outside Tauri', async () => {

@@ -2,7 +2,10 @@ use super::{atlas_profile::codex_8x9_profile, codex_validator::validate_codex_pe
 use crate::session_store;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::{fs, path::Path};
+use std::{
+    fs,
+    path::{Component, Path, PathBuf},
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PetManifest {
@@ -69,6 +72,11 @@ pub fn list_installed_pets() -> Result<Vec<InstalledPet>, String> {
     list_installed_pets_from_root(&root)
 }
 
+pub fn remove_installed_pet(id: &str, delete_files: bool) -> Result<Vec<InstalledPet>, String> {
+    let root = session_store::ensure_layout()?.join("pets");
+    remove_installed_pet_from_root(&root, id, delete_files)
+}
+
 fn list_installed_pets_from_root(root: &Path) -> Result<Vec<InstalledPet>, String> {
     if !root.is_dir() {
         return Ok(Vec::new());
@@ -104,6 +112,38 @@ fn list_installed_pets_from_root(root: &Path) -> Result<Vec<InstalledPet>, Strin
     Ok(pets)
 }
 
+fn remove_installed_pet_from_root(
+    root: &Path,
+    id: &str,
+    delete_files: bool,
+) -> Result<Vec<InstalledPet>, String> {
+    let pet_dir = safe_pet_dir(root, id)?;
+    if delete_files {
+        if pet_dir.exists() {
+            fs::remove_dir_all(&pet_dir).map_err(|error| error.to_string())?;
+        }
+    } else {
+        let manifest_path = pet_dir.join("manifest.json");
+        if manifest_path.exists() {
+            fs::remove_file(manifest_path).map_err(|error| error.to_string())?;
+        }
+    }
+
+    list_installed_pets_from_root(root)
+}
+
+fn safe_pet_dir(root: &Path, id: &str) -> Result<PathBuf, String> {
+    if id.is_empty() || id.contains('/') || id.contains('\\') || id.contains(':') {
+        return Err(format!("Invalid pet id: {id}"));
+    }
+
+    let mut components = Path::new(id).components();
+    match (components.next(), components.next()) {
+        (Some(Component::Normal(name)), None) if name.to_string_lossy() == id => Ok(root.join(id)),
+        _ => Err(format!("Invalid pet id: {id}")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -118,6 +158,22 @@ mod tests {
             .expect("system time should be after epoch")
             .as_nanos();
         std::env::temp_dir().join(format!("claude-sprout-pets-test-{id}"))
+    }
+
+    fn write_installed_pet(root: &Path, id: &str, name: &str) -> PathBuf {
+        let pet_dir = root.join(id);
+        fs::create_dir_all(&pet_dir).expect("pet directory should be created");
+        fs::write(pet_dir.join("spritesheet.webp"), "fake")
+            .expect("spritesheet should be writable");
+        fs::write(pet_dir.join("pet.json"), "{}").expect("pet metadata should be writable");
+        fs::write(
+            pet_dir.join("manifest.json"),
+            format!(
+                r#"{{"id":"{id}","name":"{name}","description":null,"source":"codex","sourcePath":"C:/pets/{id}","spritesheet":"spritesheet.webp","atlas":"codex-8x9","importedAt":"2026-05-20T00:00:00Z"}}"#
+            ),
+        )
+        .expect("manifest should be writable");
+        pet_dir
     }
 
     #[test]
@@ -164,5 +220,70 @@ mod tests {
 
         assert!(raw.contains("spritesheetPath"));
         assert!(!raw.contains("spritesheet_path"));
+    }
+
+    #[test]
+    fn remove_installed_pet_from_root_hides_manifest_but_keeps_assets() {
+        let root = temp_root();
+        let pet_dir = write_installed_pet(&root, "sprout", "Sprout");
+        write_installed_pet(&root, "fern", "Fern");
+
+        let pets = remove_installed_pet_from_root(&root, "sprout", false)
+            .expect("pet should be removed from installed list");
+
+        assert_eq!(pets.len(), 1);
+        assert_eq!(pets[0].id, "fern");
+        assert!(!pet_dir.join("manifest.json").exists());
+        assert!(pet_dir.join("spritesheet.webp").is_file());
+        assert!(pet_dir.join("pet.json").is_file());
+        fs::remove_dir_all(root).expect("temp pets root should be removable");
+    }
+
+    #[test]
+    fn remove_installed_pet_from_root_deletes_pet_directory() {
+        let root = temp_root();
+        let pet_dir = write_installed_pet(&root, "sprout", "Sprout");
+        write_installed_pet(&root, "fern", "Fern");
+
+        let pets = remove_installed_pet_from_root(&root, "sprout", true)
+            .expect("pet directory should be deleted");
+
+        assert_eq!(pets.len(), 1);
+        assert_eq!(pets[0].id, "fern");
+        assert!(!pet_dir.exists());
+        fs::remove_dir_all(root).expect("temp pets root should be removable");
+    }
+
+    #[test]
+    fn remove_installed_pet_from_root_rejects_path_traversal() {
+        let root = temp_root();
+        let pet_dir = write_installed_pet(&root, "sprout", "Sprout");
+
+        for id in ["../sprout", r"..\sprout", "/tmp/sprout", r"C:\tmp\sprout"] {
+            let error = remove_installed_pet_from_root(&root, id, true)
+                .expect_err("unsafe pet id should be rejected");
+            assert!(error.contains("Invalid pet id"));
+        }
+
+        assert!(pet_dir.join("manifest.json").is_file());
+        assert!(pet_dir.join("spritesheet.webp").is_file());
+        fs::remove_dir_all(root).expect("temp pets root should be removable");
+    }
+
+    #[test]
+    fn remove_installed_pet_from_root_returns_updated_list() {
+        let root = temp_root();
+        write_installed_pet(&root, "sprout", "Sprout");
+        write_installed_pet(&root, "fern", "Fern");
+        write_installed_pet(&root, "moss", "Moss");
+
+        let pets = remove_installed_pet_from_root(&root, "fern", false)
+            .expect("pet should be removed from installed list");
+
+        assert_eq!(
+            pets.iter().map(|pet| pet.id.as_str()).collect::<Vec<_>>(),
+            vec!["moss", "sprout"]
+        );
+        fs::remove_dir_all(root).expect("temp pets root should be removable");
     }
 }

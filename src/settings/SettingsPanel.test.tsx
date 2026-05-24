@@ -9,7 +9,16 @@ function renderSettingsPanel() {
   return renderToStaticMarkup(
     <SettingsPanel
       settings={DEFAULT_APP_SETTINGS}
-      petAssets={[builtInPetAsset]}
+      petAssets={[
+        builtInPetAsset,
+        {
+          ...builtInPetAsset,
+          id: 'handoff',
+          name: 'Handoff',
+          description: 'Imported helper',
+          spritesheetPath: 'C:/pets/handoff/spritesheet.webp',
+        },
+      ]}
       previewPetId={null}
       codexPetCandidates={[]}
       hasScannedCodexPets={false}
@@ -28,6 +37,7 @@ function renderSettingsPanel() {
       onRefreshPetAssets={vi.fn()}
       onScanCodexPets={vi.fn()}
       onImportCodexPet={vi.fn()}
+      onRemovePet={vi.fn()}
       onRefreshStorage={vi.fn()}
       onCleanStorage={vi.fn()}
       onOpenDataFolder={vi.fn()}
@@ -50,5 +60,13 @@ describe('SettingsPanel', () => {
     expect(html).toContain('Follow Windows by default')
     expect(html).toContain('Light')
     expect(html).toContain('Dark')
+  })
+
+  it('keeps pet appearance compact behind a manager entry', () => {
+    const html = renderSettingsPanel()
+
+    expect(html).toContain('Manage pets')
+    expect(html).toContain('Claude Sprout')
+    expect(html).not.toContain('Handoff</button>')
   })
 })

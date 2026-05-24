@@ -79,6 +79,14 @@ pub fn list_installed_pets() -> Result<Vec<pet_import::InstalledPet>, String> {
 }
 
 #[tauri::command]
+pub fn remove_installed_pet(
+    id: String,
+    delete_files: bool,
+) -> Result<Vec<pet_import::InstalledPet>, String> {
+    pet_import::remove_installed_pet(&id, delete_files)
+}
+
+#[tauri::command]
 pub fn get_storage_summary() -> Result<storage_cleanup::StorageSummary, String> {
     storage_cleanup::summarize()
 }

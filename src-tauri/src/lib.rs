@@ -46,6 +46,7 @@ pub fn run() {
             commands::scan_codex_pets,
             commands::import_codex_pet,
             commands::list_installed_pets,
+            commands::remove_installed_pet,
             commands::get_storage_summary,
             commands::clean_storage
         ])
