@@ -6,7 +6,7 @@ function notification(key: string): SessionNotification {
   return {
     key,
     title: 'Claude Code needs permission',
-    body: 'claude-sprout - E:\\Codex Project\\claude-sprout',
+    body: 'agent-desktop-companion - E:\\Codex Project\\agent-desktop-companion',
   }
 }
 

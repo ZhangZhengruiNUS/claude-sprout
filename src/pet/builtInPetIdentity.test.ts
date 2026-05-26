@@ -7,11 +7,14 @@ import {
 } from './builtInPetIdentity'
 
 describe('built-in pet identity', () => {
-  it('treats retired imported Claude Sprout ids as the built-in pet', () => {
+  it('treats Glint and retired Claude Sprout ids as the built-in pet', () => {
     expect(normalizePetSelectionId(null)).toBeNull()
     expect(normalizePetSelectionId(BUILT_IN_PET_ID)).toBeNull()
+    expect(normalizePetSelectionId('built-in-claude-sprout')).toBeNull()
     expect(normalizePetSelectionId('claude-sprout')).toBeNull()
     expect(normalizePetSelectionId('handoff')).toBe('handoff')
+    expect(isBuiltInPetSelectionId(BUILT_IN_PET_ID)).toBe(true)
+    expect(isBuiltInPetSelectionId('built-in-claude-sprout')).toBe(true)
     expect(isBuiltInPetSelectionId('claude-sprout')).toBe(true)
   })
 

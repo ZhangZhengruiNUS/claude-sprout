@@ -101,7 +101,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time should be after epoch")
             .as_nanos();
-        std::env::temp_dir().join(format!("claude-sprout-codex-validator-test-{id}"))
+        std::env::temp_dir().join(format!("agent-desktop-companion-codex-validator-test-{id}"))
     }
 
     fn write_pet_with_sprite_size(width: u32, height: u32) -> PathBuf {

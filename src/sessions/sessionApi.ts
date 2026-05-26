@@ -14,7 +14,7 @@ export async function loadSessions(): Promise<SessionSnapshot[]> {
 
 export async function getDataRoot(): Promise<string> {
   if (!isTauriRuntime()) {
-    return '%USERPROFILE%\\.claude-sprout'
+    return '%USERPROFILE%\\.agent-desktop-companion'
   }
 
   return invoke<string>('get_data_root')

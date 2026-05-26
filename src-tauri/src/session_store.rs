@@ -6,6 +6,11 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+const APP_HOME_ENV: &str = "AGENT_DESKTOP_COMPANION_HOME";
+const LEGACY_HOME_ENV: &str = "CLAUDE_SPROUT_HOME";
+const APP_DATA_DIR: &str = ".agent-desktop-companion";
+const LEGACY_DATA_DIR: &str = ".claude-sprout";
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum SessionStatus {
@@ -43,13 +48,41 @@ pub struct SessionSnapshot {
 }
 
 pub fn data_dir() -> PathBuf {
-    if let Ok(path) = std::env::var("CLAUDE_SPROUT_HOME") {
+    let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
+    let app_home = std::env::var(APP_HOME_ENV).ok();
+    let legacy_home = std::env::var(LEGACY_HOME_ENV).ok();
+    resolve_data_dir(&home, app_home.as_deref(), legacy_home.as_deref())
+}
+
+fn resolve_data_dir(home: &Path, app_home: Option<&str>, legacy_home: Option<&str>) -> PathBuf {
+    if let Some(path) = non_empty_env_path(app_home) {
+        return PathBuf::from(path);
+    }
+    if let Some(path) = non_empty_env_path(legacy_home) {
         return PathBuf::from(path);
     }
 
-    dirs::home_dir()
-        .unwrap_or_else(|| PathBuf::from("."))
-        .join(".claude-sprout")
+    let app_dir = home.join(APP_DATA_DIR);
+    if app_dir.exists() {
+        return app_dir;
+    }
+
+    let legacy_dir = home.join(LEGACY_DATA_DIR);
+    if legacy_dir.exists() {
+        return legacy_dir;
+    }
+
+    app_dir
+}
+
+fn non_empty_env_path(value: Option<&str>) -> Option<&str> {
+    value.and_then(|path| {
+        if path.trim().is_empty() {
+            None
+        } else {
+            Some(path)
+        }
+    })
 }
 
 pub fn ensure_layout() -> Result<PathBuf, String> {
@@ -212,7 +245,7 @@ mod tests {
     #[test]
     fn fingerprints_json_session_files_only() {
         let root = std::env::temp_dir().join(format!(
-            "claude-sprout-session-fingerprint-{}",
+            "agent-desktop-companion-session-fingerprint-{}",
             Utc::now().timestamp_nanos_opt().unwrap_or_default()
         ));
         let session_dir = root.join("sessions");
@@ -273,9 +306,57 @@ mod tests {
     }
 
     #[test]
+    fn resolves_new_data_home_before_legacy_home() {
+        let root = PathBuf::from("C:/Users/Test");
+
+        assert_eq!(
+            resolve_data_dir(
+                &root,
+                Some("C:/custom/agent-desktop-companion"),
+                Some("C:/custom/claude-sprout"),
+            ),
+            PathBuf::from("C:/custom/agent-desktop-companion")
+        );
+    }
+
+    #[test]
+    fn resolves_legacy_home_when_new_home_is_not_set() {
+        let root = PathBuf::from("C:/Users/Test");
+
+        assert_eq!(
+            resolve_data_dir(&root, None, Some("C:/custom/claude-sprout")),
+            PathBuf::from("C:/custom/claude-sprout")
+        );
+    }
+
+    #[test]
+    fn resolves_existing_legacy_directory_before_creating_new_default() {
+        let home = std::env::temp_dir().join(format!(
+            "agent-desktop-companion-home-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let legacy = home.join(LEGACY_DATA_DIR);
+        fs::create_dir_all(&legacy).expect("legacy data directory should be created");
+
+        assert_eq!(resolve_data_dir(&home, None, None), legacy);
+
+        fs::remove_dir_all(home).expect("temp home should be removable");
+    }
+
+    #[test]
+    fn resolves_new_default_when_no_legacy_directory_exists() {
+        let home = std::env::temp_dir().join(format!(
+            "agent-desktop-companion-new-home-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+
+        assert_eq!(resolve_data_dir(&home, None, None), home.join(APP_DATA_DIR));
+    }
+
+    #[test]
     fn skips_malformed_session_files_when_listing() {
         let root = std::env::temp_dir().join(format!(
-            "claude-sprout-session-list-{}",
+            "agent-desktop-companion-session-list-{}",
             Utc::now().timestamp_nanos_opt().unwrap_or_default()
         ));
         let session_dir = root.join("sessions");

@@ -1,6 +1,6 @@
 # Codex-Compatible Pet Importer
 
-Claude Sprout supports a compatibility layer for custom Codex-compatible pets. The renderer should use Claude Sprout manifests, not Codex files directly.
+Agent Desktop Companion supports a compatibility layer for custom Codex-compatible pets. The renderer uses installed Agent Desktop Companion manifests, not Codex files directly.
 
 ## Search Paths
 
@@ -42,16 +42,18 @@ Claude Sprout supports a compatibility layer for custom Codex-compatible pets. T
 | 7 | `running` | 6 | loop |
 | 8 | `review` | 6 | loop |
 
-Claude Sprout maps Claude Code session status to these Codex row semantics: active work uses `running`, permission waits use `waiting`, ordinary input waits are weak reminders that settle to `idle`, new clean completions play `jumping` once and then settle back to `idle`, errors use `failed`, and quiet or closed sessions use `idle`. The `review` row remains available for explicit review-style actions instead of being held forever after completion.
+Agent Desktop Companion maps Claude Code session status to these Codex row semantics: active work uses `running`, permission waits use `waiting`, ordinary input waits are weak reminders that settle to `idle`, new clean completions play `jumping` once and then settle back to `idle`, errors use `failed`, and quiet or closed sessions use `idle`. The `review` row remains available for explicit review-style actions instead of being held forever after completion.
 
 While dragging an imported pet, horizontal movement temporarily overrides the sustained status animation with `runningRight` or `runningLeft`. Releasing the drag clears that override and returns to the current session-driven animation.
 
 ## Import Behavior
 
 1. Validate required files and `spritesheet.webp` dimensions.
-2. Copy the package into `%USERPROFILE%\.claude-sprout\pets\<pet-id>`.
+2. Copy the package into `%USERPROFILE%\.agent-desktop-companion\pets\<pet-id>` by default.
 3. Generate `manifest.json`.
 4. Use atlas profile `codex-8x9`.
+
+If `AGENT_DESKTOP_COMPANION_HOME` is set, imports use that root. Legacy `CLAUDE_SPROUT_HOME` and `%USERPROFILE%\.claude-sprout` remain readable for compatibility; the app does not automatically move or delete old pet directories.
 
 ## Copyright Boundary
 

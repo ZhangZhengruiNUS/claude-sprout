@@ -5,8 +5,8 @@ import type { SessionSnapshot, SessionStatus } from './sessionTypes'
 function session(session_id: string, status: SessionStatus): SessionSnapshot {
   return {
     session_id,
-    project_name: 'claude-sprout',
-    cwd: 'E:\\Codex Project\\claude-sprout',
+    project_name: 'agent-desktop-companion',
+    cwd: 'E:\\Codex Project\\agent-desktop-companion',
     status,
     last_event: 'Notification',
     updated_at: '2026-05-20T00:00:00Z',
@@ -21,7 +21,7 @@ describe('session notifications', () => {
         {
           key: 'a:waiting_permission:2026-05-20T00:00:00Z',
           title: 'Claude Code needs permission',
-          body: 'claude-sprout - E:\\Codex Project\\claude-sprout',
+          body: 'agent-desktop-companion - E:\\Codex Project\\agent-desktop-companion',
         },
       ])
   })

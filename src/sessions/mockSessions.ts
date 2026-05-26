@@ -20,8 +20,8 @@ export const mockSessions: SessionSnapshot[] = [
   },
   {
     session_id: 'mock-running-002',
-    project_name: 'claude-sprout',
-    cwd: 'E:\\Codex Project\\claude-sprout',
+    project_name: 'agent-desktop-companion',
+    cwd: 'E:\\Codex Project\\agent-desktop-companion',
     status: 'tool_running',
     last_event: 'PreToolUse',
     notification_type: null,

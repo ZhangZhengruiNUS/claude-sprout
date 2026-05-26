@@ -39,7 +39,7 @@ describe('FloatingPetAssistant', () => {
             {
               key: 'session:running:now',
               sessionId: 'session',
-              title: 'claude-sprout - session',
+              title: 'agent-desktop-companion - session',
               detail: 'Using Edit',
               meta: 'running - 12% ctx',
               status: 'tool_running',
@@ -51,7 +51,7 @@ describe('FloatingPetAssistant', () => {
             {
               key: 'session:running:now',
               sessionId: 'session',
-              title: 'claude-sprout - session',
+              title: 'agent-desktop-companion - session',
               detail: 'Using Edit',
               meta: 'running - 12% ctx',
               status: 'tool_running',
@@ -75,7 +75,7 @@ describe('FloatingPetAssistant', () => {
     const card = {
       key: 'session:running:now',
       sessionId: 'session',
-      title: 'claude-sprout - session',
+      title: 'agent-desktop-companion - session',
       detail: 'Using Edit',
       meta: 'running - 12% ctx',
       status: 'tool_running' as const,
@@ -123,7 +123,7 @@ describe('FloatingPetAssistant', () => {
               sessionId: 'release',
               title: 'Release publish finished',
               detail: 'Claude: Built the release checklist',
-              meta: 'claude-sprout - releas - 42% ctx',
+              meta: 'agent-desktop-companion - releas - 42% ctx',
               tone: 'complete',
               persistent: false,
               updatedAt: '2026-05-23T00:00:00Z',
@@ -139,7 +139,7 @@ describe('FloatingPetAssistant', () => {
 
     expect(html).toContain('Release publish finished')
     expect(html).toContain('Claude: Built the release checklist')
-    expect(html).toContain('claude-sprout - releas - 42% ctx')
+    expect(html).toContain('agent-desktop-companion - releas - 42% ctx')
     expect(html).toContain('class="pet-message-open"')
     expect(html).toContain('<button type="button" class="pet-message-open"')
   })
@@ -153,7 +153,7 @@ describe('FloatingPetAssistant', () => {
             {
               key: 'session:running:now',
               sessionId: 'session',
-              title: 'claude-sprout - session',
+              title: 'agent-desktop-companion - session',
               detail: 'Using Edit',
               meta: 'running - 12% ctx',
               status: 'tool_running',
@@ -165,7 +165,7 @@ describe('FloatingPetAssistant', () => {
             {
               key: 'session:running:now',
               sessionId: 'session',
-              title: 'claude-sprout - session',
+              title: 'agent-desktop-companion - session',
               detail: 'Using Edit',
               meta: 'running - 12% ctx',
               status: 'tool_running',

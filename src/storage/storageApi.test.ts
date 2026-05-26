@@ -37,7 +37,7 @@ describe('storage api', () => {
 
   it('loads storage summary from Tauri', async () => {
     invokeMock.mockResolvedValueOnce({
-      rootPath: 'C:/Users/Test/.claude-sprout',
+      rootPath: 'C:/Users/Test/.agent-desktop-companion',
       sessions: {
         fileCount: 2,
         directoryCount: 0,
@@ -63,7 +63,7 @@ describe('storage api', () => {
 
     const summary = await getStorageSummary()
 
-    expect(summary.rootPath).toBe('C:/Users/Test/.claude-sprout')
+    expect(summary.rootPath).toBe('C:/Users/Test/.agent-desktop-companion')
     expect(invokeMock).toHaveBeenCalledWith('get_storage_summary')
   })
 

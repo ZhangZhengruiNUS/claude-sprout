@@ -179,7 +179,7 @@ function usage() {
   console.log(`Usage: node scripts/release-doctor.mjs [--target nsis|msi|all]
 
 Checks the local Tauri installer tool cache under src-tauri/target/.tauri.
-The default target is nsis because it is Claude Sprout's default installer path.`)
+The default target is nsis because it is Agent Desktop Companion's default installer path.`)
 }
 
 async function main() {
@@ -192,7 +192,7 @@ async function main() {
   const repoRoot = join(fileURLToPath(new URL('.', import.meta.url)), '..')
   const report = await inspectReleaseTools({ repoRoot })
 
-  console.log('Claude Sprout release doctor')
+  console.log('Agent Desktop Companion release doctor')
   console.log(`NSIS cache: ${report.nsis.cacheRoot}`)
   console.log(`WiX cache: ${report.wix.cacheRoot}`)
   printFileGroup('NSIS local cache', report.nsis.requiredFiles)

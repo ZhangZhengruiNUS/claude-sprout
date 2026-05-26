@@ -97,10 +97,10 @@ import './styles/app.css'
 
 type WindowKind = 'panel' | 'pet' | 'pet-menu'
 type StorageMessage = { kind: 'success' | 'error'; text: string }
-const SETTINGS_CHANGED_EVENT = 'claude-sprout://settings-changed'
-const PET_ASSETS_CHANGED_EVENT = 'claude-sprout://pet-assets-changed'
-const SESSION_CHANGED_EVENT = 'claude-sprout://sessions-changed'
-const OPEN_SETTINGS_EVENT = 'claude-sprout://open-settings'
+const SETTINGS_CHANGED_EVENT = 'agent-desktop-companion://settings-changed'
+const PET_ASSETS_CHANGED_EVENT = 'agent-desktop-companion://pet-assets-changed'
+const SESSION_CHANGED_EVENT = 'agent-desktop-companion://sessions-changed'
+const OPEN_SETTINGS_EVENT = 'agent-desktop-companion://open-settings'
 
 function resolveInitialWindowKind(): WindowKind {
   const params = new URLSearchParams(window.location.search)
@@ -124,7 +124,7 @@ function App() {
   const [sessions, setSessions] = useState<SessionSnapshot[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sessionLoadError, setSessionLoadError] = useState<string | null>(null)
-  const [dataRoot, setDataRoot] = useState('%USERPROFILE%\\.claude-sprout')
+  const [dataRoot, setDataRoot] = useState('%USERPROFILE%\\.agent-desktop-companion')
   const [settings, setSettings] = useState(loadAppSettings)
   const [activeTab, setActiveTab] = useState<'sessions' | 'settings'>('sessions')
   const [windowKind] = useState<WindowKind>(resolveInitialWindowKind)
@@ -965,7 +965,7 @@ function App() {
       <aside className="pet-rail" aria-label={t('app.petPreviewLabel')}>
         <div className="brand-mark">
           <PawPrint size={18} />
-          <span>Claude Sprout</span>
+          <span>Agent Desktop Companion</span>
         </div>
         <PetRenderer
           status={topStatus}

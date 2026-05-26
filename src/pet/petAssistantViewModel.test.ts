@@ -58,7 +58,7 @@ describe('pet assistant view model', () => {
       context_used_percentage: 42,
     })
     const error = session('error', 'error', undefined, {
-      project_name: 'claude-sprout',
+      project_name: 'agent-desktop-companion',
       last_tool: 'Edit',
       context_used_percentage: 64,
     })
@@ -87,7 +87,7 @@ describe('pet assistant view model', () => {
     expect(view.messages).toContainEqual(
       expect.objectContaining({
         key: petAssistantMessageKey(error),
-        title: 'claude-sprout - error failed',
+        title: 'agent-desktop-companion - error failed',
         detail: 'Failed around Edit',
         meta: 'error - 64% ctx',
         tone: 'failed',

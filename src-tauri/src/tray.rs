@@ -7,9 +7,9 @@ use tauri::{
     App, Emitter, Listener, Manager, Wry,
 };
 
-const SESSION_CHANGED_EVENT: &str = "claude-sprout://sessions-changed";
-const SETTINGS_CHANGED_EVENT: &str = "claude-sprout://settings-changed";
-const OPEN_SETTINGS_EVENT: &str = "claude-sprout://open-settings";
+const SESSION_CHANGED_EVENT: &str = "agent-desktop-companion://sessions-changed";
+const SETTINGS_CHANGED_EVENT: &str = "agent-desktop-companion://settings-changed";
+const OPEN_SETTINGS_EVENT: &str = "agent-desktop-companion://open-settings";
 
 #[derive(Clone)]
 struct TrayMenuItems {
@@ -81,8 +81,8 @@ pub fn create_tray(app: &mut App) -> tauri::Result<()> {
         }
     });
 
-    let mut tray = TrayIconBuilder::with_id("claude-sprout-tray")
-        .tooltip("Claude Sprout")
+    let mut tray = TrayIconBuilder::with_id("agent-desktop-companion-tray")
+        .tooltip("Agent Desktop Companion")
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "quit" => app.exit(0),

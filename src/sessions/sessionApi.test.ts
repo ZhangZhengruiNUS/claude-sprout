@@ -64,9 +64,9 @@ describe('session api', () => {
   })
 
   it('reads the active data root from Tauri', async () => {
-    invokeMock.mockResolvedValueOnce('C:\\Users\\ASUS\\.claude-sprout')
+    invokeMock.mockResolvedValueOnce('C:\\Users\\ASUS\\.agent-desktop-companion')
 
-    await expect(getDataRoot()).resolves.toBe('C:\\Users\\ASUS\\.claude-sprout')
+    await expect(getDataRoot()).resolves.toBe('C:\\Users\\ASUS\\.agent-desktop-companion')
     expect(invokeMock).toHaveBeenCalledWith('get_data_root')
   })
 })

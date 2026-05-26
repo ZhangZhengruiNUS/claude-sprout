@@ -1,15 +1,15 @@
 # Release Checklist
 
-This checklist is for the first tagged Windows release of Claude Sprout.
+This checklist is for the first tagged Windows release of Agent Desktop Companion.
 
 ## Release Scope
 
 - Target version: `v0.1.0`.
 - Official Windows artifacts:
-  - standalone release executable: `src-tauri\target\release\claude-sprout.exe`
-  - NSIS installer: `src-tauri\target\release\bundle\nsis\Claude Sprout_0.1.0_x64-setup.exe`
+  - standalone release executable: `src-tauri\target\release\agent-desktop-companion.exe`
+  - NSIS installer: `src-tauri\target\release\bundle\nsis\Agent Desktop Companion_0.1.0_x64-setup.exe`
 - Optional maintainer artifact:
-  - MSI installer: `src-tauri\target\release\bundle\msi\Claude Sprout_0.1.0_x64_en-US.msi`
+  - MSI installer: `src-tauri\target\release\bundle\msi\Agent Desktop Companion_0.1.0_x64_en-US.msi`
 - Do not block the release on MSI unless a specific distribution requirement needs it.
 - Do not tag the release until the verification and artifact checks below pass.
 
@@ -35,9 +35,11 @@ This checklist is for the first tagged Windows release of Claude Sprout.
    - `src-tauri\Cargo.toml`
    - `src-tauri\Cargo.lock`
 4. Confirm release notes mention the privacy boundaries:
-   - local-only state under `%USERPROFILE%\.claude-sprout`
+   - local-only state under `%USERPROFILE%\.agent-desktop-companion`
+   - legacy read compatibility for `CLAUDE_SPROUT_HOME` and `%USERPROFILE%\.claude-sprout`
    - no prompt/output capture by default
    - no automatic Claude Code permission approval
+   - the app has a new Windows identity after the identifier migration to `dev.agentdesktopcompanion.desktop`; users may need to uninstall the old app manually
 5. Confirm the official artifact policy still matches `docs\install-windows.md`.
 6. Confirm the release notes say the app is unsigned unless code signing has been configured.
 
@@ -79,7 +81,7 @@ Build the official installer:
 npm run release:nsis
 ```
 
-Tauri patches `src-tauri\target\release\claude-sprout.exe` with bundle metadata while producing the NSIS installer. Re-run the standalone executable build after `release:nsis` before hashing or publishing the standalone exe:
+Tauri patches `src-tauri\target\release\agent-desktop-companion.exe` with bundle metadata while producing the NSIS installer. Re-run the standalone executable build after `release:nsis` before hashing or publishing the standalone exe:
 
 ```powershell
 npm run release:exe
@@ -97,15 +99,15 @@ npm run release:msi
 Confirm the expected official files exist:
 
 ```powershell
-Test-Path src-tauri\target\release\claude-sprout.exe
-Test-Path "src-tauri\target\release\bundle\nsis\Claude Sprout_0.1.0_x64-setup.exe"
+Test-Path src-tauri\target\release\agent-desktop-companion.exe
+Test-Path "src-tauri\target\release\bundle\nsis\Agent Desktop Companion_0.1.0_x64-setup.exe"
 ```
 
 Capture hashes for the official artifacts:
 
 ```powershell
-Get-FileHash src-tauri\target\release\claude-sprout.exe -Algorithm SHA256
-Get-FileHash "src-tauri\target\release\bundle\nsis\Claude Sprout_0.1.0_x64-setup.exe" -Algorithm SHA256
+Get-FileHash src-tauri\target\release\agent-desktop-companion.exe -Algorithm SHA256
+Get-FileHash "src-tauri\target\release\bundle\nsis\Agent Desktop Companion_0.1.0_x64-setup.exe" -Algorithm SHA256
 ```
 
 Record the file sizes and hashes in the GitHub release notes.
@@ -115,7 +117,7 @@ Record the file sizes and hashes in the GitHub release notes.
 Run the release executable:
 
 ```powershell
-.\src-tauri\target\release\claude-sprout.exe
+.\src-tauri\target\release\agent-desktop-companion.exe
 ```
 
 Verify:
@@ -123,7 +125,7 @@ Verify:
 1. The pet window opens first, is transparent, frameless, always on top, and hidden from the taskbar.
 2. Clicking the pet opens and focuses the session panel.
 3. The tray menu can open the session panel, open Settings, refresh sessions, toggle Do Not Disturb, open the data folder, and quit cleanly.
-4. Settings changes persist under `%USERPROFILE%\.claude-sprout\settings.json`.
+4. Settings changes persist under `%USERPROFILE%\.agent-desktop-companion\settings.json`, unless an override or legacy compatibility root is active.
 5. Do Not Disturb suppresses native notifications.
 6. With Do Not Disturb off, a controlled `waiting_permission`, `done`, or `error` transition shows one native notification; `waiting_input` stays visible as a weak in-app reminder without a native toast.
 
@@ -132,7 +134,7 @@ Run the NSIS installer and verify:
 1. The installer completes without requesting MSI/WiX.
 2. The installed app launches to the pet window.
 3. The pet, tray, session panel, Settings, and quit flow still work from the installed app.
-4. Uninstall removes the installed app cleanly without deleting `%USERPROFILE%\.claude-sprout`.
+4. Uninstall removes the installed app cleanly without deleting `%USERPROFILE%\.agent-desktop-companion` or legacy `%USERPROFILE%\.claude-sprout` data.
 
 For repeatable session-state flow setup:
 
@@ -153,8 +155,8 @@ Native notification visibility still needs desktop observation.
 
 2. Create a GitHub release for `v0.1.0`.
 3. Upload the official artifacts:
-   - `claude-sprout.exe`
-   - `Claude Sprout_0.1.0_x64-setup.exe`
+   - `agent-desktop-companion.exe`
+   - `Agent Desktop Companion_0.1.0_x64-setup.exe`
 4. Include SHA256 hashes, file sizes, supported OS notes, and a short smoke-test summary.
 5. Mention that the app is unsigned if code signing is not configured for this release.
 

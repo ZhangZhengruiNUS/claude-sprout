@@ -199,7 +199,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time should be after epoch")
             .as_nanos();
-        std::env::temp_dir().join(format!("claude-sprout-settings-test-{id}"))
+        std::env::temp_dir().join(format!("agent-desktop-companion-settings-test-{id}"))
     }
 
     #[test]

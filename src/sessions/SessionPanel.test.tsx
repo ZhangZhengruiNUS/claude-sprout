@@ -7,10 +7,10 @@ import type { SessionSnapshot } from './sessionTypes'
 function session(extra: Partial<SessionSnapshot> = {}): SessionSnapshot {
   return {
     session_id: '4b05e339-c239-4363-a5b7-801b9dd2a734',
-    project_name: 'claude-sprout',
+    project_name: 'agent-desktop-companion',
     display_name: null,
     conversation_preview: null,
-    cwd: 'E:\\Codex Project\\claude-sprout',
+    cwd: 'E:\\Codex Project\\agent-desktop-companion',
     status: 'tool_running',
     last_event: 'PreToolUse',
     notification_type: null,
@@ -42,7 +42,7 @@ describe('SessionPanel', () => {
 
     expect(html).toContain('Release checklist polish')
     expect(html).toContain('Claude: Updated the session panel with richer details')
-    expect(html).toContain('claude-sprout - 4b05e3 - 42% ctx')
+    expect(html).toContain('agent-desktop-companion - 4b05e3 - 42% ctx')
     expect(html).toContain('test')
   })
 

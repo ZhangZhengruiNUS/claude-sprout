@@ -51,5 +51,5 @@ pub fn run() {
             commands::clean_storage
         ])
         .run(tauri::generate_context!())
-        .expect("failed to run Claude Sprout");
+        .expect("failed to run Agent Desktop Companion");
 }

@@ -79,7 +79,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time should be after epoch")
             .as_nanos();
-        std::env::temp_dir().join(format!("claude-sprout-codex-scan-test-{id}"))
+        std::env::temp_dir().join(format!("agent-desktop-companion-codex-scan-test-{id}"))
     }
 
     fn write_valid_pet(path: &Path) {

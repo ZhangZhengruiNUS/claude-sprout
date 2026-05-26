@@ -12,7 +12,7 @@ async function tempRoot(name) {
 
 describe('release doctor', () => {
   it('reports missing local NSIS cache files with the expected cache path', async () => {
-    const root = await tempRoot('claude-sprout-release-doctor')
+    const root = await tempRoot('agent-desktop-companion-release-doctor')
     try {
       const report = await inspectReleaseTools({ repoRoot: root, envPath: '' })
 
@@ -29,7 +29,7 @@ describe('release doctor', () => {
   })
 
   it('detects cached NSIS tools and validates the tauri utils dll hash', async () => {
-    const root = await tempRoot('claude-sprout-release-doctor')
+    const root = await tempRoot('agent-desktop-companion-release-doctor')
     const nsisRoot = join(root, 'src-tauri', 'target', '.tauri', 'NSIS')
     const nsisDllPath = join(nsisRoot, 'Plugins', 'x86-unicode', 'additional')
     try {

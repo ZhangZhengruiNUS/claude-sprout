@@ -62,24 +62,24 @@ function runWithStdin(command, args, input, env) {
 
 describe('hook writers', () => {
   it('preserves ended_at across PowerShell statusline updates', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
-      const env = { CLAUDE_SPROUT_HOME: root }
+      const env = { AGENT_DESKTOP_COMPANION_HOME: root }
       await runPowerShellScript(
-        'hooks/windows/claude-sprout-hook.ps1',
+        'hooks/windows/agent-desktop-companion-hook.ps1',
         JSON.stringify({
           session_id: 'ps-session',
           hook_event_name: 'Stop',
-          cwd: 'E:/Codex Project/claude-sprout',
+          cwd: 'E:/Codex Project/agent-desktop-companion',
           reason: 'complete',
         }),
         env,
       )
       await runPowerShellScript(
-        'hooks/windows/claude-sprout-statusline.ps1',
+        'hooks/windows/agent-desktop-companion-statusline.ps1',
         JSON.stringify({
           session_id: 'ps-session',
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
           context_window: { used_percentage: 10 },
         }),
         env,
@@ -94,12 +94,34 @@ describe('hook writers', () => {
     }
   }, 15_000)
 
-  it('handles UTF-8 Claude payloads with CJK assistant text in PowerShell hooks', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+  it('keeps legacy PowerShell wrapper and CLAUDE_SPROUT_HOME compatibility', async () => {
+    const root = await tempRoot('agent-desktop-companion-legacy-wrapper')
     try {
       const env = { CLAUDE_SPROUT_HOME: root }
       await runPowerShellScript(
         'hooks/windows/claude-sprout-hook.ps1',
+        JSON.stringify({
+          session_id: 'ps-legacy-wrapper',
+          hook_event_name: 'UserPromptSubmit',
+          cwd: 'E:/Codex Project/agent-desktop-companion',
+        }),
+        env,
+      )
+
+      const snapshot = await readSnapshot(root, 'ps-legacy-wrapper')
+      expect(snapshot.status).toBe('running')
+      expect(snapshot.project_name).toBe('agent-desktop-companion')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('handles UTF-8 Claude payloads with CJK assistant text in PowerShell hooks', async () => {
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
+    try {
+      const env = { AGENT_DESKTOP_COMPANION_HOME: root }
+      await runPowerShellScript(
+        'hooks/windows/agent-desktop-companion-hook.ps1',
         JSON.stringify({
           session_id: 'ps-cjk-session',
           hook_event_name: 'Stop',
@@ -125,24 +147,24 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('preserves ended_at across Node statusline updates', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
-      const env = { CLAUDE_SPROUT_HOME: root }
+      const env = { AGENT_DESKTOP_COMPANION_HOME: root }
       await runNodeScript(
-        'hooks/node/claude-sprout-hook.js',
+        'hooks/node/agent-desktop-companion-hook.js',
         JSON.stringify({
           session_id: 'node-session',
           hook_event_name: 'Stop',
-          cwd: 'E:/Codex Project/claude-sprout',
+          cwd: 'E:/Codex Project/agent-desktop-companion',
           reason: 'complete',
         }),
         env,
       )
       await runNodeScript(
-        'hooks/node/claude-sprout-statusline.js',
+        'hooks/node/agent-desktop-companion-statusline.js',
         JSON.stringify({
           session_id: 'node-session',
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
           context_window: { used_percentage: 10 },
         }),
         env,
@@ -157,25 +179,46 @@ describe('hook writers', () => {
     }
   }, 15_000)
 
-  it('captures and preserves safe display names from Node hook payloads', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+  it('keeps legacy Node wrapper and CLAUDE_SPROUT_HOME compatibility', async () => {
+    const root = await tempRoot('agent-desktop-companion-node-legacy-wrapper')
     try {
-      const env = { CLAUDE_SPROUT_HOME: root }
       await runNodeScript(
-        'hooks/node/claude-sprout-statusline.js',
+        'hooks/node/claude-sprout-hook.js',
+        JSON.stringify({
+          session_id: 'node-legacy-wrapper',
+          hook_event_name: 'UserPromptSubmit',
+          cwd: 'E:/Codex Project/agent-desktop-companion',
+        }),
+        { CLAUDE_SPROUT_HOME: root },
+      )
+
+      const snapshot = await readSnapshot(root, 'node-legacy-wrapper')
+      expect(snapshot.status).toBe('running')
+      expect(snapshot.project_name).toBe('agent-desktop-companion')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 15_000)
+
+  it('captures and preserves safe display names from Node hook payloads', async () => {
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
+    try {
+      const env = { AGENT_DESKTOP_COMPANION_HOME: root }
+      await runNodeScript(
+        'hooks/node/agent-desktop-companion-statusline.js',
         JSON.stringify({
           session_id: 'node-named-session',
           session_title: 'Renamed release follow-up',
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
         }),
         env,
       )
       await runNodeScript(
-        'hooks/node/claude-sprout-hook.js',
+        'hooks/node/agent-desktop-companion-hook.js',
         JSON.stringify({
           session_id: 'node-named-session',
           hook_event_name: 'PreToolUse',
-          cwd: 'E:/Codex Project/claude-sprout',
+          cwd: 'E:/Codex Project/agent-desktop-companion',
           tool_name: 'Edit',
         }),
         env,
@@ -190,7 +233,7 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('uses Claude transcript summary metadata as a Node display name without assistant text', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       const transcriptPath = join(root, 'node-transcript.jsonl')
       await writeFile(
@@ -202,13 +245,13 @@ describe('hook writers', () => {
       )
 
       await runNodeScript(
-        'hooks/node/claude-sprout-statusline.js',
+        'hooks/node/agent-desktop-companion-statusline.js',
         JSON.stringify({
           session_id: 'node-summary-session',
           transcript_path: transcriptPath,
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'node-summary-session')
@@ -219,7 +262,7 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('does not capture Node conversation previews unless the setting is enabled', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       const transcriptPath = join(root, 'node-preview-off.jsonl')
       await writeFile(
@@ -231,13 +274,13 @@ describe('hook writers', () => {
       )
 
       await runNodeScript(
-        'hooks/node/claude-sprout-statusline.js',
+        'hooks/node/agent-desktop-companion-statusline.js',
         JSON.stringify({
           session_id: 'node-preview-off',
           transcript_path: transcriptPath,
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'node-preview-off')
@@ -248,17 +291,17 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('clears previous Node conversation preview after opt-out', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       await mkdir(join(root, 'sessions'), { recursive: true })
       await writeFile(
         join(root, 'sessions', 'node-preview-clear.json'),
         JSON.stringify({
           session_id: 'node-preview-clear',
-          project_name: 'claude-sprout',
+          project_name: 'agent-desktop-companion',
           display_name: null,
           conversation_preview: 'Claude: old preview',
-          cwd: 'E:/Codex Project/claude-sprout',
+          cwd: 'E:/Codex Project/agent-desktop-companion',
           status: 'tool_running',
           last_event: 'PreToolUse',
           notification_type: null,
@@ -273,12 +316,12 @@ describe('hook writers', () => {
       )
 
       await runNodeScript(
-        'hooks/node/claude-sprout-statusline.js',
+        'hooks/node/agent-desktop-companion-statusline.js',
         JSON.stringify({
           session_id: 'node-preview-clear',
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'node-preview-clear')
@@ -290,7 +333,7 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('skips Node tool result blocks when finding conversation previews', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       await writeSettings(root, { petConversationPreviewEnabled: true })
       const transcriptPath = join(root, 'node-preview-tools.jsonl')
@@ -309,13 +352,13 @@ describe('hook writers', () => {
       )
 
       await runNodeScript(
-        'hooks/node/claude-sprout-statusline.js',
+        'hooks/node/agent-desktop-companion-statusline.js',
         JSON.stringify({
           session_id: 'node-preview-tools',
           transcript_path: transcriptPath,
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'node-preview-tools')
@@ -327,7 +370,7 @@ describe('hook writers', () => {
 
 
   it('captures a truncated Node conversation preview when enabled', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       await writeSettings(root, { petConversationPreviewEnabled: true })
       const transcriptPath = join(root, 'node-preview-on.jsonl')
@@ -350,13 +393,13 @@ describe('hook writers', () => {
       )
 
       await runNodeScript(
-        'hooks/node/claude-sprout-statusline.js',
+        'hooks/node/agent-desktop-companion-statusline.js',
         JSON.stringify({
           session_id: 'node-preview-on',
           transcript_path: transcriptPath,
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'node-preview-on')
@@ -369,24 +412,24 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('captures and preserves safe display names from PowerShell hook payloads', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
-      const env = { CLAUDE_SPROUT_HOME: root }
+      const env = { AGENT_DESKTOP_COMPANION_HOME: root }
       await runPowerShellScript(
-        'hooks/windows/claude-sprout-statusline.ps1',
+        'hooks/windows/agent-desktop-companion-statusline.ps1',
         JSON.stringify({
           session_id: 'ps-named-session',
           session_title: 'Renamed Windows follow-up',
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
         }),
         env,
       )
       await runPowerShellScript(
-        'hooks/windows/claude-sprout-hook.ps1',
+        'hooks/windows/agent-desktop-companion-hook.ps1',
         JSON.stringify({
           session_id: 'ps-named-session',
           hook_event_name: 'PreToolUse',
-          cwd: 'E:/Codex Project/claude-sprout',
+          cwd: 'E:/Codex Project/agent-desktop-companion',
           tool_name: 'Bash',
         }),
         env,
@@ -401,7 +444,7 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('uses Claude transcript summary metadata as a PowerShell display name', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       const transcriptPath = join(root, 'ps-transcript.jsonl')
       await writeFile(
@@ -413,13 +456,13 @@ describe('hook writers', () => {
       )
 
       await runPowerShellScript(
-        'hooks/windows/claude-sprout-statusline.ps1',
+        'hooks/windows/agent-desktop-companion-statusline.ps1',
         JSON.stringify({
           session_id: 'ps-summary-session',
           transcript_path: transcriptPath,
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'ps-summary-session')
@@ -430,7 +473,7 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('captures a truncated PowerShell conversation preview when enabled', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       await writeSettings(root, { petConversationPreviewEnabled: true })
       const transcriptPath = join(root, 'ps-preview-on.jsonl')
@@ -446,13 +489,13 @@ describe('hook writers', () => {
       )
 
       await runPowerShellScript(
-        'hooks/windows/claude-sprout-statusline.ps1',
+        'hooks/windows/agent-desktop-companion-statusline.ps1',
         JSON.stringify({
           session_id: 'ps-preview-on',
           transcript_path: transcriptPath,
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'ps-preview-on')
@@ -465,7 +508,7 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('reads UTF-8 PowerShell conversation previews without mojibake', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       await writeSettings(root, { petConversationPreviewEnabled: true })
       const transcriptPath = join(root, 'ps-preview-cjk.jsonl')
@@ -479,13 +522,13 @@ describe('hook writers', () => {
       )
 
       await runPowerShellScript(
-        'hooks/windows/claude-sprout-statusline.ps1',
+        'hooks/windows/agent-desktop-companion-statusline.ps1',
         JSON.stringify({
           session_id: 'ps-preview-cjk',
           transcript_path: transcriptPath,
-          workspace: { current_dir: 'E:/Codex Project/claude-sprout' },
+          workspace: { current_dir: 'E:/Codex Project/agent-desktop-companion' },
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'ps-preview-cjk')
@@ -496,7 +539,7 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('overwrites malformed previous PowerShell snapshots instead of failing hooks', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       await mkdir(join(root, 'sessions'), { recursive: true })
       await writeFile(
@@ -506,14 +549,14 @@ describe('hook writers', () => {
       )
 
       await runPowerShellScript(
-        'hooks/windows/claude-sprout-hook.ps1',
+        'hooks/windows/agent-desktop-companion-hook.ps1',
         JSON.stringify({
           session_id: 'ps-malformed-previous',
           hook_event_name: 'Notification',
           notification_type: 'idle_prompt',
           cwd: 'C:/Users/ASUS',
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'ps-malformed-previous')
@@ -526,7 +569,7 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('overwrites malformed previous Node snapshots instead of failing hooks', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       await mkdir(join(root, 'sessions'), { recursive: true })
       await writeFile(
@@ -536,14 +579,14 @@ describe('hook writers', () => {
       )
 
       await runNodeScript(
-        'hooks/node/claude-sprout-hook.js',
+        'hooks/node/agent-desktop-companion-hook.js',
         JSON.stringify({
           session_id: 'node-malformed-previous',
           hook_event_name: 'Notification',
           notification_type: 'idle_prompt',
           cwd: 'C:/Users/ASUS',
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'node-malformed-previous')
@@ -556,7 +599,7 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('ignores malformed previous PowerShell snapshots in statusline updates', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       await mkdir(join(root, 'sessions'), { recursive: true })
       await writeFile(
@@ -566,12 +609,12 @@ describe('hook writers', () => {
       )
 
       await runPowerShellScript(
-        'hooks/windows/claude-sprout-statusline.ps1',
+        'hooks/windows/agent-desktop-companion-statusline.ps1',
         JSON.stringify({
           session_id: 'ps-statusline-malformed',
           workspace: { current_dir: 'C:/Users/ASUS' },
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'ps-statusline-malformed')
@@ -583,7 +626,7 @@ describe('hook writers', () => {
   }, 15_000)
 
   it('ignores malformed previous Node snapshots in statusline updates', async () => {
-    const root = await tempRoot('claude-sprout-hook-writers')
+    const root = await tempRoot('agent-desktop-companion-hook-writers')
     try {
       await mkdir(join(root, 'sessions'), { recursive: true })
       await writeFile(
@@ -593,12 +636,12 @@ describe('hook writers', () => {
       )
 
       await runNodeScript(
-        'hooks/node/claude-sprout-statusline.js',
+        'hooks/node/agent-desktop-companion-statusline.js',
         JSON.stringify({
           session_id: 'node-statusline-malformed',
           workspace: { current_dir: 'C:/Users/ASUS' },
         }),
-        { CLAUDE_SPROUT_HOME: root },
+        { AGENT_DESKTOP_COMPANION_HOME: root },
       )
 
       const snapshot = await readSnapshot(root, 'node-statusline-malformed')

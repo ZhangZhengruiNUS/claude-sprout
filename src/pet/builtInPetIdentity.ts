@@ -1,9 +1,13 @@
-export const BUILT_IN_PET_ID = 'built-in-claude-sprout'
+export const BUILT_IN_PET_ID = 'built-in-glint'
 
-const RETIRED_BUILT_IN_PET_IDS = new Set(['claude-sprout', BUILT_IN_PET_ID])
+const BUILT_IN_PET_IDS = new Set([
+  BUILT_IN_PET_ID,
+  'built-in-claude-sprout',
+  'claude-sprout',
+])
 
 export function isBuiltInPetSelectionId(petId: string | null | undefined) {
-  return petId == null || RETIRED_BUILT_IN_PET_IDS.has(petId)
+  return petId == null || BUILT_IN_PET_IDS.has(petId)
 }
 
 export function normalizePetSelectionId(petId: string | null) {

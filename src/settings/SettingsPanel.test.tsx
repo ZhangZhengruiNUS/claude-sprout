@@ -69,7 +69,7 @@ describe('SettingsPanel', () => {
     const html = renderSettingsPanel()
 
     expect(html).toContain('Manage pets')
-    expect(html).toContain('Claude Sprout')
+    expect(html).toContain('Glint')
     expect(html).not.toContain('Handoff</button>')
   })
 

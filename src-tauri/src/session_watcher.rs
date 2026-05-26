@@ -2,7 +2,7 @@ use crate::session_store;
 use std::{thread, time::Duration};
 use tauri::{AppHandle, Emitter};
 
-const SESSION_CHANGED_EVENT: &str = "claude-sprout://sessions-changed";
+const SESSION_CHANGED_EVENT: &str = "agent-desktop-companion://sessions-changed";
 const POLL_INTERVAL: Duration = Duration::from_secs(2);
 
 pub fn start(app: AppHandle) {

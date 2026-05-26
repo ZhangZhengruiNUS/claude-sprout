@@ -4,6 +4,6 @@ pub fn notification_title_for_status(status: &str) -> &'static str {
         "waiting_permission" => "Claude Code needs permission",
         "done" => "Claude Code task finished",
         "error" => "Claude Code task failed",
-        _ => "Claude Sprout",
+        _ => "Agent Desktop Companion",
     }
 }

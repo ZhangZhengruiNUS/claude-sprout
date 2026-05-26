@@ -334,7 +334,7 @@ mod tests {
 
     fn temp_root(name: &str) -> PathBuf {
         std::env::temp_dir().join(format!(
-            "claude-sprout-storage-cleanup-{name}-{}",
+            "agent-desktop-companion-storage-cleanup-{name}-{}",
             Utc::now().timestamp_nanos_opt().unwrap_or_default()
         ))
     }

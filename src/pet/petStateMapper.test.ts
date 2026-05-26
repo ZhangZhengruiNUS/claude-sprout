@@ -45,8 +45,8 @@ describe('pet state mapper', () => {
 function session(status: SessionStatus) {
   return {
     session_id: status,
-    project_name: 'claude-sprout',
-    cwd: 'E:/Codex Project/claude-sprout',
+    project_name: 'agent-desktop-companion',
+    cwd: 'E:/Codex Project/agent-desktop-companion',
     status,
     last_event: 'Status',
     updated_at: '2026-05-22T00:00:00.000Z',

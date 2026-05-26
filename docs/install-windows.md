@@ -40,7 +40,7 @@ npm run release:exe
 The executable is written to:
 
 ```text
-src-tauri\target\release\claude-sprout.exe
+src-tauri\target\release\agent-desktop-companion.exe
 ```
 
 Build the default Windows installer:
@@ -92,7 +92,7 @@ Reference downloads and expected hashes are printed by `npm run release:doctor`.
 After the cache is populated, `npm run release:nsis` writes the installer to:
 
 ```text
-src-tauri\target\release\bundle\nsis\Claude Sprout_0.1.0_x64-setup.exe
+src-tauri\target\release\bundle\nsis\Agent Desktop Companion_0.1.0_x64-setup.exe
 ```
 
 Optionally build an MSI only when WiX is installed and working:
@@ -108,14 +108,14 @@ If `npm run release:doctor -- --target msi` reports `candle.exe` and `light.exe`
 After building the release exe, run:
 
 ```powershell
-.\src-tauri\target\release\claude-sprout.exe
+.\src-tauri\target\release\agent-desktop-companion.exe
 ```
 
 Then verify:
 
 1. The pet window opens as the primary surface and clicking it opens the session panel.
 2. The tray menu opens the session panel, opens Settings, refreshes sessions, toggles Do Not Disturb, opens the data folder, and quits cleanly.
-3. Toggling Do Not Disturb changes `%USERPROFILE%\.claude-sprout\settings.json`.
+3. Toggling Do Not Disturb changes `%USERPROFILE%\.agent-desktop-companion\settings.json`, unless an override or legacy compatibility root is active.
 4. With Do Not Disturb off, a controlled session JSON transition to `waiting_permission`, `done`, or `error` shows one native notification. `waiting_input` remains visible in session UI as a weak reminder but does not show a native notification.
 5. With Do Not Disturb on, the same transition refreshes session state without showing a native notification.
 
@@ -127,14 +127,27 @@ For a repeatable controlled session-state smoke sequence, run:
 npm run smoke:sessions
 ```
 
-This launches the release exe with a temporary `CLAUDE_SPROUT_HOME`, writes `running -> waiting_permission -> done`, toggles do-not-disturb in settings, then writes `running -> waiting_input` for a second session. The script verifies the file flow and app process path; native notification visibility still needs desktop observation for strong notification states.
+This launches the release exe with a temporary `AGENT_DESKTOP_COMPANION_HOME`, writes `running -> waiting_permission -> done`, toggles do-not-disturb in settings, then writes `running -> waiting_input` for a second session. The script verifies the file flow and app process path; native notification visibility still needs desktop observation for strong notification states.
+
+Use the legacy compatibility path with:
+
+```powershell
+npm run smoke:sessions -- --legacy-env
+```
 
 ## Data Folder
 
-Claude Sprout stores local state in:
+Agent Desktop Companion stores local state in:
 
 ```text
-%USERPROFILE%\.claude-sprout
+%USERPROFILE%\.agent-desktop-companion
 ```
 
 Delete that folder to reset local session snapshots, events, imported pets, and config.
+
+Compatibility notes:
+
+- `AGENT_DESKTOP_COMPANION_HOME` overrides the current data root.
+- If `CLAUDE_SPROUT_HOME` is set, the app and canonical hooks continue to use it.
+- If the new default directory does not exist but `%USERPROFILE%\.claude-sprout` exists, the app reads the legacy directory.
+- Legacy data is not moved or deleted automatically.

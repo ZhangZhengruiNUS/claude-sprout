@@ -1,13 +1,13 @@
 [package]
-name = "claude-sprout"
+name = "agent-desktop-companion"
 version = "0.1.0"
-description = "Windows-first desktop companion for Claude Code CLI sessions"
-authors = ["Claude Sprout contributors"]
+description = "Local-first AI Agent desktop companion workbench"
+authors = ["Agent Desktop Companion contributors"]
 edition = "2021"
 license = "MIT"
 
 [lib]
-name = "claude_sprout_lib"
+name = "agent_desktop_companion_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

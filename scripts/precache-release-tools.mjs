@@ -71,7 +71,7 @@ function openDownload(url, redirects = 0) {
       url,
       {
         headers: {
-          'User-Agent': 'claude-sprout-release-tool-precache',
+          'User-Agent': 'agent-desktop-companion-release-tool-precache',
         },
       },
       (response) => {
@@ -126,7 +126,7 @@ async function hashFile(path, algorithm) {
 }
 
 async function extractZip(archivePath, destination) {
-  const extractRoot = join(tmpdir(), `claude-sprout-release-tools-${Date.now()}-${Math.random().toString(16).slice(2)}`)
+  const extractRoot = join(tmpdir(), `agent-desktop-companion-release-tools-${Date.now()}-${Math.random().toString(16).slice(2)}`)
   await rm(extractRoot, { recursive: true, force: true })
   await mkdir(extractRoot, { recursive: true })
   try {

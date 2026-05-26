@@ -157,7 +157,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time should be after epoch")
             .as_nanos();
-        std::env::temp_dir().join(format!("claude-sprout-pets-test-{id}"))
+        std::env::temp_dir().join(format!("agent-desktop-companion-pets-test-{id}"))
     }
 
     fn write_installed_pet(root: &Path, id: &str, name: &str) -> PathBuf {

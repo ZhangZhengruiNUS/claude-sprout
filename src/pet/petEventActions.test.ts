@@ -243,8 +243,8 @@ function session({
 }): SessionSnapshot {
   return {
     session_id: id,
-    project_name: 'claude-sprout',
-    cwd: 'E:/Codex Project/claude-sprout',
+    project_name: 'agent-desktop-companion',
+    cwd: 'E:/Codex Project/agent-desktop-companion',
     status,
     last_event: lastEvent,
     notification_type: notificationType,

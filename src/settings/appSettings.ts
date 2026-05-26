@@ -22,7 +22,8 @@ export type AppSettings = {
 
 type StoredAppSettings = Partial<AppSettings>
 
-export const APP_SETTINGS_STORAGE_KEY = 'claude-sprout.settings.v1'
+export const APP_SETTINGS_STORAGE_KEY = 'agent-desktop-companion.settings.v1'
+export const LEGACY_APP_SETTINGS_STORAGE_KEY = 'claude-sprout.settings.v1'
 export const LEGACY_PET_SCALE_STORAGE_KEY = 'claude-sprout.pet-scale'
 
 export const PET_SCALE_MIN = 0.55
@@ -90,7 +91,10 @@ export function settingsWithPetSizePreset(
 }
 
 export function loadAppSettings(storage: Storage = window.localStorage): AppSettings {
-  const storedSettings = parseStoredSettings(storage.getItem(APP_SETTINGS_STORAGE_KEY))
+  const storedSettings = parseStoredSettings(
+    storage.getItem(APP_SETTINGS_STORAGE_KEY) ??
+      storage.getItem(LEGACY_APP_SETTINGS_STORAGE_KEY),
+  )
   const legacyScale = parseFiniteNumber(storage.getItem(LEGACY_PET_SCALE_STORAGE_KEY))
 
   return normalizeAppSettings({
@@ -107,6 +111,7 @@ export function saveAppSettings(settings: AppSettings, storage: Storage = window
 export function hasStoredAppSettings(storage: Storage = window.localStorage) {
   return (
     storage.getItem(APP_SETTINGS_STORAGE_KEY) !== null ||
+    storage.getItem(LEGACY_APP_SETTINGS_STORAGE_KEY) !== null ||
     storage.getItem(LEGACY_PET_SCALE_STORAGE_KEY) !== null
   )
 }

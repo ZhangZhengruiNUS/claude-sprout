@@ -15,7 +15,7 @@ export function createSessionSnapshot({
   sessionId,
   status,
   updatedAt = new Date().toISOString(),
-  projectName = 'Claude Sprout Smoke',
+  projectName = 'Agent Desktop Companion Smoke',
   cwd = process.cwd(),
 }) {
   return {
@@ -31,7 +31,7 @@ export function createSessionSnapshot({
     updated_at: updatedAt,
     ended_at: ['done', 'error', 'closed'].includes(status) ? updatedAt : null,
     end_reason: status === 'done' ? 'smoke_complete' : null,
-    source: 'claude-sprout-smoke',
+    source: 'agent-desktop-companion-smoke',
   }
 }
 
@@ -92,6 +92,7 @@ function parseArgs(argv) {
     delayMs: DEFAULT_DELAY_MS,
     launch: true,
     keepRunning: false,
+    legacyEnv: false,
   }
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -106,6 +107,8 @@ function parseArgs(argv) {
       options.launch = false
     } else if (arg === '--keep-running') {
       options.keepRunning = true
+    } else if (arg === '--legacy-env') {
+      options.legacyEnv = true
     } else if (arg === '--help') {
       options.help = true
     }
@@ -118,11 +121,12 @@ function usage() {
   console.log(`Usage: node scripts/session-smoke.mjs [options]
 
 Options:
-  --home <path>       CLAUDE_SPROUT_HOME root. Defaults to a temp smoke folder.
-  --exe <path>        Release exe path. Defaults to src-tauri/target/release/claude-sprout.exe.
+  --home <path>       AGENT_DESKTOP_COMPANION_HOME root. Defaults to a temp smoke folder.
+  --exe <path>        Release exe path. Defaults to src-tauri/target/release/agent-desktop-companion.exe.
   --delay-ms <ms>     Delay between snapshot transitions. Defaults to ${DEFAULT_DELAY_MS}.
   --skip-launch       Only write controlled session/settings files.
   --keep-running      Leave the launched app running after writing snapshots.
+  --legacy-env        Launch with CLAUDE_SPROUT_HOME to verify compatibility.
 `)
 }
 
@@ -144,8 +148,8 @@ async function writeTransition(root, sessionId, status) {
 
 async function runSmoke(options) {
   const repoRoot = join(fileURLToPath(new URL('.', import.meta.url)), '..')
-  const smokeRoot = options.home ?? join(tmpdir(), `claude-sprout-smoke-${Date.now()}`)
-  const exe = options.exe ?? join(repoRoot, 'src-tauri', 'target', 'release', 'claude-sprout.exe')
+  const smokeRoot = options.home ?? join(tmpdir(), `agent-desktop-companion-smoke-${Date.now()}`)
+  const exe = options.exe ?? join(repoRoot, 'src-tauri', 'target', 'release', 'agent-desktop-companion.exe')
 
   await mkdir(join(smokeRoot, 'sessions'), { recursive: true })
   await writeSmokeSettings(smokeRoot, false)
@@ -155,9 +159,10 @@ async function runSmoke(options) {
     if (!existsSync(exe)) {
       throw new Error(`Release exe not found at ${exe}. Run npm run release:exe first.`)
     }
+    const homeEnvName = options.legacyEnv ? 'CLAUDE_SPROUT_HOME' : 'AGENT_DESKTOP_COMPANION_HOME'
     appProcess = spawn(exe, [], {
       cwd: repoRoot,
-      env: { ...process.env, CLAUDE_SPROUT_HOME: smokeRoot },
+      env: { ...process.env, [homeEnvName]: smokeRoot },
       windowsHide: true,
       stdio: 'ignore',
     })

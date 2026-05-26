@@ -1,6 +1,6 @@
-# Claude Sprout Agent Instructions
+# Agent Desktop Companion Agent Instructions
 
-This repository is a Windows-first Tauri v2 desktop companion for Claude Code CLI sessions. The product surface is a small transparent always-on-top pet window; the full session panel is secondary.
+This repository is a Windows-first Tauri v2 local-first AI Agent desktop companion. The primary product surface is Glint, a small transparent always-on-top pet window; the full session panel is secondary.
 
 ## Automatic Startup Context
 
@@ -20,7 +20,7 @@ Do not ask the user to restate prior context unless the handoff is stale, contra
 - Prefer Windows behavior and PowerShell hook support first.
 - Do not implement automatic Claude Code permission approval.
 - Do not capture full prompts, model outputs, secrets, or project file contents.
-- Keep data local under `%USERPROFILE%\.claude-sprout` unless the user explicitly asks otherwise.
+- Keep data local under `%USERPROFILE%\.agent-desktop-companion` by default, while preserving legacy read compatibility for `%USERPROFILE%\.claude-sprout` and `CLAUDE_SPROUT_HOME`.
 
 ## Development Workflow
 

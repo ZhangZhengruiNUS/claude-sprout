@@ -5,7 +5,7 @@ import type { StorageSummary } from './storageApi'
 
 function summary(cleanableFileCount: number): StorageSummary {
   return {
-    rootPath: 'C:/Users/Test/.claude-sprout',
+    rootPath: 'C:/Users/Test/.agent-desktop-companion',
     sessions: {
       fileCount: 3,
       directoryCount: 0,

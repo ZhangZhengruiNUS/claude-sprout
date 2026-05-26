@@ -9,14 +9,14 @@ const codexPetAsset: PetAsset = {
   id: 'handoff',
   name: 'Handoff',
   description: null,
-  spritesheetPath: 'C:/Users/Test/.claude-sprout/pets/handoff/spritesheet.webp',
+  spritesheetPath: 'C:/Users/Test/.agent-desktop-companion/pets/handoff/spritesheet.webp',
   atlas: 'codex-8x9',
   imageSrc: 'asset://handoff/spritesheet.webp',
   atlasProfile: codexAtlasProfile,
 }
 
 describe('PetRenderer', () => {
-  it('renders the standard built-in Claude Sprout as a Codex atlas sprite', () => {
+  it('renders the standard built-in Glint as a Codex atlas sprite', () => {
     const html = renderToStaticMarkup(
       <PetRenderer status="idle" alertCount={0} petAsset={builtInPetAsset} />,
     )
@@ -24,7 +24,7 @@ describe('PetRenderer', () => {
     expect(html).toContain('pet-hit-target')
     expect(html).toContain('sprite-pet loop')
     expect(html).toContain('pet-surface idle imported-pet')
-    expect(html).toContain('claude-sprout-spritesheet.webp')
+    expect(html).toContain('glint-spritesheet.webp')
     expect(html).toContain('--sprite-frame-width:192px')
     expect(html).toContain('--sprite-frame-height:208px')
   })

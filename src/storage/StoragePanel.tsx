@@ -43,7 +43,7 @@ export function StoragePanel({
       <div className="setting-row storage-heading">
         <span>
           <strong>{t('storage.title')}</strong>
-          <small>{summary?.rootPath ?? '%USERPROFILE%\\.claude-sprout'}</small>
+          <small>{summary?.rootPath ?? '%USERPROFILE%\\.agent-desktop-companion'}</small>
         </span>
         <div className="setting-actions">
           <button type="button" onClick={onRefresh} disabled={isLoading || isCleaning}>

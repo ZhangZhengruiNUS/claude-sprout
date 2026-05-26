@@ -14,7 +14,7 @@ $hook = @'
 #!/bin/sh
 set -e
 
-echo "[claude-sprout] updating handoff..."
+echo "[agent-desktop-companion] updating handoff..."
 npm run handoff:update
 git add docs/next-session.md
 '@

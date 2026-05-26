@@ -1,3 +1,3 @@
 fn main() {
-    claude_sprout_lib::run();
+    agent_desktop_companion_lib::run();
 }

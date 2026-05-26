@@ -39,7 +39,7 @@ const EMPTY_BUCKET: StorageBucketSummary = {
 }
 
 const EMPTY_SUMMARY: StorageSummary = {
-  rootPath: '%USERPROFILE%\\.claude-sprout',
+  rootPath: '%USERPROFILE%\\.agent-desktop-companion',
   sessions: EMPTY_BUCKET,
   events: EMPTY_BUCKET,
   pets: EMPTY_BUCKET,

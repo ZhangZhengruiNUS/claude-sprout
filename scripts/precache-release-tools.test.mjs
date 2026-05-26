@@ -16,7 +16,7 @@ describe('release tool pre-cache helpers', () => {
   })
 
   it('builds deterministic cache destinations from release doctor constants', () => {
-    const root = 'C:\\repo\\claude-sprout'
+    const root = 'C:\\repo\\agent-desktop-companion'
     const plan = buildPrecachePlan({ repoRoot: root, targets: releaseToolTargetNames })
 
     expect(plan.map((entry) => entry.name)).toEqual(['nsis', 'nsis-tauri-utils', 'wix'])

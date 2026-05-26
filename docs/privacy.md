@@ -1,6 +1,6 @@
 # Privacy
 
-Claude Sprout is local-first.
+Agent Desktop Companion is local-first.
 
 ## What It Stores
 
@@ -30,8 +30,10 @@ Claude Sprout is local-first.
 
 ## Reset
 
-Delete this directory to reset local app data:
+Delete this directory to reset current local app data:
 
 ```text
-%USERPROFILE%\.claude-sprout
+%USERPROFILE%\.agent-desktop-companion
 ```
+
+Legacy local data may still exist under `%USERPROFILE%\.claude-sprout`, or under the directory pointed to by `CLAUDE_SPROUT_HOME`. Agent Desktop Companion can read those paths for compatibility but does not automatically move or delete them.

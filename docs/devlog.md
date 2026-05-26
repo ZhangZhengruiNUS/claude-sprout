@@ -1,5 +1,22 @@
 # Development Log
 
+## 2026-05-26
+
+- Migrated the product identity from Claude Sprout to Agent Desktop Companion while keeping the existing GitHub remote rename as a later manual step.
+- Set Glint as the built-in visual identity and standard pet: a head-only winged luminous technology sprite based on the user-confirmed direction.
+- Replaced built-in pet and app imagery with the approved Glint assets:
+  - `src/assets/glint-spritesheet.webp`
+  - `src/assets/glint-icon.png`
+  - `public/favicon.png`
+  - `src-tauri/icons/icon.ico`
+  - `src-tauri/icons/tray-icon.png`
+- Renamed package, Tauri product identity, Rust crate/lib, app identifier, event protocol, release paths, hook scripts, and user-facing documentation to Agent Desktop Companion / `agent-desktop-companion`.
+- Added compatibility handling for old local data and settings:
+  - new default data root is `%USERPROFILE%\.agent-desktop-companion`
+  - new override env var is `AGENT_DESKTOP_COMPANION_HOME`
+  - legacy `CLAUDE_SPROUT_HOME`, `%USERPROFILE%\.claude-sprout`, retired built-in pet ids, old localStorage keys, and old hook filenames remain readable/wrapped.
+- Rewrote README.zh-CN.md as clean UTF-8 Chinese and refreshed architecture, privacy, hooks, importer, install, release checklist, roadmap, handoff, and AGENTS wording around the new positioning.
+
 ## 2026-05-25
 
 - Ran the project Codex UI/UX reviewer workflow with two read-only subagents:

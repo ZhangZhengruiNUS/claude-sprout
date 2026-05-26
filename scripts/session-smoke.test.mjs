@@ -17,7 +17,7 @@ async function tempRoot(name) {
 
 describe('session smoke helpers', () => {
   it('writes the schema consumed by the Rust session store', async () => {
-    const root = await tempRoot('claude-sprout-session-smoke')
+    const root = await tempRoot('agent-desktop-companion-session-smoke')
     try {
       const snapshot = createSessionSnapshot({
         sessionId: 'smoke-a',
@@ -29,10 +29,10 @@ describe('session smoke helpers', () => {
       const raw = JSON.parse(await readFile(smokeSessionFilePath(root, 'smoke-a'), 'utf8'))
       expect(raw).toMatchObject({
         session_id: 'smoke-a',
-        project_name: 'Claude Sprout Smoke',
+        project_name: 'Agent Desktop Companion Smoke',
         status: 'waiting_permission',
         notification_type: 'permission_prompt',
-        source: 'claude-sprout-smoke',
+        source: 'agent-desktop-companion-smoke',
       })
     } finally {
       await rm(root, { recursive: true, force: true })
@@ -40,7 +40,7 @@ describe('session smoke helpers', () => {
   })
 
   it('writes do-not-disturb settings used by the app-data settings store', async () => {
-    const root = await tempRoot('claude-sprout-session-smoke')
+    const root = await tempRoot('agent-desktop-companion-session-smoke')
     try {
       await writeSmokeSettings(root, true)
 

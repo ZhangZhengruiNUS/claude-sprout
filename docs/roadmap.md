@@ -17,10 +17,14 @@
 - Release doctor and controlled session smoke scripts.
 - Terminal hook state preservation for more accurate closed-session detection.
 - Standalone release exe, NSIS installer, and optional MSI build scripts.
+- Product identity migrated to Agent Desktop Companion, with Glint as the built-in desktop pet and visual mascot.
+- New default data root and canonical hooks under `agent-desktop-companion`, with legacy Claude Sprout data and hook compatibility retained.
 
 ## Next
 
 - File watcher with debounce.
+- Acceptance-test the Glint assets in the release exe: taskbar/Alt-Tab icon, tray icon, built-in pet preview, Message mode, and Board mode.
+- Manually rename the GitHub repository to `agent-desktop-companion` when ready; the remote URL is intentionally not changed by the code migration.
 - Prepare and publish the first tagged Windows release.
 
 ## Later
@@ -28,4 +32,4 @@
 - Optional wrapper/PID enhancement for process-level closed detection.
 - Signed release flow.
 - GitHub Actions release builds.
-- Optional light theme.
+- API and skill management once the pet-first companion workflow is stable.

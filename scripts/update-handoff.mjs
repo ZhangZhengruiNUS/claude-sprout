@@ -62,7 +62,7 @@ When a new Codex session starts in this repository:
 2. Read this file.
 3. Skim \`docs/devlog.md\`.
 4. Run \`git status --short --branch\` and \`git log --oneline --decorate -5\` for live Git context.
-5. If the user says "continue" or gives a new Claude Sprout requirement, continue from "Next Tasks" unless newer user instructions override it.
+5. If the user says "continue" or gives a new Agent Desktop Companion requirement, continue from "Next Tasks" unless newer user instructions override it.
 
 ## Git Context
 

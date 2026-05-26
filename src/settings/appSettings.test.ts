@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  APP_SETTINGS_STORAGE_KEY,
   DEFAULT_APP_SETTINGS,
+  LEGACY_APP_SETTINGS_STORAGE_KEY,
   PET_SCALE_MIN,
   PET_SIZE_OPTIONS,
   clampPetScale,
@@ -46,7 +48,7 @@ describe('app settings persistence', () => {
   it('sanitizes saved values and clamps pet scale', () => {
     const storage = new MemoryStorage()
     storage.setItem(
-      'claude-sprout.settings.v1',
+      APP_SETTINGS_STORAGE_KEY,
       JSON.stringify({
         doNotDisturb: true,
         language: 'zh-CN',
@@ -85,7 +87,7 @@ describe('app settings persistence', () => {
   it('normalizes pet assistant settings from invalid stored values', () => {
     const storage = new MemoryStorage()
     storage.setItem(
-      'claude-sprout.settings.v1',
+      APP_SETTINGS_STORAGE_KEY,
       JSON.stringify({
         petDisplayMode: 'dashboard',
         petCompletionToastSeconds: -4,
@@ -101,7 +103,7 @@ describe('app settings persistence', () => {
   it('falls back to the default scale when stored scale is not numeric', () => {
     const storage = new MemoryStorage()
     storage.setItem(
-      'claude-sprout.settings.v1',
+      APP_SETTINGS_STORAGE_KEY,
       JSON.stringify({
         petScale: 'wide',
         petSizePreset: 'custom',
@@ -125,6 +127,33 @@ describe('app settings persistence', () => {
       petScale: 1.25,
       petSizePreset: 'custom',
     })
+  })
+
+  it('loads legacy Claude Sprout settings when the new key is missing', () => {
+    const storage = new MemoryStorage()
+    storage.setItem(
+      LEGACY_APP_SETTINGS_STORAGE_KEY,
+      JSON.stringify({
+        doNotDisturb: true,
+        petSizePreset: 'small',
+      }),
+    )
+
+    expect(loadAppSettings(storage)).toEqual({
+      ...DEFAULT_APP_SETTINGS,
+      doNotDisturb: true,
+      petScale: PET_SIZE_OPTIONS.small.scale,
+      petSizePreset: 'small',
+    })
+  })
+
+  it('saves migrated settings under the Agent Desktop Companion key', () => {
+    const storage = new MemoryStorage()
+    storage.setItem(LEGACY_APP_SETTINGS_STORAGE_KEY, JSON.stringify({ theme: 'dark' }))
+
+    saveAppSettings(loadAppSettings(storage), storage)
+
+    expect(storage.getItem(APP_SETTINGS_STORAGE_KEY)).toContain('"theme":"dark"')
   })
 
   it('saves selected pet size presets with their scale', () => {
@@ -172,7 +201,7 @@ describe('app settings persistence', () => {
   it('defaults invalid theme values to system', () => {
     const storage = new MemoryStorage()
     storage.setItem(
-      'claude-sprout.settings.v1',
+      APP_SETTINGS_STORAGE_KEY,
       JSON.stringify({
         theme: 'sepia',
       }),
